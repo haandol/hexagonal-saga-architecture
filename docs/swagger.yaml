@@ -1,0 +1,80 @@
+definitions:
+  dto.Trip:
+    properties:
+      carId:
+        type: integer
+      createdAt:
+        type: string
+      flightId:
+        type: integer
+      hotelId:
+        type: integer
+      id:
+        type: integer
+      status:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    required:
+    - carId
+    - flightId
+    - hotelId
+    - status
+    - userId
+    type: object
+info:
+  contact: {}
+  description: hexagonal architecture example api server
+  title: Hexagonal API
+  version: "0.1"
+paths:
+  /trips:
+    get:
+      consumes:
+      - application/json
+      description: list all trips
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Trip'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: list all trips
+      tags:
+      - trips
+    post:
+      consumes:
+      - application/json
+      description: create new trip
+      parameters:
+      - description: trip request
+        in: body
+        name: '"body"'
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Trip'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Trip'
+      security:
+      - BearerAuth: []
+      summary: create new trip
+      tags:
+      - trips
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
