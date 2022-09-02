@@ -5,7 +5,7 @@ hexagonal architecture example for gophers
 # Prerequisites
 
 - Go 1.18
-- MySQL 5.7
+- Docker
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
 - [Ginkgo](https://onsi.github.io/ginkgo/), Gomega and [GoMock](https://github.com/golang/mock) for testing
