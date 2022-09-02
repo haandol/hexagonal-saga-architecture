@@ -2,6 +2,8 @@
 
 hexagonal architecture example for gophers
 
+this repository is for [Gin](https://github.com/gin-gonic/gin) based Rest API server example.
+
 # Prerequisites
 
 - Go 1.18
