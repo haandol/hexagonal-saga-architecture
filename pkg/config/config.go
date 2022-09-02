@@ -16,6 +16,13 @@ type App struct {
 	GracefulShutdownTimeout int    `validate:"required,number,gte=0"`
 }
 
+type Kafka struct {
+	Seeds            []string `validate:"required"`
+	GroupId          string   `validate:"required"`
+	MessageExpirySec int      `validate:"required,number"`
+	BatchSize        int      `validate:"required,number"`
+}
+
 type Database struct {
 	Host               string `validate:"required"`
 	Port               int    `validate:"required,number"`
@@ -32,6 +39,7 @@ type Trace struct {
 
 type Config struct {
 	App    App
+	Kafka  Kafka
 	TripDB Database
 	Trace  Trace
 }
@@ -49,6 +57,12 @@ func BuildFromPath(envPath string) Config {
 			RPS:                     getEnv("APP_RPS").Int(),
 			TimeoutSec:              getEnv("APP_TIMEOUT_SEC").Int(),
 			GracefulShutdownTimeout: getEnv("APP_GRACEFUL_SHUTDOWN_TIMEOUT").Int(),
+		},
+		Kafka: Kafka{
+			Seeds:            getEnv("KAFKA_SEEDS").Split(","),
+			GroupId:          getEnv("KAFKA_GROUP_ID").String(),
+			MessageExpirySec: getEnv("KAFKA_MESSAGE_EXPIRY_SEC").Int(),
+			BatchSize:        getEnv("KAFKA_BATCH_SIZE").Int(),
 		},
 		TripDB: Database{
 			Host:               getEnv("DB_HOST").String(),

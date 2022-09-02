@@ -9,11 +9,13 @@ package app
 import (
 	"github.com/google/wire"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
+	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"gorm.io/gorm"
@@ -25,9 +27,10 @@ import (
 func InitTripApp(cfg config.Config) port.App {
 	ginRouter := router.NewGinRouter(cfg)
 	server := NewServer(cfg, ginRouter)
+	kafkaProducer := producer.NewKafkaProducer(cfg)
 	db := provideTripDB(cfg)
 	tripRepository := repository.NewTripRepository(db)
-	tripService := service.NewTripService(tripRepository)
+	tripService := service.NewTripService(kafkaProducer, tripRepository)
 	tripRouter := router.NewTripRouter(tripService)
 	tripApp := NewTripApp(server, ginRouter, tripRouter)
 	return tripApp
@@ -43,6 +46,8 @@ func provideTripDB(cfg config.Config) *gorm.DB {
 	}
 	return db
 }
+
+var provideProducer = wire.NewSet(producer.NewKafkaProducer, wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)))
 
 var provideRepositories = wire.NewSet(repository.NewTripRepository, wire.Bind(new(repositoryport.TripRepository), new(*repository.TripRepository)))
 

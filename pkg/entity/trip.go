@@ -39,7 +39,7 @@ func (m Trips) DTO() ([]dto.Trip, error) {
 	for _, trip := range m {
 		t, err := trip.DTO()
 		if err != nil {
-			logger.Error(err)
+			logger.Error(err.Error())
 			continue
 		}
 		trips = append(trips, t)

@@ -7,11 +7,13 @@ import (
 
 	"github.com/google/wire"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
+	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"gorm.io/gorm"
@@ -25,6 +27,11 @@ func provideTripDB(cfg config.Config) *gorm.DB {
 	}
 	return db
 }
+
+var provideProducer = wire.NewSet(
+	producer.NewKafkaProducer,
+	wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)),
+)
 
 var provideRepositories = wire.NewSet(
 	repository.NewTripRepository,
@@ -45,6 +52,7 @@ var provideRouters = wire.NewSet(
 func InitTripApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
+		provideProducer,
 		provideRepositories,
 		provideRestServices,
 		provideRouters,

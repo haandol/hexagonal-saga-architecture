@@ -3,7 +3,6 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/pkg/constant"
-	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"github.com/haandol/hexagonal/pkg/util"
@@ -35,21 +34,21 @@ func (r *TripRouter) Route(rg routerport.RouterGroup) {
 // @Tags trips
 // @Accept json
 // @Produce json
-// @Param "body" body dto.Trip true "trip request"
+// @Param "userId" body uint true "user id"
 // @Success 200 {object} dto.Trip
 // @Router /trips [post]
 // @Security BearerAuth
 func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
-	req := &dto.Trip{}
+	req := &struct{ UserID uint }{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		return cerrors.New(constant.ErrBadRequest, err)
 	}
 
-	if err := util.ValidateStruct(req); err != nil {
+	if err := util.ValidateVar(req.UserID, "required"); err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, err)
 	}
 
-	trip, err := r.tripService.Create(c.Request.Context(), req)
+	trip, err := r.tripService.Create(c.Request.Context(), req.UserID)
 	if err != nil {
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
