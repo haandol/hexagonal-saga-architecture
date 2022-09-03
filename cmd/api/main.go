@@ -19,6 +19,7 @@ var applications []port.App
 // bootstrap - register apps
 func bootstrap(cfg config.Config) {
 	applications = append(applications, app.InitTripApp(cfg))
+	applications = append(applications, app.InitSagaApp(cfg))
 }
 
 func initialize() {

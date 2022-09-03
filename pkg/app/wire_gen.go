@@ -8,6 +8,7 @@ package app
 
 import (
 	"github.com/google/wire"
+	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
@@ -36,6 +37,12 @@ func InitTripApp(cfg config.Config) port.App {
 	return tripApp
 }
 
+func InitSagaApp(cfg config.Config) port.App {
+	sagaConsumer := provideSagaConsumer(cfg)
+	sagaApp := NewSagaApp(sagaConsumer)
+	return sagaApp
+}
+
 // wire.go:
 
 // TripApp
@@ -54,3 +61,9 @@ var provideRepositories = wire.NewSet(repository.NewTripRepository, wire.Bind(ne
 var provideRestServices = wire.NewSet(service.NewTripService)
 
 var provideRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter)
+
+// SagaApp
+func provideSagaConsumer(cfg config.Config) *consumer.SagaConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
+	return consumer.NewSagaConsumer(kafkaConsumer)
+}

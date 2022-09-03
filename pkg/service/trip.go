@@ -28,6 +28,7 @@ func NewTripService(
 	}
 }
 
+// create trip for the given user
 func (s *TripService) Create(ctx context.Context, userID uint) (dto.Trip, error) {
 	logger := util.GetLogger().With(
 		"service", "TripService",
@@ -43,9 +44,9 @@ func (s *TripService) Create(ctx context.Context, userID uint) (dto.Trip, error)
 	cmd := command.StartSaga{
 		Command: command.Command{
 			Name:          "StartTripSaga",
-			Version:       "1.0",
+			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: uuid.NewString(), // TODO: use client provided value
+			CorrelationID: uuid.NewString(), // TODO: use the client provided value
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.StartSagaBody{

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/google/wire"
+	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
@@ -59,6 +60,21 @@ func InitTripApp(cfg config.Config) port.App {
 		NewServer,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),
+	)
+	return nil
+}
+
+// SagaApp
+func provideSagaConsumer(cfg config.Config) *consumer.SagaConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
+	return consumer.NewSagaConsumer(kafkaConsumer)
+}
+
+func InitSagaApp(cfg config.Config) port.App {
+	wire.Build(
+		provideSagaConsumer,
+		NewSagaApp,
+		wire.Bind(new(port.App), new(*SagaApp)),
 	)
 	return nil
 }

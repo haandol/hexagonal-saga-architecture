@@ -15,7 +15,7 @@ type Message struct {
 type HandlerFunc func(context.Context, *Message) error
 
 type Consumer interface {
-	Init()
+	Init() // should be implemented on the concrete consumer
 	RegisterHandler(h HandlerFunc) error
 	Consume()
 	Close(context.Context) error

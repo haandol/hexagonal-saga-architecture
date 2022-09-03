@@ -18,7 +18,6 @@ type App struct {
 
 type Kafka struct {
 	Seeds            []string `validate:"required"`
-	GroupId          string   `validate:"required"`
 	MessageExpirySec int      `validate:"required,number"`
 	BatchSize        int      `validate:"required,number"`
 }
@@ -60,7 +59,6 @@ func BuildFromPath(envPath string) Config {
 		},
 		Kafka: Kafka{
 			Seeds:            getEnv("KAFKA_SEEDS").Split(","),
-			GroupId:          getEnv("KAFKA_GROUP_ID").String(),
 			MessageExpirySec: getEnv("KAFKA_MESSAGE_EXPIRY_SEC").Int(),
 			BatchSize:        getEnv("KAFKA_BATCH_SIZE").Int(),
 		},

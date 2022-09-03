@@ -22,10 +22,8 @@ type KafkaConsumer struct {
 	batchSize        int
 }
 
-func NewKafkaConsumer(
-	cfg config.Kafka, topic string,
-) *KafkaConsumer {
-	opts := BuildConsumerOpts(cfg.Seeds, cfg.GroupId, topic)
+func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaConsumer {
+	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
 		log.Fatal(err.Error())

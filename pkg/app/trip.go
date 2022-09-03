@@ -15,8 +15,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type Port int
-
 type TripApp struct {
 	server      *http.Server
 	routerGroup routerport.RouterGroup
