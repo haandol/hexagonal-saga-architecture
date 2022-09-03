@@ -19,10 +19,13 @@ func NewTripRepository(db *gorm.DB) *TripRepository {
 	}
 }
 
-func (r *TripRepository) Create(ctx context.Context, userID uint) (dto.Trip, error) {
+func (r *TripRepository) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
 	row := &entity.Trip{
-		UserID: userID,
-		Status: "INITIALIZED",
+		UserID:   d.UserID,
+		CarID:    d.CarID,
+		HotelID:  d.HotelID,
+		FlightID: d.FlightID,
+		Status:   "INITIALIZED",
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -38,8 +41,8 @@ func (r *TripRepository) Update(ctx context.Context, d *dto.Trip) error {
 		Updates(&entity.Trip{
 			ID:       d.ID,
 			UserID:   d.UserID,
-			HotelID:  d.HotelID,
 			CarID:    d.CarID,
+			HotelID:  d.HotelID,
 			FlightID: d.FlightID,
 			Status:   d.Status,
 		})

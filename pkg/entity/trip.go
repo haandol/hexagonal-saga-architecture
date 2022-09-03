@@ -10,12 +10,12 @@ import (
 type Trip struct {
 	ID        uint      `gorm:"type:bigint;primaryKey;autoIncrement;<-:create;"`
 	UserID    uint      `gorm:"type:bigint;<-:create;"`
-	HotelID   uint      `gorm:"type:bigint;<-:create;"`
-	CarID     uint      `gorm:"type:bigint;<-:create;"`
-	FlightID  uint      `gorm:"type:bigint;<-:create;"`
+	CarID     uint      `gorm:"type:bigint;"`
+	HotelID   uint      `gorm:"type:bigint;"`
+	FlightID  uint      `gorm:"type:bigint;"`
 	Status    string    `gorm:"type:varchar(16);"`
 	CreatedAt time.Time `gorm:"type:timestamp;<-:create;"`
-	UpdatedAt time.Time `gorm:"type:timestamp;<-:create;"`
+	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }
 
 type Trips []Trip
@@ -24,8 +24,8 @@ func (m Trip) DTO() (dto.Trip, error) {
 	return dto.Trip{
 		ID:        m.ID,
 		UserID:    m.UserID,
-		HotelID:   m.HotelID,
 		CarID:     m.CarID,
+		HotelID:   m.HotelID,
 		FlightID:  m.FlightID,
 		Status:    m.Status,
 		CreatedAt: m.CreatedAt,

@@ -33,13 +33,17 @@ func InitTripApp(cfg config.Config) port.App {
 	tripRepository := repository.NewTripRepository(db)
 	tripService := service.NewTripService(kafkaProducer, tripRepository)
 	tripRouter := router.NewTripRouter(tripService)
-	tripApp := NewTripApp(server, ginRouter, tripRouter)
+	tripApp := NewTripApp(server, ginRouter, tripRouter, kafkaProducer)
 	return tripApp
 }
 
 func InitSagaApp(cfg config.Config) port.App {
-	sagaConsumer := provideSagaConsumer(cfg)
-	sagaApp := NewSagaApp(sagaConsumer)
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	db := provideTripDB(cfg)
+	sagaRepository := repository.NewSagaRepository(db)
+	sagaService := service.NewSagaService(kafkaProducer, sagaRepository)
+	sagaConsumer := provideSagaConsumer(cfg, sagaService)
+	sagaApp := NewSagaApp(sagaConsumer, kafkaProducer)
 	return sagaApp
 }
 
@@ -63,7 +67,12 @@ var provideRestServices = wire.NewSet(service.NewTripService)
 var provideRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter)
 
 // SagaApp
-func provideSagaConsumer(cfg config.Config) *consumer.SagaConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
-	return consumer.NewSagaConsumer(kafkaConsumer)
+func provideSagaConsumer(
+	cfg config.Config,
+	sagaService *service.SagaService,
+) *consumer.SagaConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "saga", "saga-service")
+	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
+
+var provideSagaServices = wire.NewSet(service.NewSagaService)

@@ -1,6 +1,6 @@
-package command
+package message
 
-type Command struct {
+type Message struct {
 	Name          string `json:"name" validate:"required"`
 	Version       string `json:"version" validate:"required"`
 	ID            string `json:"id" validate:"required"`

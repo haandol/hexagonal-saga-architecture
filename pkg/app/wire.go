@@ -53,10 +53,10 @@ var provideRouters = wire.NewSet(
 func InitTripApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
-		provideProducer,
 		provideRepositories,
 		provideRestServices,
 		provideRouters,
+		provideProducer,
 		NewServer,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),
@@ -65,14 +65,26 @@ func InitTripApp(cfg config.Config) port.App {
 }
 
 // SagaApp
-func provideSagaConsumer(cfg config.Config) *consumer.SagaConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
-	return consumer.NewSagaConsumer(kafkaConsumer)
+func provideSagaConsumer(
+	cfg config.Config,
+	sagaService *service.SagaService,
+) *consumer.SagaConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "saga", "saga-service")
+	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
+
+var provideSagaServices = wire.NewSet(
+	service.NewSagaService,
+)
 
 func InitSagaApp(cfg config.Config) port.App {
 	wire.Build(
+		provideTripDB,
 		provideSagaConsumer,
+		provideProducer,
+		provideSagaServices,
+		repository.NewSagaRepository,
+		wire.Bind(new(repositoryport.SagaRepository), new(*repository.SagaRepository)),
 		NewSagaApp,
 		wire.Bind(new(port.App), new(*SagaApp)),
 	)

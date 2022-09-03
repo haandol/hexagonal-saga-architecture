@@ -9,9 +9,11 @@ import (
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
+	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
@@ -19,6 +21,7 @@ type TripApp struct {
 	server      *http.Server
 	routerGroup routerport.RouterGroup
 	routers     []routerport.Router
+	producers   []producerport.Producer
 }
 
 func NewServer(cfg config.Config, h http.Handler) *http.Server {
@@ -32,15 +35,20 @@ func NewTripApp(
 	server *http.Server,
 	ginRouter *router.GinRouter,
 	tripRouter *router.TripRouter,
+	kafkaProducer *producer.KafkaProducer,
 ) *TripApp {
 	routers := []routerport.Router{
 		tripRouter,
+	}
+	producers := []producerport.Producer{
+		kafkaProducer,
 	}
 
 	return &TripApp{
 		server:      server,
 		routerGroup: ginRouter,
 		routers:     routers,
+		producers:   producers,
 	}
 }
 
@@ -95,6 +103,14 @@ func (app *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		logger.Error("Error on database close:", err)
 	}
 	logger.Info("Database connection closed.")
+
+	logger.Info("Closing producer...")
+	for _, producer := range app.producers {
+		if err := producer.Close(ctx); err != nil {
+			logger.Error("Error on producer close:", err)
+		}
+	}
+	logger.Info("Producer connection closed.")
 
 	logger.Info("Cleanup done.")
 }

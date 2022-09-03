@@ -43,6 +43,7 @@ func BuildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.SeedBrokers(seeds...),
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
+		kgo.AllowAutoTopicCreation(), // TODO: only for the dev
 		kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, func() string {
 			return fmt.Sprintf("%s\t", time.Now().Format(time.RFC3339))
 		})),
