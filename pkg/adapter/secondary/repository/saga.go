@@ -9,6 +9,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"github.com/haandol/hexagonal/pkg/message/command"
+	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/util"
 	"gorm.io/gorm"
 )
@@ -46,6 +47,106 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 	}
 
 	return row.DTO()
+}
+
+func (r *SagaRepository) ProcessCarRental(ctx context.Context, evt *event.CarRented) error {
+	logger := util.GetLogger().With(
+		"pkg", "repository",
+		"module", "SagaRepository",
+		"func", "ProcessCarRental",
+	)
+
+	tx := r.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error("Rollback")
+			tx.Rollback()
+		}
+	}()
+
+	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
+
+	saga, err := r.GetByCorrelationId(txCtx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := tx.
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			CarRentalID: evt.Body.CarRentalID,
+			Status:      evt.Name,
+			History:     history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (r *SagaRepository) CompensateCarRental(ctx context.Context, evt *event.CarRentalCanceled) error {
+	logger := util.GetLogger().With(
+		"pkg", "repository",
+		"module", "SagaRepository",
+		"func", "CompensateCarRental",
+	)
+
+	tx := r.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error("Rollback")
+			tx.Rollback()
+		}
+	}()
+
+	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
+
+	saga, err := r.GetByCorrelationId(txCtx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := tx.
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			CarRentalID: 0,
+			Status:      evt.Name,
+			History:     history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+
+	tx.Commit()
+
+	return nil
 }
 
 func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
@@ -91,6 +192,9 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("no rows affected")
 	}
+
+	tx.Commit()
+
 	return nil
 }
 
@@ -139,6 +243,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) erro
 	}
 
 	tx.Commit()
+
 	return nil
 }
 
@@ -154,6 +259,26 @@ func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error)
 
 	result := db.
 		Where("id = ?", id).
+		Take(row)
+	if result.Error != nil {
+		return dto.Saga{}, result.Error
+	}
+
+	return row.DTO()
+}
+
+func (r *SagaRepository) GetByCorrelationId(ctx context.Context, id string) (dto.Saga, error) {
+	row := &entity.Saga{}
+
+	var db *gorm.DB
+	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
+		db = tx
+	} else {
+		db = r.db.WithContext(ctx)
+	}
+
+	result := db.
+		Where("correlation_id = ?", id).
 		Take(row)
 	if result.Error != nil {
 		return dto.Saga{}, result.Error

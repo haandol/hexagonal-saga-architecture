@@ -47,6 +47,16 @@ func InitSagaApp(cfg config.Config) port.App {
 	return sagaApp
 }
 
+func InitCarApp(cfg config.Config) port.App {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	db := provideTripDB(cfg)
+	carRepository := repository.NewCarRepository(db)
+	carService := service.NewCarService(kafkaProducer, carRepository)
+	carConsumer := provideCarConsumer(cfg, carService)
+	carApp := NewCarApp(carConsumer, kafkaProducer)
+	return carApp
+}
+
 // wire.go:
 
 // TripApp
@@ -75,4 +85,11 @@ func provideSagaConsumer(
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
-var provideSagaServices = wire.NewSet(service.NewSagaService)
+// CarApp
+func provideCarConsumer(
+	cfg config.Config,
+	carService *service.CarService,
+) *consumer.CarConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "car", "car-service")
+	return consumer.NewCarConsumer(kafkaConsumer, carService)
+}

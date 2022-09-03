@@ -33,7 +33,7 @@ func (r *TripRouter) Route(rg routerport.RouterGroup) {
 // @Schemes
 // @Description create new trip
 // @Tags trips
-// @Accept json
+// @Accept jso/
 // @Produce json
 // @Param "userId" body uint true "user id"
 // @Success 200 {object} dto.Trip

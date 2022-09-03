@@ -8,7 +8,7 @@ type Trip struct {
 	CarID     uint      `json:"carId" binding:"required" validate:"required"`
 	HotelID   uint      `json:"hotelId" binding:"required" validate:"required"`
 	FlightID  uint      `json:"flightId" binding:"required" validate:"required"`
-	Status    string    `json:"status" binding:"required" validate:"required"`
+	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

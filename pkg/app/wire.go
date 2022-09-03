@@ -73,20 +73,39 @@ func provideSagaConsumer(
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
-var provideSagaServices = wire.NewSet(
-	service.NewSagaService,
-)
-
 func InitSagaApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
 		provideSagaConsumer,
 		provideProducer,
-		provideSagaServices,
+		service.NewSagaService,
 		repository.NewSagaRepository,
 		wire.Bind(new(repositoryport.SagaRepository), new(*repository.SagaRepository)),
 		NewSagaApp,
 		wire.Bind(new(port.App), new(*SagaApp)),
+	)
+	return nil
+}
+
+// CarApp
+func provideCarConsumer(
+	cfg config.Config,
+	carService *service.CarService,
+) *consumer.CarConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "car", "car-service")
+	return consumer.NewCarConsumer(kafkaConsumer, carService)
+}
+
+func InitCarApp(cfg config.Config) port.App {
+	wire.Build(
+		provideTripDB,
+		provideCarConsumer,
+		provideProducer,
+		service.NewCarService,
+		repository.NewCarRepository,
+		wire.Bind(new(repositoryport.CarRepository), new(*repository.CarRepository)),
+		NewCarApp,
+		wire.Bind(new(port.App), new(*CarApp)),
 	)
 	return nil
 }

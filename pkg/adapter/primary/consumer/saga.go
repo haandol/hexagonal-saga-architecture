@@ -7,6 +7,7 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
+	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"github.com/haandol/hexagonal/pkg/util"
@@ -58,6 +59,18 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
 		return c.sagaService.Start(ctx, cmd)
+	case "CarRented":
+		evt := &event.CarRented{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.ProcessCarRental(ctx, evt)
+	case "CarRentalCanceled":
+		evt := &event.CarRentalCanceled{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.CompensateCarRental(ctx, evt)
 	case "EndSaga":
 		cmd := &command.EndSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {

@@ -139,6 +139,38 @@ func (s *SagaService) publishBookFlight(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
+func (s *SagaService) ProcessCarRental(ctx context.Context, evt *event.CarRented) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "ProcessCarRental",
+	)
+
+	logger.Infow("success car rented", "event", evt)
+
+	if err := s.sagaRepository.ProcessCarRental(ctx, evt); err != nil {
+		logger.Errorf("failed to process car rented", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *SagaService) CompensateCarRental(ctx context.Context, evt *event.CarRentalCanceled) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "CompensateCarRental",
+	)
+
+	logger.Infow("cancel car rental", "event", evt)
+
+	if err := s.sagaRepository.CompensateCarRental(ctx, evt); err != nil {
+		logger.Errorf("failed to process cancel car rental", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
