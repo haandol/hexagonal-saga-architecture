@@ -11,7 +11,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/util"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 var applications []port.App
@@ -59,13 +58,6 @@ func main() {
 
 	logger.Info("Initializing apps...")
 	initialize()
-
-	// enable datadog tracing
-	if cfg.Trace.Host != "" {
-		logger.Info("Starting tracing...")
-		tracer.Start(tracer.WithAgentAddr(cfg.Trace.Host))
-		defer tracer.Stop()
-	}
 
 	logger.Info("Starting apps...")
 	start()

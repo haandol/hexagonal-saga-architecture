@@ -11,7 +11,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
 type GinRouter struct {
@@ -94,7 +93,6 @@ func NewGinRouter(cfg config.Config) *GinRouter {
 	r.Use(middleware.LeakBucket(cfg.App))
 	r.Use(middleware.Timeout(cfg.App))
 	r.Use(middleware.Cors())
-	r.Use(gintrace.Middleware(cfg.App.Name))
 	r.Use(util.GinzapWithConfig(logger, &util.Config{
 		UTC:       false,
 		SkipPaths: []string{"/healthy"},

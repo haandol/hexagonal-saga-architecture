@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	sql "github.com/go-sql-driver/mysql"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
-	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
-	gormtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gorm.io/gorm.v1"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,7 +18,7 @@ const (
 	DbConnMaxLifeTime = 15 * time.Second
 )
 
-func getDns(cfg config.Database) string {
+func getDsn(cfg config.Database) string {
 	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FJakarta"
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name, postfix)
 }
@@ -31,15 +28,7 @@ func initDb(cfg config.Database) {
 		return
 	}
 
-	sqltrace.Register("mysql", &sql.MySQLDriver{})
-
-	dns := getDns(cfg)
-	sqlDb, err := sqltrace.Open("mysql", dns)
-	if err != nil {
-		panic(err)
-	}
-
-	db, err := gormtrace.Open(mysql.New(mysql.Config{Conn: sqlDb}), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(getDsn(cfg)), &gorm.Config{
 		PrepareStmt: true,
 	})
 	if err != nil {
