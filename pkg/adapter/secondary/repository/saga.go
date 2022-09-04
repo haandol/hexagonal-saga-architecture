@@ -10,7 +10,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/entity"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
-	"github.com/haandol/hexagonal/pkg/util"
 	"gorm.io/gorm"
 )
 
@@ -50,23 +49,7 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 }
 
 func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
-	logger := util.GetLogger().With(
-		"pkg", "repository",
-		"module", "SagaRepository",
-		"func", "ProcessCarBooking",
-	)
-
-	tx := r.db.WithContext(ctx).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			logger.Error("Rollback")
-			tx.Rollback()
-		}
-	}()
-
-	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
-
-	saga, err := r.GetByCorrelationId(txCtx, evt.CorrelationID)
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
 	if err != nil {
 		return err
 	}
@@ -80,7 +63,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return err
 	}
 
-	result := tx.
+	result := r.db.WithContext(ctx).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			CarBookingID: evt.Body.BookingID,
@@ -94,29 +77,11 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return fmt.Errorf("no rows affected")
 	}
 
-	tx.Commit()
-
 	return nil
 }
 
 func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
-	logger := util.GetLogger().With(
-		"pkg", "repository",
-		"module", "SagaRepository",
-		"func", "CompensateCarBooking",
-	)
-
-	tx := r.db.WithContext(ctx).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			logger.Error("Rollback")
-			tx.Rollback()
-		}
-	}()
-
-	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
-
-	saga, err := r.GetByCorrelationId(txCtx, evt.CorrelationID)
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
 	if err != nil {
 		return err
 	}
@@ -130,7 +95,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return err
 	}
 
-	result := tx.
+	result := r.db.WithContext(ctx).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			CarBookingID: 0,
@@ -144,29 +109,139 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return fmt.Errorf("no rows affected")
 	}
 
-	tx.Commit()
+	return nil
+}
+
+func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := r.db.WithContext(ctx).
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			HotelBookingID: evt.Body.BookingID,
+			Status:         evt.Name,
+			History:        history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+
+	return nil
+}
+
+func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) error {
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := r.db.WithContext(ctx).
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			HotelBookingID: 0,
+			Status:         evt.Name,
+			History:        history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+
+	return nil
+}
+
+func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := r.db.WithContext(ctx).
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			FlightBookingID: evt.Body.BookingID,
+			Status:          evt.Name,
+			History:         history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
+
+	return nil
+}
+
+func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) error {
+	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+	if err != nil {
+		return err
+	}
+	v := []any{}
+	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
+		return err
+	}
+	v = append(v, evt)
+	history, err := json.Marshal(&v)
+	if err != nil {
+		return err
+	}
+
+	result := r.db.WithContext(ctx).
+		Where("correlation_id = ?", evt.CorrelationID).
+		Updates(&entity.Saga{
+			FlightBookingID: 0,
+			Status:          evt.Name,
+			History:         history,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no rows affected")
+	}
 
 	return nil
 }
 
 func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
-	logger := util.GetLogger().With(
-		"pkg", "repository",
-		"module", "SagaRepository",
-		"func", "End",
-	)
-
-	tx := r.db.WithContext(ctx).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			logger.Error("Rollback")
-			tx.Rollback()
-		}
-	}()
-
-	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
-
-	saga, err := r.GetById(txCtx, cmd.Body.SagaID)
+	saga, err := r.GetById(ctx, cmd.Body.SagaID)
 	if err != nil {
 		return err
 	}
@@ -180,7 +255,7 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 		return err
 	}
 
-	result := tx.
+	result := r.db.WithContext(ctx).
 		Where("id = ?", cmd.Body.SagaID).
 		Updates(&entity.Saga{
 			Status:  "ENDED",
@@ -193,29 +268,11 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 		return fmt.Errorf("no rows affected")
 	}
 
-	tx.Commit()
-
 	return nil
 }
 
 func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) error {
-	logger := util.GetLogger().With(
-		"pkg", "repository",
-		"module", "SagaRepository",
-		"func", "Abort",
-	)
-
-	tx := r.db.WithContext(ctx).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			logger.Error("Rollback")
-			tx.Rollback()
-		}
-	}()
-
-	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
-
-	saga, err := r.GetById(txCtx, cmd.Body.SagaID)
+	saga, err := r.GetById(ctx, cmd.Body.SagaID)
 	if err != nil {
 		return err
 	}
@@ -229,7 +286,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) erro
 		return err
 	}
 
-	result := tx.
+	result := r.db.WithContext(ctx).
 		Where("id = ?", cmd.Body.SagaID).
 		Updates(&entity.Saga{
 			Status:  "ABORTED",
@@ -241,8 +298,6 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) erro
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("no rows affected")
 	}
-
-	tx.Commit()
 
 	return nil
 }
@@ -279,7 +334,7 @@ func (r *SagaRepository) GetByCorrelationId(ctx context.Context, id string) (dto
 
 	result := db.
 		Where("correlation_id = ?", id).
-		Take(row)
+		Find(row)
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
 	}

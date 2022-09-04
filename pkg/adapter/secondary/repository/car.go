@@ -23,9 +23,7 @@ func (r *CarRepository) Book(ctx context.Context, d *dto.CarBooking) (dto.CarBoo
 		TripID: d.TripID,
 		CarID:  d.CarID,
 	}
-	result := r.db.WithContext(ctx).
-		Where("trip_id = ? AND car_id = ?", d.TripID, d.CarID).
-		FirstOrCreate(row)
+	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
 		return dto.CarBooking{}, result.Error
 	}

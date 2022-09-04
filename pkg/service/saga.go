@@ -183,6 +183,70 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 	return nil
 }
 
+func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "ProcessHotelBooking",
+	)
+
+	logger.Infow("success hotel booked", "event", evt)
+
+	if err := s.sagaRepository.ProcessHotelBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process Hotel booked", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "CompensateHotelBooking",
+	)
+
+	logger.Infow("cancel hotel booking", "event", evt)
+
+	if err := s.sagaRepository.CompensateHotelBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process cancel Hotel booking", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "ProcessFlightBooking",
+	)
+
+	logger.Infow("success flight booked", "event", evt)
+
+	if err := s.sagaRepository.ProcessFlightBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process flight booked", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "CompensateFlightBooking",
+	)
+
+	logger.Infow("cancel flight booking", "event", evt)
+
+	if err := s.sagaRepository.CompensateFlightBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process cancel flight booking", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",

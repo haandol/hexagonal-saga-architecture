@@ -1,6 +1,9 @@
 package router
 
 import (
+	"context"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/dto"
@@ -49,7 +52,10 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 		return cerrors.New(constant.ErrInvalidRequest, err)
 	}
 
-	trip, err := r.tripService.Create(c.Request.Context(), req)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
+	defer cancel()
+
+	trip, err := r.tripService.Create(ctx, req)
 	if err != nil {
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}

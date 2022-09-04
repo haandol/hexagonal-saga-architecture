@@ -71,6 +71,30 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
 		return c.sagaService.CompensateCarBooking(ctx, evt)
+	case "HotelBooked":
+		evt := &event.HotelBooked{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.ProcessHotelBooking(ctx, evt)
+	case "HotelBookingCanceled":
+		evt := &event.HotelBookingCanceled{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.CompensateHotelBooking(ctx, evt)
+	case "FlightBooked":
+		evt := &event.FlightBooked{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.ProcessFlightBooking(ctx, evt)
+	case "FlightBookingCanceled":
+		evt := &event.FlightBookingCanceled{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+		}
+		return c.sagaService.CompensateFlightBooking(ctx, evt)
 	case "EndSaga":
 		cmd := &command.EndSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {

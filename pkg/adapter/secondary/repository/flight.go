@@ -23,9 +23,7 @@ func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking) (dto.
 		TripID:   d.TripID,
 		FlightID: d.FlightID,
 	}
-	result := r.db.WithContext(ctx).
-		Where("trip_id = ? AND flight_id = ?", d.TripID, d.FlightID).
-		FirstOrCreate(row)
+	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
 		return dto.FlightBooking{}, result.Error
 	}

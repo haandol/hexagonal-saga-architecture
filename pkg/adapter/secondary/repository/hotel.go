@@ -23,9 +23,7 @@ func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking) (dto.Ho
 		TripID:  d.TripID,
 		HotelID: d.HotelID,
 	}
-	result := r.db.WithContext(ctx).
-		Where("trip_id = ? AND hotel_id = ?", d.TripID, d.HotelID).
-		FirstOrCreate(row)
+	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
 		return dto.HotelBooking{}, result.Error
 	}
