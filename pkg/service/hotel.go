@@ -15,49 +15,49 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type CarService struct {
-	producer      producerport.Producer
-	carRepository repositoryport.CarRepository
+type HotelService struct {
+	producer        producerport.Producer
+	hotelRepository repositoryport.HotelRepository
 }
 
-func NewCarService(
+func NewHotelService(
 	producer producerport.Producer,
-	carRepository repositoryport.CarRepository,
-) *CarService {
-	return &CarService{
-		producer:      producer,
-		carRepository: carRepository,
+	hotelRepository repositoryport.HotelRepository,
+) *HotelService {
+	return &HotelService{
+		producer:        producer,
+		hotelRepository: hotelRepository,
 	}
 }
 
-func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
+func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 	logger := util.GetLogger().With(
-		"service", "CarService",
+		"service", "HotelService",
 		"method", "Book",
 	)
 
-	logger.Infow("Book car", "command", cmd)
+	logger.Infow("book hotel", "command", cmd)
 
-	req := &dto.CarBooking{
-		TripID: cmd.Body.TripID,
-		CarID:  cmd.Body.CarID,
+	req := &dto.HotelBooking{
+		TripID:  cmd.Body.TripID,
+		HotelID: cmd.Body.HotelID,
 	}
-	booking, err := s.carRepository.Book(ctx, req)
+	boooking, err := s.hotelRepository.Book(ctx, req)
 	if err != nil {
-		logger.Errorf("failed to book car", "req", req, "err", err.Error())
+		logger.Errorf("failed to book hotel", "req", req, "err", err.Error())
 		return err
 	}
 
-	evt := &event.CarBooked{
+	evt := &event.HotelBooked{
 		Message: message.Message{
-			Name:          "CarBooked",
+			Name:          "HotelBooked",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: cmd.CorrelationID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.CarBookedBody{
-			BookingID: booking.ID,
+		Body: event.HotelBookedBody{
+			BookingID: boooking.ID,
 		},
 	}
 	v, err := json.Marshal(evt)
@@ -73,28 +73,28 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	return nil
 }
 
-func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
+func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHotelBooking) error {
 	logger := util.GetLogger().With(
-		"service", "CarService",
+		"service", "HotelService",
 		"method", "CancelBooking",
 	)
 
-	logger.Infow("cancel car booking", "command", cmd)
+	logger.Infow("cancel hotel booking", "command", cmd)
 
-	if err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID); err != nil {
-		logger.Errorf("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+	if err := s.hotelRepository.CancelBooking(ctx, cmd.Body.BookingID); err != nil {
+		logger.Errorf("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 		return err
 	}
 
-	evt := &event.CarBookingCanceled{
+	evt := &event.HotelBookingCanceled{
 		Message: message.Message{
-			Name:          "CarBookingCanceled",
+			Name:          "HotelBookingCanceled",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: cmd.CorrelationID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.CarBookedBody{
+		Body: event.HotelBookedBody{
 			BookingID: cmd.Body.BookingID,
 		},
 	}

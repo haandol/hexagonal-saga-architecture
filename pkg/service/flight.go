@@ -15,49 +15,49 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type CarService struct {
-	producer      producerport.Producer
-	carRepository repositoryport.CarRepository
+type FlightService struct {
+	producer         producerport.Producer
+	flightRepository repositoryport.FlightRepository
 }
 
-func NewCarService(
+func NewFlightService(
 	producer producerport.Producer,
-	carRepository repositoryport.CarRepository,
-) *CarService {
-	return &CarService{
-		producer:      producer,
-		carRepository: carRepository,
+	flightRepository repositoryport.FlightRepository,
+) *FlightService {
+	return &FlightService{
+		producer:         producer,
+		flightRepository: flightRepository,
 	}
 }
 
-func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
+func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error {
 	logger := util.GetLogger().With(
-		"service", "CarService",
+		"service", "FlightService",
 		"method", "Book",
 	)
 
-	logger.Infow("Book car", "command", cmd)
+	logger.Infow("book flight", "command", cmd)
 
-	req := &dto.CarBooking{
-		TripID: cmd.Body.TripID,
-		CarID:  cmd.Body.CarID,
+	req := &dto.FlightBooking{
+		TripID:   cmd.Body.TripID,
+		FlightID: cmd.Body.FlightID,
 	}
-	booking, err := s.carRepository.Book(ctx, req)
+	boooking, err := s.flightRepository.Book(ctx, req)
 	if err != nil {
-		logger.Errorf("failed to book car", "req", req, "err", err.Error())
+		logger.Errorf("failed to book flight", "req", req, "err", err.Error())
 		return err
 	}
 
-	evt := &event.CarBooked{
+	evt := &event.FlightBooked{
 		Message: message.Message{
-			Name:          "CarBooked",
+			Name:          "FlightBooked",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: cmd.CorrelationID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.CarBookedBody{
-			BookingID: booking.ID,
+		Body: event.FlightBookedBody{
+			BookingID: boooking.ID,
 		},
 	}
 	v, err := json.Marshal(evt)
@@ -73,28 +73,28 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	return nil
 }
 
-func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
+func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFlightBooking) error {
 	logger := util.GetLogger().With(
-		"service", "CarService",
+		"service", "FlightService",
 		"method", "CancelBooking",
 	)
 
-	logger.Infow("cancel car booking", "command", cmd)
+	logger.Infow("cancel flight booking", "command", cmd)
 
-	if err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID); err != nil {
-		logger.Errorf("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+	if err := s.flightRepository.CancelBooking(ctx, cmd.Body.BookingID); err != nil {
+		logger.Errorf("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 		return err
 	}
 
-	evt := &event.CarBookingCanceled{
+	evt := &event.FlightBookingCanceled{
 		Message: message.Message{
-			Name:          "CarBookingCanceled",
+			Name:          "FlightBookingCanceled",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: cmd.CorrelationID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.CarBookedBody{
+		Body: event.FlightBookedBody{
 			BookingID: cmd.Body.BookingID,
 		},
 	}

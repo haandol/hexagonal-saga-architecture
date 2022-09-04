@@ -43,8 +43,8 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
 	}
 
-	if err := s.publishRentCar(ctx, saga); err != nil {
-		logger.Errorw("failed to publish rent car", "saga", saga, "error", err.Error())
+	if err := s.publishBookCar(ctx, saga); err != nil {
+		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
 		return err
 	}
 
@@ -61,16 +61,16 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 	return nil
 }
 
-func (s *SagaService) publishRentCar(ctx context.Context, d dto.Saga) error {
-	cmd := &command.RentCar{
+func (s *SagaService) publishBookCar(ctx context.Context, d dto.Saga) error {
+	cmd := &command.BookCar{
 		Message: message.Message{
-			Name:          "RentCar",
+			Name:          "BookCar",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: command.RentCarBody{
+		Body: command.BookCarBody{
 			TripID: d.TripID,
 			CarID:  d.CarID,
 		},
@@ -139,32 +139,32 @@ func (s *SagaService) publishBookFlight(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
-func (s *SagaService) ProcessCarRental(ctx context.Context, evt *event.CarRented) error {
+func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
-		"method", "ProcessCarRental",
+		"method", "ProcessCarBooking",
 	)
 
-	logger.Infow("success car rented", "event", evt)
+	logger.Infow("success car booked", "event", evt)
 
-	if err := s.sagaRepository.ProcessCarRental(ctx, evt); err != nil {
-		logger.Errorf("failed to process car rented", "event", evt, "err", err.Error())
+	if err := s.sagaRepository.ProcessCarBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process car booked", "event", evt, "err", err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (s *SagaService) CompensateCarRental(ctx context.Context, evt *event.CarRentalCanceled) error {
+func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
-		"method", "CompensateCarRental",
+		"method", "CompensateCarBooking",
 	)
 
-	logger.Infow("cancel car rental", "event", evt)
+	logger.Infow("cancel car booking", "event", evt)
 
-	if err := s.sagaRepository.CompensateCarRental(ctx, evt); err != nil {
-		logger.Errorf("failed to process cancel car rental", "event", evt, "err", err.Error())
+	if err := s.sagaRepository.CompensateCarBooking(ctx, evt); err != nil {
+		logger.Errorf("failed to process cancel car booking", "event", evt, "err", err.Error())
 		return err
 	}
 

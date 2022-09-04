@@ -12,10 +12,10 @@ type Saga struct {
 	CorrelationID   string         `gorm:"type:varchar(36);<-:create;"`
 	TripID          uint           `gorm:"type:bigint;<-:create;"`
 	CarID           uint           `gorm:"type:bigint;"`
-	CarRentalID     uint           `gorm:"type:bigint;"`
 	HotelID         uint           `gorm:"type:bigint;"`
-	HotelBookingID  uint           `gorm:"type:bigint;"`
 	FlightID        uint           `gorm:"type:bigint;"`
+	CarBookingID    uint           `gorm:"type:bigint;"`
+	HotelBookingID  uint           `gorm:"type:bigint;"`
 	FlightBookingID uint           `gorm:"type:bigint;"`
 	Status          string         `gorm:"type:varchar(16);"`
 	History         datatypes.JSON `gorm:"type:json;"`
@@ -29,10 +29,10 @@ func (m Saga) DTO() (dto.Saga, error) {
 		CorrelationID:   m.CorrelationID,
 		TripID:          m.TripID,
 		CarID:           m.CarID,
-		CarRentalID:     m.CarRentalID,
 		HotelID:         m.HotelID,
-		HotelBookingID:  m.HotelBookingID,
 		FlightID:        m.FlightID,
+		CarBookingID:    m.CarBookingID,
+		HotelBookingID:  m.HotelBookingID,
 		FlightBookingID: m.FlightBookingID,
 		Status:          m.Status,
 		History:         string(m.History),

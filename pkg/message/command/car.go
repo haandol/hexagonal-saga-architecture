@@ -2,22 +2,21 @@ package command
 
 import "github.com/haandol/hexagonal/pkg/message"
 
-type RentCar struct {
+type BookCar struct {
 	message.Message
-	Body RentCarBody `json:"body" validate:"required"`
+	Body BookCarBody `json:"body" validate:"required"`
 }
 
-type RentCarBody struct {
-	TripID   uint  `json:"tripId" validate:"required"`
-	CarID    uint  `json:"carId" validate:"required"`
-	Quantity int64 `json:"quantity"`
+type BookCarBody struct {
+	TripID uint `json:"tripId" validate:"required"`
+	CarID  uint `json:"carId" validate:"required"`
 }
 
-type CancelCarRental struct {
+type CancelCarBooking struct {
 	message.Message
-	Body CancelCarRentalBody `json:"body" validate:"required"`
+	Body CancelCarBookingBody `json:"body" validate:"required"`
 }
 
-type CancelCarRentalBody struct {
-	RentalID uint `json:"rentalId" validate:"required"`
+type CancelCarBookingBody struct {
+	BookingID uint `json:"bookingId" validate:"required"`
 }

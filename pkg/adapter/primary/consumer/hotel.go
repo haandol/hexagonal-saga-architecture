@@ -12,24 +12,24 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type CarConsumer struct {
+type HotelConsumer struct {
 	*KafkaConsumer
-	carService *service.CarService
+	hotelService *service.HotelService
 }
 
-func NewCarConsumer(
+func NewHotelConsumer(
 	kafkaConsumer *KafkaConsumer,
-	carService *service.CarService,
-) *CarConsumer {
-	return &CarConsumer{
+	hotelService *service.HotelService,
+) *HotelConsumer {
+	return &HotelConsumer{
 		KafkaConsumer: kafkaConsumer,
-		carService:    carService,
+		hotelService:  hotelService,
 	}
 }
 
-func (c *CarConsumer) Init() {
+func (c *HotelConsumer) Init() {
 	logger := util.GetLogger().With(
-		"module", "CarConsumer",
+		"module", "HotelConsumer",
 		"func", "Init",
 	)
 
@@ -38,9 +38,9 @@ func (c *CarConsumer) Init() {
 	}
 }
 
-func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
+func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
 	logger := util.GetLogger().With(
-		"module", "CarConsumer",
+		"module", "HotelConsumer",
 		"func", "Handle",
 	)
 
@@ -52,18 +52,18 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	logger.Infow("Received command", "command", msg)
 
 	switch msg.Name {
-	case "BookCar":
-		cmd := &command.BookCar{}
+	case "BookHotel":
+		cmd := &command.BookHotel{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
-		return c.carService.Book(ctx, cmd)
-	case "CancelCarBooking":
-		cmd := &command.CancelCarBooking{}
+		return c.hotelService.Book(ctx, cmd)
+	case "CancelHotelBooking":
+		cmd := &command.CancelHotelBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
-		return c.carService.CancelBooking(ctx, cmd)
+		return c.hotelService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		return errors.New("unknown command")

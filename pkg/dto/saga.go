@@ -7,7 +7,7 @@ type Saga struct {
 	CorrelationID   string    `json:"correlationId" binding:"required" validate:"required"`
 	TripID          uint      `json:"tripId" binding:"required" validate:"required"`
 	CarID           uint      `json:"carId" binding:"required" validate:"required"`
-	CarRentalID     uint      `json:"carRentalId"`
+	CarBookingID    uint      `json:"carBookingId"`
 	HotelID         uint      `json:"hotelId" binding:"required" validate:"required"`
 	HotelBookingID  uint      `json:"hotelBookingId"`
 	FlightID        uint      `json:"flightId" binding:"required" validate:"required"`

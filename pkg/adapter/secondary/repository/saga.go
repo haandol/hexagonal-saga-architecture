@@ -49,11 +49,11 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 	return row.DTO()
 }
 
-func (r *SagaRepository) ProcessCarRental(ctx context.Context, evt *event.CarRented) error {
+func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
 	logger := util.GetLogger().With(
 		"pkg", "repository",
 		"module", "SagaRepository",
-		"func", "ProcessCarRental",
+		"func", "ProcessCarBooking",
 	)
 
 	tx := r.db.WithContext(ctx).Begin()
@@ -83,9 +83,9 @@ func (r *SagaRepository) ProcessCarRental(ctx context.Context, evt *event.CarRen
 	result := tx.
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
-			CarRentalID: evt.Body.CarRentalID,
-			Status:      evt.Name,
-			History:     history,
+			CarBookingID: evt.Body.BookingID,
+			Status:       evt.Name,
+			History:      history,
 		})
 	if result.Error != nil {
 		return result.Error
@@ -99,11 +99,11 @@ func (r *SagaRepository) ProcessCarRental(ctx context.Context, evt *event.CarRen
 	return nil
 }
 
-func (r *SagaRepository) CompensateCarRental(ctx context.Context, evt *event.CarRentalCanceled) error {
+func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
 	logger := util.GetLogger().With(
 		"pkg", "repository",
 		"module", "SagaRepository",
-		"func", "CompensateCarRental",
+		"func", "CompensateCarBooking",
 	)
 
 	tx := r.db.WithContext(ctx).Begin()
@@ -133,9 +133,9 @@ func (r *SagaRepository) CompensateCarRental(ctx context.Context, evt *event.Car
 	result := tx.
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
-			CarRentalID: 0,
-			Status:      evt.Name,
-			History:     history,
+			CarBookingID: 0,
+			Status:       evt.Name,
+			History:      history,
 		})
 	if result.Error != nil {
 		return result.Error

@@ -18,25 +18,24 @@ func NewCarRepository(db *gorm.DB) *CarRepository {
 	}
 }
 
-func (r *CarRepository) Rent(ctx context.Context, d *dto.CarRental) (dto.CarRental, error) {
-	row := &entity.CarRental{
-		TripID:   d.TripID,
-		CarID:    d.CarID,
-		Quantity: d.Quantity,
+func (r *CarRepository) Book(ctx context.Context, d *dto.CarBooking) (dto.CarBooking, error) {
+	row := &entity.CarBooking{
+		TripID: d.TripID,
+		CarID:  d.CarID,
 	}
 	result := r.db.WithContext(ctx).
-		Where("trip_id = ? AND car_id = ? AND quantity = ?", d.TripID, d.CarID, d.Quantity).
+		Where("trip_id = ? AND car_id = ?", d.TripID, d.CarID).
 		FirstOrCreate(row)
 	if result.Error != nil {
-		return dto.CarRental{}, result.Error
+		return dto.CarBooking{}, result.Error
 	}
 
 	return row.DTO()
 }
 
-func (r *CarRepository) CancelRental(ctx context.Context, id uint) error {
+func (r *CarRepository) CancelBooking(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).
 		Where("id = ?", id).
 		Unscoped().
-		Delete(&entity.CarRental{}, id).Error
+		Delete(&entity.CarBooking{}, id).Error
 }

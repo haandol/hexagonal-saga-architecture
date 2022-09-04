@@ -2,16 +2,16 @@ package event
 
 import "github.com/haandol/hexagonal/pkg/message"
 
-type CarRented struct {
+type CarBooked struct {
 	message.Message
-	Body CarRentedBody `json:"body"`
+	Body CarBookedBody `json:"body" validate:"required"`
 }
 
-type CarRentedBody struct {
-	CarRentalID uint `json:"carRentalId"`
+type CarBookedBody struct {
+	BookingID uint `json:"bookingId" validate:"required"`
 }
 
-type CarRentalCanceled struct {
+type CarBookingCanceled struct {
 	message.Message
-	Body CarRentedBody `json:"body"`
+	Body CarBookedBody `json:"body" validate:"required"`
 }

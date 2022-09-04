@@ -57,6 +57,26 @@ func InitCarApp(cfg config.Config) port.App {
 	return carApp
 }
 
+func InitHotelApp(cfg config.Config) port.App {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	db := provideTripDB(cfg)
+	hotelRepository := repository.NewHotelRepository(db)
+	hotelService := service.NewHotelService(kafkaProducer, hotelRepository)
+	hotelConsumer := provideHotelConsumer(cfg, hotelService)
+	hotelApp := NewHotelApp(hotelConsumer, kafkaProducer)
+	return hotelApp
+}
+
+func InitFlightApp(cfg config.Config) port.App {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	db := provideTripDB(cfg)
+	flightRepository := repository.NewFlightRepository(db)
+	flightService := service.NewFlightService(kafkaProducer, flightRepository)
+	flightConsumer := provideFlightConsumer(cfg, flightService)
+	flightApp := NewFlightApp(flightConsumer, kafkaProducer)
+	return flightApp
+}
+
 // wire.go:
 
 // TripApp
@@ -92,4 +112,22 @@ func provideCarConsumer(
 ) *consumer.CarConsumer {
 	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "car", "car-service")
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
+}
+
+// HotelApp
+func provideHotelConsumer(
+	cfg config.Config,
+	hotelService *service.HotelService,
+) *consumer.HotelConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "hotel", "hotel-service")
+	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
+}
+
+// FlightApp
+func provideFlightConsumer(
+	cfg config.Config,
+	flightService *service.FlightService,
+) *consumer.FlightConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "flight", "flight-service")
+	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
 }

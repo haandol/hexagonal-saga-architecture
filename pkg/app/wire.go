@@ -109,3 +109,49 @@ func InitCarApp(cfg config.Config) port.App {
 	)
 	return nil
 }
+
+// HotelApp
+func provideHotelConsumer(
+	cfg config.Config,
+	hotelService *service.HotelService,
+) *consumer.HotelConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "hotel", "hotel-service")
+	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
+}
+
+func InitHotelApp(cfg config.Config) port.App {
+	wire.Build(
+		provideTripDB,
+		provideHotelConsumer,
+		provideProducer,
+		service.NewHotelService,
+		repository.NewHotelRepository,
+		wire.Bind(new(repositoryport.HotelRepository), new(*repository.HotelRepository)),
+		NewHotelApp,
+		wire.Bind(new(port.App), new(*HotelApp)),
+	)
+	return nil
+}
+
+// FlightApp
+func provideFlightConsumer(
+	cfg config.Config,
+	flightService *service.FlightService,
+) *consumer.FlightConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "flight", "flight-service")
+	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
+}
+
+func InitFlightApp(cfg config.Config) port.App {
+	wire.Build(
+		provideTripDB,
+		provideFlightConsumer,
+		provideProducer,
+		service.NewFlightService,
+		repository.NewFlightRepository,
+		wire.Bind(new(repositoryport.FlightRepository), new(*repository.FlightRepository)),
+		NewFlightApp,
+		wire.Bind(new(port.App), new(*FlightApp)),
+	)
+	return nil
+}

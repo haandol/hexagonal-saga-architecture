@@ -6,7 +6,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 )
 
-type CarRepository interface {
-	Book(ctx context.Context, d *dto.CarBooking) (dto.CarBooking, error)
+type HotelRepository interface {
+	Book(ctx context.Context, d *dto.HotelBooking) (dto.HotelBooking, error)
 	CancelBooking(ctx context.Context, id uint) error
 }

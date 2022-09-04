@@ -10,8 +10,8 @@ import (
 
 type SagaRepository interface {
 	Start(ctx context.Context, cmd *command.StartSaga) (dto.Saga, error)
-	ProcessCarRental(ctx context.Context, evt *event.CarRented) error
-	CompensateCarRental(ctx context.Context, evt *event.CarRentalCanceled) error
+	ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error
+	CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error
 	End(ctx context.Context, cmd *command.EndSaga) error
 	Abort(ctx context.Context, cmd *command.AbortSaga) error
 }

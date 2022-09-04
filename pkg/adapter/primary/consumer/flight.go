@@ -12,24 +12,24 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type CarConsumer struct {
+type FlightConsumer struct {
 	*KafkaConsumer
-	carService *service.CarService
+	flightService *service.FlightService
 }
 
-func NewCarConsumer(
+func NewFlightConsumer(
 	kafkaConsumer *KafkaConsumer,
-	carService *service.CarService,
-) *CarConsumer {
-	return &CarConsumer{
+	flightService *service.FlightService,
+) *FlightConsumer {
+	return &FlightConsumer{
 		KafkaConsumer: kafkaConsumer,
-		carService:    carService,
+		flightService: flightService,
 	}
 }
 
-func (c *CarConsumer) Init() {
+func (c *FlightConsumer) Init() {
 	logger := util.GetLogger().With(
-		"module", "CarConsumer",
+		"module", "FlightConsumer",
 		"func", "Init",
 	)
 
@@ -38,9 +38,9 @@ func (c *CarConsumer) Init() {
 	}
 }
 
-func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
+func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
 	logger := util.GetLogger().With(
-		"module", "CarConsumer",
+		"module", "FlightConsumer",
 		"func", "Handle",
 	)
 
@@ -52,18 +52,18 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	logger.Infow("Received command", "command", msg)
 
 	switch msg.Name {
-	case "BookCar":
-		cmd := &command.BookCar{}
+	case "BookFlight":
+		cmd := &command.BookFlight{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
-		return c.carService.Book(ctx, cmd)
-	case "CancelCarBooking":
-		cmd := &command.CancelCarBooking{}
+		return c.flightService.Book(ctx, cmd)
+	case "CancelFlightBooking":
+		cmd := &command.CancelFlightBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
-		return c.carService.CancelBooking(ctx, cmd)
+		return c.flightService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		return errors.New("unknown command")

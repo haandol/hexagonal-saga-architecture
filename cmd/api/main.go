@@ -21,6 +21,8 @@ func bootstrap(cfg config.Config) {
 	applications = append(applications, app.InitTripApp(cfg))
 	applications = append(applications, app.InitSagaApp(cfg))
 	applications = append(applications, app.InitCarApp(cfg))
+	applications = append(applications, app.InitHotelApp(cfg))
+	applications = append(applications, app.InitFlightApp(cfg))
 }
 
 func initialize() {
