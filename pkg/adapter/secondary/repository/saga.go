@@ -48,51 +48,57 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 	return row.DTO()
 }
 
-func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
+
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(&entity.Saga{
 			CarBookingID: evt.Body.BookingID,
 			Status:       evt.Name,
 			History:      history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.CarBookingID = evt.Body.BookingID
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -103,28 +109,32 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 			History:      history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.CarBookingID = 0
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -135,28 +145,32 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 			History:        history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.HotelBookingID = evt.Body.BookingID
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -167,28 +181,32 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 			History:        history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.HotelBookingID = 0
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -199,28 +217,32 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 			History:         history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.FlightBookingID = evt.Body.BookingID
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) error {
-	saga, err := r.GetByCorrelationId(ctx, evt.CorrelationID)
+func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) (dto.Saga, error) {
+	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, evt)
+
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -231,28 +253,31 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 			History:         history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.FlightBookingID = 0
+	saga.Status = evt.Name
+
+	return saga, nil
 }
 
-func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
+func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Saga, error) {
 	saga, err := r.GetById(ctx, cmd.Body.SagaID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, cmd)
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -262,28 +287,30 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 			History: history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.Status = "ENDED"
+
+	return saga, nil
 }
 
-func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) error {
+func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto.Saga, error) {
 	saga, err := r.GetById(ctx, cmd.Body.SagaID)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 	v := []any{}
-	if err := json.Unmarshal([]byte(saga.History), &[]any{}); err != nil {
-		return err
+	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
+		return dto.Saga{}, err
 	}
 	v = append(v, cmd)
 	history, err := json.Marshal(&v)
 	if err != nil {
-		return err
+		return dto.Saga{}, err
 	}
 
 	result := r.db.WithContext(ctx).
@@ -293,13 +320,15 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) erro
 			History: history,
 		})
 	if result.Error != nil {
-		return result.Error
+		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return dto.Saga{}, fmt.Errorf("no rows affected")
 	}
 
-	return nil
+	saga.Status = "ABORTED"
+
+	return saga, nil
 }
 
 func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error) {
@@ -322,7 +351,7 @@ func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error)
 	return row.DTO()
 }
 
-func (r *SagaRepository) GetByCorrelationId(ctx context.Context, id string) (dto.Saga, error) {
+func (r *SagaRepository) GetByCorrelationID(ctx context.Context, id string) (dto.Saga, error) {
 	row := &entity.Saga{}
 
 	var db *gorm.DB
