@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -43,20 +44,31 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
 	}
 
-	if err := s.publishBookCar(ctx, saga); err != nil {
-		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
-		return err
-	}
+	var wg sync.WaitGroup
+	wg.Add(3)
 
-	if err := s.publishBookHotel(ctx, saga); err != nil {
-		logger.Errorw("failed to publish book hotel", "saga", saga, "error", err.Error())
-		return err
-	}
+	go func() {
+		if err := s.publishBookCar(ctx, saga); err != nil {
+			logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
+		}
+		wg.Done()
+	}()
 
-	if err := s.publishBookFlight(ctx, saga); err != nil {
-		logger.Errorw("failed to publish book flight", "saga", saga, "error", err.Error())
-		return err
-	}
+	go func() {
+		if err := s.publishBookHotel(ctx, saga); err != nil {
+			logger.Errorw("failed to publish book hotel", "saga", saga, "error", err.Error())
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		if err := s.publishBookFlight(ctx, saga); err != nil {
+			logger.Errorw("failed to publish book flight", "saga", saga, "error", err.Error())
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	return nil
 }
