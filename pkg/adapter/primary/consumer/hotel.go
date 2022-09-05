@@ -34,7 +34,7 @@ func (c *HotelConsumer) Init() {
 	)
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		logger.Fatalw("Failed to register handler", "err", err.Error())
+		logger.Panicw("Failed to register handler", "err", err.Error())
 	}
 }
 

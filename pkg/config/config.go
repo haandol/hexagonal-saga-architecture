@@ -45,7 +45,7 @@ type Config struct {
 
 func BuildFromPath(envPath string) Config {
 	if err := godotenv.Load(envPath); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Panic("Error loading .env file")
 	}
 
 	cfg := Config{
@@ -77,7 +77,7 @@ func BuildFromPath(envPath string) Config {
 	}
 
 	if err := util.ValidateStruct(cfg); err != nil {
-		log.Fatalf("Error validating config: %s", err)
+		log.Panicf("Error validating config: %s", err.Error())
 	}
 	return cfg
 }

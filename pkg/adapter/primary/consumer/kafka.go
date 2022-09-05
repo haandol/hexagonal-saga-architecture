@@ -26,7 +26,7 @@ func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaCons
 	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Panic(err.Error())
 	}
 
 	return &KafkaConsumer{
@@ -78,7 +78,7 @@ func (c *KafkaConsumer) Consume() {
 
 	// check initialized
 	if c.handler == nil {
-		logger.Fatal("handler not registered")
+		logger.Panic("handler not registered")
 	}
 
 	for {
@@ -88,7 +88,7 @@ func (c *KafkaConsumer) Consume() {
 			return
 		}
 		if errs := fetches.Errors(); len(errs) > 0 {
-			logger.Fatal(errs[0].Err.Error())
+			logger.Panicw("failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
 		}
 
 		fetches.EachRecord(func(record *kgo.Record) {
