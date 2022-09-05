@@ -9,4 +9,5 @@ import (
 type CarProducer interface {
 	PublishCarBooked(ctx context.Context, corrID string, d dto.CarBooking) error
 	PublishCarBookingCanceled(ctx context.Context, corrID string, d dto.CarBooking) error
+	PublishAbortSaga(ctx context.Context, corrID string, tripID uint, reason string) error
 }

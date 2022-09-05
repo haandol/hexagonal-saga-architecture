@@ -66,11 +66,25 @@ func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
 func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded) error {
 	logger := util.GetLogger().With(
 		"service", "TripService",
-		"method", "ProcessTripBooking",
+		"method", "ProcessSagaEnded",
 	)
 
 	if err := s.tripRepository.UpdateBooking(ctx, evt); err != nil {
 		logger.Errorw("failed to update trip booking", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAborted) error {
+	logger := util.GetLogger().With(
+		"service", "TripService",
+		"method", "ProcessSagaAborted",
+	)
+
+	if err := s.tripRepository.AbortBooking(ctx, evt); err != nil {
+		logger.Errorw("failed to abort trip booking", "event", evt, "err", err.Error())
 		return err
 	}
 

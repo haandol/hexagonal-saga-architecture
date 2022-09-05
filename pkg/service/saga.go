@@ -55,7 +55,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 
 	saga, err := s.sagaRepository.ProcessCarBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process car booked", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process car booked", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -74,9 +74,14 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 
 	logger.Infow("cancel car booking", "event", evt)
 
-	_, err := s.sagaRepository.CompensateCarBooking(ctx, evt)
+	saga, err := s.sagaRepository.CompensateCarBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process cancel car booking", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process cancel car booking", "event", evt, "err", err.Error())
+		return err
+	}
+
+	if err := s.publisher.PublishSagaAborted(ctx, evt.CorrelationID, saga); err != nil {
+		logger.Errorw("failed to publish SagaAborted", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -93,7 +98,7 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 
 	saga, err := s.sagaRepository.ProcessHotelBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process Hotel booked", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process Hotel booked", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -115,7 +120,7 @@ func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.Hot
 
 	_, err := s.sagaRepository.CompensateHotelBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process cancel Hotel booking", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process cancel Hotel booking", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -132,7 +137,7 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 
 	saga, err := s.sagaRepository.ProcessFlightBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process flight booked", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process flight booked", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -154,7 +159,7 @@ func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.Fl
 
 	_, err := s.sagaRepository.CompensateFlightBooking(ctx, evt)
 	if err != nil {
-		logger.Errorf("failed to process cancel flight booking", "event", evt, "err", err.Error())
+		logger.Errorw("failed to process cancel flight booking", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -190,15 +195,34 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 
 	logger.Infow("abort saga", "command", cmd)
 
-	_, err := s.sagaRepository.Abort(ctx, cmd)
+	saga, err := s.sagaRepository.Abort(ctx, cmd)
 	if err != nil {
 		logger.Errorw("failed to abort saga", "command", cmd, "err", err.Error())
 		return err
 	}
 
-	if err := s.publisher.PublishSagaAborted(ctx, cmd); err != nil {
-		logger.Errorw("failed to publish SagaAborted", "command", cmd, "err", err.Error())
-		return err
+	switch cmd.Body.Source {
+	case "saga":
+		if err := s.publisher.PublishCancelFlightBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelFlightBooking", "command", cmd, "err", err.Error())
+		}
+		if err := s.publisher.PublishCancelHotelBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+		}
+		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+		}
+	case "flight":
+		if err := s.publisher.PublishCancelHotelBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+		}
+		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+		}
+	case "hotel":
+		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
+			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+		}
 	}
 
 	return nil

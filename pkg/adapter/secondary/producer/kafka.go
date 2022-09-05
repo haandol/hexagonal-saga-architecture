@@ -64,7 +64,7 @@ func (p *KafkaProducer) Produce(ctx context.Context, topic string, key string, v
 
 	r := p.newRecord(topic, key, val)
 	if err := p.client.ProduceSync(ctx, r).FirstErr(); err != nil {
-		logger.Errorf("produce failed: %v", err)
+		logger.Errorw("produce failed", "err", err.Error())
 		return err
 	}
 	logger.Debugw("Message produced", "record", r)

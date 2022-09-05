@@ -29,7 +29,7 @@ type AbortSaga struct {
 }
 
 type AbortSagaBody struct {
-	SagaID uint   `json:"sagaId" validate:"required"`
+	TripID uint   `json:"tripId" validate:"required"`
 	Reason string `json:"reason" validate:"required"`
 	Source string `json:"source" validate:"required"`
 }

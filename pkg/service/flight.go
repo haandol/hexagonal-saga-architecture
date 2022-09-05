@@ -39,7 +39,7 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 	}
 	booking, err := s.flightRepository.Book(ctx, req)
 	if err != nil {
-		logger.Errorf("failed to book flight", "req", req, "err", err.Error())
+		logger.Errorw("failed to book flight", "req", req, "err", err.Error())
 		return err
 	}
 
@@ -60,7 +60,14 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 
 	booking, err := s.flightRepository.CancelBooking(ctx, cmd.Body.BookingID)
 	if err != nil {
-		logger.Errorf("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+		logger.Errorw("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+
+		go func(reason string) {
+			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.Body.TripID, reason); err != nil {
+				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
+			}
+		}(err.Error())
+
 		return err
 	}
 

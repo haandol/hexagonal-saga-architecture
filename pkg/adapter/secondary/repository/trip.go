@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
@@ -51,7 +51,7 @@ func (r *TripRepository) Update(ctx context.Context, d *dto.Trip) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no rows affected")
+		return errors.New("no rows affected")
 	}
 	return nil
 }
@@ -74,5 +74,13 @@ func (r *TripRepository) UpdateBooking(ctx context.Context, evt *event.SagaEnded
 			HotelBookingID:  evt.Body.HotelBookingID,
 			FlightBookingID: evt.Body.FlightBookingID,
 			Status:          "BOOKED",
+		}).Error
+}
+
+func (r *TripRepository) AbortBooking(ctx context.Context, evt *event.SagaAborted) error {
+	return r.db.WithContext(ctx).
+		Where("id = ?", evt.Body.TripID).
+		Updates(&entity.Trip{
+			Status: "ABORTED",
 		}).Error
 }

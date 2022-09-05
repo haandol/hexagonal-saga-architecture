@@ -53,11 +53,17 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 
 	switch msg.Name {
 	case "SagaEnded":
-		cmd := &event.SagaEnded{}
-		if err := json.Unmarshal(r.Value, cmd); err != nil {
+		evt := &event.SagaEnded{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
 		}
-		return c.tripService.ProcessSagaEnded(ctx, cmd)
+		return c.tripService.ProcessSagaEnded(ctx, evt)
+	case "SagaAborted":
+		evt := &event.SagaAborted{}
+		if err := json.Unmarshal(r.Value, evt); err != nil {
+			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+		}
+		return c.tripService.ProcessSagaAborted(ctx, evt)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		return errors.New("unknown command")

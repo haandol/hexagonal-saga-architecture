@@ -39,12 +39,17 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	}
 	booking, err := s.carRepository.Book(ctx, req)
 	if err != nil {
-		logger.Errorf("failed to book car", "req", req, "err", err.Error())
+		logger.Errorw("failed to book car", "req", req, "err", err.Error())
+		go func(reason string) {
+			if err := s.carProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.Body.TripID, reason); err != nil {
+				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
+			}
+		}(err.Error())
 		return err
 	}
 
 	if err := s.carProducer.PublishCarBooked(ctx, cmd.CorrelationID, booking); err != nil {
-		logger.Errorf("failed to publish car booked", "booking", booking, "err", err.Error())
+		logger.Errorw("failed to publish car booked", "booking", booking, "err", err.Error())
 		return err
 	}
 
@@ -61,12 +66,12 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 
 	booking, err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID)
 	if err != nil {
-		logger.Errorf("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+		logger.Errorw("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 		return err
 	}
 
 	if err := s.carProducer.PublishCarBookingCanceled(ctx, cmd.CorrelationID, booking); err != nil {
-		logger.Errorf("failed to publish car booking canceled", "booking", booking, "err", err.Error())
+		logger.Errorw("failed to publish car booking canceled", "booking", booking, "err", err.Error())
 		return err
 	}
 

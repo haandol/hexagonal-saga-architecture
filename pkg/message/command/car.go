@@ -18,5 +18,6 @@ type CancelCarBooking struct {
 }
 
 type CancelCarBookingBody struct {
+	TripID    uint `json:"tripId" validate:"required"`
 	BookingID uint `json:"bookingId" validate:"required"`
 }

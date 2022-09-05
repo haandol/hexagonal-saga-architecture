@@ -52,6 +52,34 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
+func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) error {
+	cmd := &command.CancelCarBooking{
+		Message: message.Message{
+			Name:          "CancelCarBooking",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: d.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+		},
+		Body: command.CancelCarBookingBody{
+			BookingID: d.CarBookingID,
+		},
+	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
+	v, err := json.Marshal(cmd)
+	if err != nil {
+		return err
+	}
+
+	if err := p.Produce(ctx, "car-service", d.CorrelationID, v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookHotel{
 		Message: message.Message{
@@ -64,6 +92,34 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 		Body: command.BookHotelBody{
 			TripID:  d.TripID,
 			HotelID: d.HotelID,
+		},
+	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
+	v, err := json.Marshal(cmd)
+	if err != nil {
+		return err
+	}
+
+	if err := p.Produce(ctx, "hotel-service", d.CorrelationID, v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga) error {
+	cmd := &command.CancelHotelBooking{
+		Message: message.Message{
+			Name:          "CancelHotelBooking",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: d.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+		},
+		Body: command.CancelHotelBookingBody{
+			BookingID: d.HotelBookingID,
 		},
 	}
 	if err := util.ValidateStruct(cmd); err != nil {
@@ -110,6 +166,34 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error 
 	return nil
 }
 
+func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Saga) error {
+	cmd := &command.CancelFlightBooking{
+		Message: message.Message{
+			Name:          "CancelFlightBooking",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: d.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+		},
+		Body: command.CancelFlightBookingBody{
+			BookingID: d.FlightBookingID,
+		},
+	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
+	v, err := json.Marshal(cmd)
+	if err != nil {
+		return err
+	}
+
+	if err := p.Produce(ctx, "flight-service", d.CorrelationID, v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 	cmd := &command.EndSaga{
 		Message: message.Message{
@@ -121,36 +205,6 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 		},
 		Body: command.EndSagaBody{
 			SagaID: d.ID,
-		},
-	}
-	if err := util.ValidateStruct(cmd); err != nil {
-		return err
-	}
-	v, err := json.Marshal(cmd)
-	if err != nil {
-		return err
-	}
-
-	if err := p.Produce(ctx, "saga-service", d.CorrelationID, v); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *SagaProducer) PublishAbortSaga(ctx context.Context, d dto.Saga, reason string, source string) error {
-	cmd := &command.AbortSaga{
-		Message: message.Message{
-			Name:          "AbortSaga",
-			Version:       "1.0.0",
-			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			CreatedAt:     time.Now().Format(time.RFC3339),
-		},
-		Body: command.AbortSagaBody{
-			SagaID: d.ID,
-			Reason: reason,
-			Source: source,
 		},
 	}
 	if err := util.ValidateStruct(cmd); err != nil {
@@ -206,7 +260,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dt
 	return nil
 }
 
-func (p *SagaProducer) PublishSagaAborted(ctx context.Context, cmd *command.AbortSaga) error {
+func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d dto.Saga) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
 		"func", "PublishSagaAborted",
@@ -217,13 +271,12 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, cmd *command.Abor
 			Name:          "SagaAborted",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: cmd.CorrelationID,
+			CorrelationID: corrID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaAbortedBody{
-			SagaID: cmd.Body.SagaID,
-			Reason: cmd.Body.Reason,
-			Source: cmd.Body.Source,
+			TripID: d.TripID,
+			SagaID: d.ID,
 		},
 	}
 	if err := util.ValidateStruct(evt); err != nil {
@@ -234,9 +287,8 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, cmd *command.Abor
 		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
 	}
 
-	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
+	if err := p.Produce(ctx, "trip", corrID, v); err != nil {
 		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err.Error())
-		return err
 	}
 
 	return nil

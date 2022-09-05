@@ -39,7 +39,14 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 	}
 	booking, err := s.hotelRepository.Book(ctx, req)
 	if err != nil {
-		logger.Errorf("failed to book hotel", "req", req, "err", err.Error())
+		logger.Errorw("failed to book hotel", "req", req, "err", err.Error())
+
+		go func(reason string) {
+			if err := s.hotelProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.Body.TripID, reason); err != nil {
+				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
+			}
+		}(err.Error())
+
 		return err
 	}
 
@@ -60,7 +67,7 @@ func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHot
 
 	booking, err := s.hotelRepository.CancelBooking(ctx, cmd.Body.BookingID)
 	if err != nil {
-		logger.Errorf("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
+		logger.Errorw("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 		return err
 	}
 

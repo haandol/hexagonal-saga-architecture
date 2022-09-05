@@ -21,7 +21,6 @@ type SagaAborted struct {
 }
 
 type SagaAbortedBody struct {
-	SagaID uint   `json:"sagaId" validate:"required"`
-	Reason string `json:"reason" validate:"required"`
-	Source string `json:"source" validate:"required"`
+	SagaID uint `json:"sagaId" validate:"required"`
+	TripID uint `json:"tripId" validate:"required"`
 }

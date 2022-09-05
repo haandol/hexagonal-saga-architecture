@@ -11,4 +11,5 @@ type TripRepository interface {
 	Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 	List(ctx context.Context) ([]dto.Trip, error)
 	UpdateBooking(ctx context.Context, evt *event.SagaEnded) error
+	AbortBooking(ctx context.Context, evt *event.SagaAborted) error
 }
