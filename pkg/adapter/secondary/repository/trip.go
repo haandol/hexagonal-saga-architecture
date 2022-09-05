@@ -66,18 +66,18 @@ func (r *TripRepository) List(ctx context.Context) ([]dto.Trip, error) {
 	return rows.DTO()
 }
 
-func (r *TripRepository) UpdateBooking(ctx context.Context, evt *event.SagaEnded) error {
+func (r *TripRepository) Complete(ctx context.Context, evt *event.SagaEnded) error {
 	return r.db.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
 			CarBookingID:    evt.Body.CarBookingID,
 			HotelBookingID:  evt.Body.HotelBookingID,
 			FlightBookingID: evt.Body.FlightBookingID,
-			Status:          "BOOKED",
+			Status:          "COMPLETED",
 		}).Error
 }
 
-func (r *TripRepository) AbortBooking(ctx context.Context, evt *event.SagaAborted) error {
+func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) error {
 	return r.db.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{

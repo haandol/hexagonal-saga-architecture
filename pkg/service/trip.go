@@ -69,7 +69,7 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 		"method", "ProcessSagaEnded",
 	)
 
-	if err := s.tripRepository.UpdateBooking(ctx, evt); err != nil {
+	if err := s.tripRepository.Complete(ctx, evt); err != nil {
 		logger.Errorw("failed to update trip booking", "event", evt, "err", err.Error())
 		return err
 	}
@@ -83,7 +83,7 @@ func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAbo
 		"method", "ProcessSagaAborted",
 	)
 
-	if err := s.tripRepository.AbortBooking(ctx, evt); err != nil {
+	if err := s.tripRepository.Abort(ctx, evt); err != nil {
 		logger.Errorw("failed to abort trip booking", "event", evt, "err", err.Error())
 		return err
 	}
