@@ -37,10 +37,10 @@ func provideTripConsumer(
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
-var provideProducer = wire.NewSet(
-	producer.NewKafkaProducer,
-	wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)),
-)
+func provideTripProducer(cfg config.Config) *producer.TripProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewTripProducer(kafkaProducer)
+}
 
 var provideRepositories = wire.NewSet(
 	repository.NewTripRepository,
@@ -64,7 +64,8 @@ func InitTripApp(cfg config.Config) port.App {
 		provideRouters,
 		provideTripConsumer,
 		provideRestServices,
-		provideProducer,
+		provideTripProducer,
+		wire.Bind(new(producerport.TripProducer), new(*producer.TripProducer)),
 		provideRepositories,
 		NewServer,
 		NewTripApp,

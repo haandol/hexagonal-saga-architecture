@@ -39,7 +39,7 @@ func NewTripApp(
 	ginRouter *router.GinRouter,
 	tripRouter *router.TripRouter,
 	tripConsumer *consumer.TripConsumer,
-	kafkaProducer *producer.KafkaProducer,
+	tripProducer *producer.TripProducer,
 ) *TripApp {
 	routers := []routerport.Router{
 		tripRouter,
@@ -48,7 +48,7 @@ func NewTripApp(
 		tripConsumer,
 	}
 	producers := []producerport.Producer{
-		kafkaProducer,
+		tripProducer,
 	}
 
 	return &TripApp{

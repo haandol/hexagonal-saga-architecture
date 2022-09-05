@@ -2,13 +2,9 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/pkg/dto"
-	"github.com/haandol/hexagonal/pkg/message"
-	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
@@ -16,16 +12,16 @@ import (
 )
 
 type TripService struct {
-	producer       producerport.Producer
+	tripProducer   producerport.TripProducer
 	tripRepository repositoryport.TripRepository
 }
 
 func NewTripService(
-	producer producerport.Producer,
+	tripProducer producerport.TripProducer,
 	tripRepository repositoryport.TripRepository,
 ) *TripService {
 	return &TripService{
-		producer:       producer,
+		tripProducer:   tripProducer,
 		tripRepository: tripRepository,
 	}
 }
@@ -43,29 +39,10 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 		return dto.Trip{}, err
 	}
 
-	cmd := command.StartSaga{
-		Message: message.Message{
-			Name:          "StartSaga",
-			Version:       "1.0.0",
-			ID:            uuid.NewString(),
-			CorrelationID: uuid.NewString(), // TODO: use the client provided value
-			CreatedAt:     time.Now().Format(time.RFC3339),
-		},
-		Body: command.StartSagaBody{
-			TripID:   trip.ID,
-			CarID:    trip.CarID,
-			HotelID:  trip.HotelID,
-			FlightID: trip.FlightID,
-		},
-	}
+	corrID := uuid.NewString() // TODO: use the client provided value
 
-	v, err := json.Marshal(cmd)
-	if err != nil {
-		logger.Errorw("failed to marshal trip", "command", cmd, "err", err.Error())
-	}
-
-	if err := s.producer.Produce(ctx, "saga-service", cmd.CorrelationID, v); err != nil {
-		logger.Errorw("failed to produce start saga", "command", cmd, "err", err.Error())
+	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
 	return trip, nil
