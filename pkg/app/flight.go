@@ -18,13 +18,13 @@ type FlightApp struct {
 
 func NewFlightApp(
 	flightConsumer *consumer.FlightConsumer,
-	kafkaProducer *producer.KafkaProducer,
+	flightProducer *producer.FlightProducer,
 ) *FlightApp {
 	consumers := []consumerport.Consumer{
 		flightConsumer,
 	}
 	producers := []producerport.Producer{
-		kafkaProducer,
+		flightProducer,
 	}
 
 	return &FlightApp{

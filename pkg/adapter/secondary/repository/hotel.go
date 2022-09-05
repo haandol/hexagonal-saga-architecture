@@ -6,6 +6,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type HotelRepository struct {
@@ -31,9 +32,16 @@ func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking) (dto.Ho
 	return row.DTO()
 }
 
-func (r *HotelRepository) CancelBooking(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).
+func (r *HotelRepository) CancelBooking(ctx context.Context, id uint) (dto.HotelBooking, error) {
+	row := &entity.HotelBooking{}
+	result := r.db.WithContext(ctx).
+		Clauses(clause.Returning{}).
 		Where("id = ?", id).
 		Unscoped().
-		Delete(&entity.HotelBooking{}, id).Error
+		Delete(row, id)
+	if result.Error != nil {
+		return dto.HotelBooking{}, result.Error
+	}
+
+	return row.DTO()
 }

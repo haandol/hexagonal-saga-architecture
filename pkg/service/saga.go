@@ -7,21 +7,20 @@ import (
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
-	"github.com/haandol/hexagonal/pkg/service/internal/publisher"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type SagaService struct {
-	producer       producerport.Producer
+	publisher      producerport.SagaProducer
 	sagaRepository repositoryport.SagaRepository
 }
 
 func NewSagaService(
-	producer producerport.Producer,
+	publisher producerport.SagaProducer,
 	sagaRepository repositoryport.SagaRepository,
 ) *SagaService {
 	return &SagaService{
-		producer:       producer,
+		publisher:      publisher,
 		sagaRepository: sagaRepository,
 	}
 }
@@ -39,7 +38,7 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
 	}
 
-	if err := publisher.PublishBookCar(ctx, s.producer, saga); err != nil {
+	if err := s.publisher.PublishBookCar(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
 	}
 
@@ -60,7 +59,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 		return err
 	}
 
-	if err := publisher.PublishBookHotel(ctx, s.producer, saga); err != nil {
+	if err := s.publisher.PublishBookHotel(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book hotel", "saga", saga, "error", err.Error())
 	}
 
@@ -98,7 +97,7 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 		return err
 	}
 
-	if err := publisher.PublishBookFlight(ctx, s.producer, saga); err != nil {
+	if err := s.publisher.PublishBookFlight(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book flight", "saga", saga, "error", err.Error())
 		return err
 	}
@@ -137,7 +136,7 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 		return err
 	}
 
-	if err := publisher.PublishEndSaga(ctx, s.producer, saga); err != nil {
+	if err := s.publisher.PublishEndSaga(ctx, saga); err != nil {
 		logger.Errorw("failed to publish end saga", "saga", saga, "error", err.Error())
 		return err
 	}
@@ -175,7 +174,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 		logger.Errorw("failed to end saga", "command", cmd, "err", err.Error())
 	}
 
-	if err := publisher.PublishSagaEnded(ctx, s.producer, cmd); err != nil {
+	if err := s.publisher.PublishSagaEnded(ctx, cmd); err != nil {
 		logger.Errorw("failed to publish SagaEnded", "command", cmd, "err", err.Error())
 		return err
 	}
@@ -197,7 +196,7 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 		return err
 	}
 
-	if err := publisher.PublishSagaAborted(ctx, s.producer, cmd); err != nil {
+	if err := s.publisher.PublishSagaAborted(ctx, cmd); err != nil {
 		logger.Errorw("failed to publish SagaAborted", "command", cmd, "err", err.Error())
 		return err
 	}

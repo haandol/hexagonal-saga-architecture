@@ -18,13 +18,13 @@ type CarApp struct {
 
 func NewCarApp(
 	carConsumer *consumer.CarConsumer,
-	kafkaProducer *producer.KafkaProducer,
+	carProducer *producer.CarProducer,
 ) *CarApp {
 	consumers := []consumerport.Consumer{
 		carConsumer,
 	}
 	producers := []producerport.Producer{
-		kafkaProducer,
+		carProducer,
 	}
 
 	return &CarApp{

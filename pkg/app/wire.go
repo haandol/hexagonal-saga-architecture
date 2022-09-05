@@ -73,12 +73,18 @@ func provideSagaConsumer(
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
+func provideSagaProducer(cfg config.Config) *producer.SagaProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewSagaProducer(kafkaProducer)
+}
+
 func InitSagaApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
 		provideSagaConsumer,
-		provideProducer,
 		service.NewSagaService,
+		provideSagaProducer,
+		wire.Bind(new(producerport.SagaProducer), new(*producer.SagaProducer)),
 		repository.NewSagaRepository,
 		wire.Bind(new(repositoryport.SagaRepository), new(*repository.SagaRepository)),
 		NewSagaApp,
@@ -96,12 +102,18 @@ func provideCarConsumer(
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
 }
 
+func provideCarProducer(cfg config.Config) *producer.CarProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewCarProducer(kafkaProducer)
+}
+
 func InitCarApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
 		provideCarConsumer,
-		provideProducer,
 		service.NewCarService,
+		provideCarProducer,
+		wire.Bind(new(producerport.CarProducer), new(*producer.CarProducer)),
 		repository.NewCarRepository,
 		wire.Bind(new(repositoryport.CarRepository), new(*repository.CarRepository)),
 		NewCarApp,
@@ -119,14 +131,20 @@ func provideHotelConsumer(
 	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
 }
 
+func provideHotelProducer(cfg config.Config) *producer.HotelProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewHotelProducer(kafkaProducer)
+}
+
 func InitHotelApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
 		provideHotelConsumer,
-		provideProducer,
 		service.NewHotelService,
 		repository.NewHotelRepository,
 		wire.Bind(new(repositoryport.HotelRepository), new(*repository.HotelRepository)),
+		provideHotelProducer,
+		wire.Bind(new(producerport.HotelProducer), new(*producer.HotelProducer)),
 		NewHotelApp,
 		wire.Bind(new(port.App), new(*HotelApp)),
 	)
@@ -142,14 +160,20 @@ func provideFlightConsumer(
 	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
 }
 
+func provideFlightProducer(cfg config.Config) *producer.FlightProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewFlightProducer(kafkaProducer)
+}
+
 func InitFlightApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
 		provideFlightConsumer,
-		provideProducer,
 		service.NewFlightService,
 		repository.NewFlightRepository,
 		wire.Bind(new(repositoryport.FlightRepository), new(*repository.FlightRepository)),
+		provideFlightProducer,
+		wire.Bind(new(producerport.FlightProducer), new(*producer.FlightProducer)),
 		NewFlightApp,
 		wire.Bind(new(port.App), new(*FlightApp)),
 	)

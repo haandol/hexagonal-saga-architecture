@@ -8,5 +8,5 @@ import (
 
 type HotelRepository interface {
 	Book(ctx context.Context, d *dto.HotelBooking) (dto.HotelBooking, error)
-	CancelBooking(ctx context.Context, id uint) error
+	CancelBooking(ctx context.Context, id uint) (dto.HotelBooking, error)
 }

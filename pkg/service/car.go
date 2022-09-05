@@ -2,30 +2,25 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/pkg/dto"
-	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
-	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type CarService struct {
-	producer      producerport.Producer
+	carProducer   producerport.CarProducer
 	carRepository repositoryport.CarRepository
 }
 
 func NewCarService(
-	producer producerport.Producer,
+	carProducer producerport.CarProducer,
 	carRepository repositoryport.CarRepository,
 ) *CarService {
 	return &CarService{
-		producer:      producer,
+		carProducer:   carProducer,
 		carRepository: carRepository,
 	}
 }
@@ -48,25 +43,8 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 		return err
 	}
 
-	evt := &event.CarBooked{
-		Message: message.Message{
-			Name:          "CarBooked",
-			Version:       "1.0.0",
-			ID:            uuid.NewString(),
-			CorrelationID: cmd.CorrelationID,
-			CreatedAt:     time.Now().Format(time.RFC3339),
-		},
-		Body: event.CarBookedBody{
-			BookingID: booking.ID,
-		},
-	}
-	v, err := json.Marshal(evt)
-	if err != nil {
-		logger.Errorf("failed to marshal event", "event", evt, "err", err.Error())
-		return err
-	}
-
-	if err := s.producer.Produce(ctx, "saga-service", cmd.CorrelationID, v); err != nil {
+	if err := s.carProducer.PublishCarBooked(ctx, cmd.CorrelationID, booking); err != nil {
+		logger.Errorf("failed to publish car booked", "booking", booking, "err", err.Error())
 		return err
 	}
 
@@ -81,30 +59,14 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 
 	logger.Infow("cancel car booking", "command", cmd)
 
-	if err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID); err != nil {
+	booking, err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID)
+	if err != nil {
 		logger.Errorf("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 		return err
 	}
 
-	evt := &event.CarBookingCanceled{
-		Message: message.Message{
-			Name:          "CarBookingCanceled",
-			Version:       "1.0.0",
-			ID:            uuid.NewString(),
-			CorrelationID: cmd.CorrelationID,
-			CreatedAt:     time.Now().Format(time.RFC3339),
-		},
-		Body: event.CarBookedBody{
-			BookingID: cmd.Body.BookingID,
-		},
-	}
-	v, err := json.Marshal(evt)
-	if err != nil {
-		logger.Errorf("failed to marshal event", "event", evt, "err", err.Error())
-		return err
-	}
-
-	if err := s.producer.Produce(ctx, "saga-service", cmd.CorrelationID, v); err != nil {
+	if err := s.carProducer.PublishCarBookingCanceled(ctx, cmd.CorrelationID, booking); err != nil {
+		logger.Errorf("failed to publish car booking canceled", "booking", booking, "err", err.Error())
 		return err
 	}
 

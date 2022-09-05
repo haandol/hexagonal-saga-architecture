@@ -1,4 +1,4 @@
-package publisher
+package producer
 
 import (
 	"context"
@@ -9,11 +9,21 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
+	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-func PublishBookCar(ctx context.Context, p producerport.Producer, d dto.Saga) error {
+type SagaProducer struct {
+	*KafkaProducer
+}
+
+func NewSagaProducer(kafkaProducer *KafkaProducer) *SagaProducer {
+	return &SagaProducer{
+		KafkaProducer: kafkaProducer,
+	}
+}
+
+func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookCar{
 		Message: message.Message{
 			Name:          "BookCar",
@@ -42,7 +52,7 @@ func PublishBookCar(ctx context.Context, p producerport.Producer, d dto.Saga) er
 	return nil
 }
 
-func PublishBookHotel(ctx context.Context, p producerport.Producer, d dto.Saga) error {
+func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookHotel{
 		Message: message.Message{
 			Name:          "BookHotel",
@@ -71,7 +81,7 @@ func PublishBookHotel(ctx context.Context, p producerport.Producer, d dto.Saga) 
 	return nil
 }
 
-func PublishBookFlight(ctx context.Context, p producerport.Producer, d dto.Saga) error {
+func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookFlight{
 		Message: message.Message{
 			Name:          "BookFlight",
@@ -100,7 +110,7 @@ func PublishBookFlight(ctx context.Context, p producerport.Producer, d dto.Saga)
 	return nil
 }
 
-func PublishEndSaga(ctx context.Context, p producerport.Producer, d dto.Saga) error {
+func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 	cmd := &command.EndSaga{
 		Message: message.Message{
 			Name:          "EndSaga",
@@ -128,7 +138,7 @@ func PublishEndSaga(ctx context.Context, p producerport.Producer, d dto.Saga) er
 	return nil
 }
 
-func PublishAbortSaga(ctx context.Context, p producerport.Producer, d dto.Saga, reason string, source string) error {
+func (p *SagaProducer) PublishAbortSaga(ctx context.Context, d dto.Saga, reason string, source string) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
 			Name:          "AbortSaga",
@@ -152,6 +162,76 @@ func PublishAbortSaga(ctx context.Context, p producerport.Producer, d dto.Saga, 
 	}
 
 	if err := p.Produce(ctx, "saga-service", d.CorrelationID, v); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *SagaProducer) PublishSagaEnded(ctx context.Context, cmd *command.EndSaga) error {
+	logger := util.GetLogger().With(
+		"module", "Publisher",
+		"func", "PublishSagaEnded",
+	)
+
+	evt := &event.SagaEnded{
+		Message: message.Message{
+			Name:          "SagaEnded",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: cmd.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+		},
+		Body: event.SagaEndedBody{
+			SagaID: cmd.Body.SagaID,
+		},
+	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
+	v, err := json.Marshal(evt)
+	if err != nil {
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
+	}
+
+	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
+		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (p *SagaProducer) PublishSagaAborted(ctx context.Context, cmd *command.AbortSaga) error {
+	logger := util.GetLogger().With(
+		"module", "Publisher",
+		"func", "PublishSagaEnded",
+	)
+
+	evt := &event.SagaAborted{
+		Message: message.Message{
+			Name:          "SagaAborted",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: cmd.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+		},
+		Body: event.SagaAbortedBody{
+			SagaID: cmd.Body.SagaID,
+			Reason: cmd.Body.Reason,
+			Source: cmd.Body.Source,
+		},
+	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
+	v, err := json.Marshal(evt)
+	if err != nil {
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
+	}
+
+	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
+		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err.Error())
 		return err
 	}
 

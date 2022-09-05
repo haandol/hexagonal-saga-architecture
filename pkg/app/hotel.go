@@ -18,13 +18,13 @@ type HotelApp struct {
 
 func NewHotelApp(
 	hotelConsumer *consumer.HotelConsumer,
-	kafkaProducer *producer.KafkaProducer,
+	hotelProducer *producer.HotelProducer,
 ) *HotelApp {
 	consumers := []consumerport.Consumer{
 		hotelConsumer,
 	}
 	producers := []producerport.Producer{
-		kafkaProducer,
+		hotelProducer,
 	}
 
 	return &HotelApp{

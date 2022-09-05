@@ -8,5 +8,5 @@ import (
 
 type FlightRepository interface {
 	Book(ctx context.Context, d *dto.FlightBooking) (dto.FlightBooking, error)
-	CancelBooking(ctx context.Context, id uint) error
+	CancelBooking(ctx context.Context, id uint) (dto.FlightBooking, error)
 }

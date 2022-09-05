@@ -8,5 +8,5 @@ import (
 
 type CarRepository interface {
 	Book(ctx context.Context, d *dto.CarBooking) (dto.CarBooking, error)
-	CancelBooking(ctx context.Context, id uint) error
+	CancelBooking(ctx context.Context, id uint) (dto.CarBooking, error)
 }

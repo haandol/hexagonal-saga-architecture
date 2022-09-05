@@ -18,13 +18,13 @@ type SagaApp struct {
 
 func NewSagaApp(
 	sagaConsumer *consumer.SagaConsumer,
-	kafkaProducer *producer.KafkaProducer,
+	sagaProducer *producer.SagaProducer,
 ) *SagaApp {
 	consumers := []consumerport.Consumer{
 		sagaConsumer,
 	}
 	producers := []producerport.Producer{
-		kafkaProducer,
+		sagaProducer,
 	}
 
 	return &SagaApp{

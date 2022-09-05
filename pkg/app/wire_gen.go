@@ -38,42 +38,42 @@ func InitTripApp(cfg config.Config) port.App {
 }
 
 func InitSagaApp(cfg config.Config) port.App {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
+	sagaProducer := provideSagaProducer(cfg)
 	db := provideTripDB(cfg)
 	sagaRepository := repository.NewSagaRepository(db)
-	sagaService := service.NewSagaService(kafkaProducer, sagaRepository)
+	sagaService := service.NewSagaService(sagaProducer, sagaRepository)
 	sagaConsumer := provideSagaConsumer(cfg, sagaService)
-	sagaApp := NewSagaApp(sagaConsumer, kafkaProducer)
+	sagaApp := NewSagaApp(sagaConsumer, sagaProducer)
 	return sagaApp
 }
 
 func InitCarApp(cfg config.Config) port.App {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
+	carProducer := provideCarProducer(cfg)
 	db := provideTripDB(cfg)
 	carRepository := repository.NewCarRepository(db)
-	carService := service.NewCarService(kafkaProducer, carRepository)
+	carService := service.NewCarService(carProducer, carRepository)
 	carConsumer := provideCarConsumer(cfg, carService)
-	carApp := NewCarApp(carConsumer, kafkaProducer)
+	carApp := NewCarApp(carConsumer, carProducer)
 	return carApp
 }
 
 func InitHotelApp(cfg config.Config) port.App {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
+	hotelProducer := provideHotelProducer(cfg)
 	db := provideTripDB(cfg)
 	hotelRepository := repository.NewHotelRepository(db)
-	hotelService := service.NewHotelService(kafkaProducer, hotelRepository)
+	hotelService := service.NewHotelService(hotelProducer, hotelRepository)
 	hotelConsumer := provideHotelConsumer(cfg, hotelService)
-	hotelApp := NewHotelApp(hotelConsumer, kafkaProducer)
+	hotelApp := NewHotelApp(hotelConsumer, hotelProducer)
 	return hotelApp
 }
 
 func InitFlightApp(cfg config.Config) port.App {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
+	flightProducer := provideFlightProducer(cfg)
 	db := provideTripDB(cfg)
 	flightRepository := repository.NewFlightRepository(db)
-	flightService := service.NewFlightService(kafkaProducer, flightRepository)
+	flightService := service.NewFlightService(flightProducer, flightRepository)
 	flightConsumer := provideFlightConsumer(cfg, flightService)
-	flightApp := NewFlightApp(flightConsumer, kafkaProducer)
+	flightApp := NewFlightApp(flightConsumer, flightProducer)
 	return flightApp
 }
 
@@ -105,6 +105,11 @@ func provideSagaConsumer(
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
+func provideSagaProducer(cfg config.Config) *producer.SagaProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewSagaProducer(kafkaProducer)
+}
+
 // CarApp
 func provideCarConsumer(
 	cfg config.Config,
@@ -112,6 +117,11 @@ func provideCarConsumer(
 ) *consumer.CarConsumer {
 	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "car", "car-service")
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
+}
+
+func provideCarProducer(cfg config.Config) *producer.CarProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewCarProducer(kafkaProducer)
 }
 
 // HotelApp
@@ -123,6 +133,11 @@ func provideHotelConsumer(
 	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
 }
 
+func provideHotelProducer(cfg config.Config) *producer.HotelProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewHotelProducer(kafkaProducer)
+}
+
 // FlightApp
 func provideFlightConsumer(
 	cfg config.Config,
@@ -130,4 +145,9 @@ func provideFlightConsumer(
 ) *consumer.FlightConsumer {
 	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "flight", "flight-service")
 	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
+}
+
+func provideFlightProducer(cfg config.Config) *producer.FlightProducer {
+	kafkaProducer := producer.NewKafkaProducer(cfg)
+	return producer.NewFlightProducer(kafkaProducer)
 }
