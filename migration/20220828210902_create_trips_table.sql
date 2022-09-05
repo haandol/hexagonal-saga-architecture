@@ -3,9 +3,12 @@
 CREATE TABLE trips (
   id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
-  hotel_id BIGINT NOT NULL,
   car_id BIGINT NOT NULL,
+  hotel_id BIGINT NOT NULL,
   flight_id BIGINT NOT NULL,
+  car_booking_id BIGINT NOT NULL,
+  hotel_booking_id BIGINT NOT NULL,
+  flight_booking_id BIGINT NOT NULL,
   status VARCHAR(16) NOT NULL,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,

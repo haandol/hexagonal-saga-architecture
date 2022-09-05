@@ -33,7 +33,8 @@ func InitTripApp(cfg config.Config) port.App {
 	tripRepository := repository.NewTripRepository(db)
 	tripService := service.NewTripService(kafkaProducer, tripRepository)
 	tripRouter := router.NewTripRouter(tripService)
-	tripApp := NewTripApp(server, ginRouter, tripRouter, kafkaProducer)
+	tripConsumer := provideTripConsumer(cfg, tripService)
+	tripApp := NewTripApp(server, ginRouter, tripRouter, tripConsumer, kafkaProducer)
 	return tripApp
 }
 
@@ -86,6 +87,14 @@ func provideTripDB(cfg config.Config) *gorm.DB {
 		panic(err)
 	}
 	return db
+}
+
+func provideTripConsumer(
+	cfg config.Config,
+	tripService *service.TripService,
+) *consumer.TripConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
+	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
 var provideProducer = wire.NewSet(producer.NewKafkaProducer, wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)))

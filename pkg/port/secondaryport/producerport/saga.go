@@ -13,6 +13,6 @@ type SagaProducer interface {
 	PublishBookFlight(ctx context.Context, d dto.Saga) error
 	PublishEndSaga(ctx context.Context, d dto.Saga) error
 	PublishAbortSaga(ctx context.Context, d dto.Saga, reason string, source string) error
-	PublishSagaEnded(ctx context.Context, cmd *command.EndSaga) error
+	PublishSagaEnded(ctx context.Context, corrID string, d dto.Saga) error
 	PublishSagaAborted(ctx context.Context, cmd *command.AbortSaga) error
 }

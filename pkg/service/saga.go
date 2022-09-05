@@ -169,12 +169,12 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 
 	logger.Infow("end saga", "command", cmd)
 
-	_, err := s.sagaRepository.End(ctx, cmd)
+	saga, err := s.sagaRepository.End(ctx, cmd)
 	if err != nil {
 		logger.Errorw("failed to end saga", "command", cmd, "err", err.Error())
 	}
 
-	if err := s.publisher.PublishSagaEnded(ctx, cmd); err != nil {
+	if err := s.publisher.PublishSagaEnded(ctx, cmd.CorrelationID, saga); err != nil {
 		logger.Errorw("failed to publish SagaEnded", "command", cmd, "err", err.Error())
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
+	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
@@ -83,4 +84,18 @@ func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
 	}
 
 	return trips, nil
+}
+
+func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded) error {
+	logger := util.GetLogger().With(
+		"service", "TripService",
+		"method", "ProcessTripBooking",
+	)
+
+	if err := s.tripRepository.UpdateBooking(ctx, evt); err != nil {
+		logger.Errorw("failed to update trip booking", "event", evt, "err", err.Error())
+		return err
+	}
+
+	return nil
 }

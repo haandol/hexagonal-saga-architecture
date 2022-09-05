@@ -6,6 +6,7 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
+	"github.com/haandol/hexagonal/pkg/message/event"
 	"gorm.io/gorm"
 )
 
@@ -63,4 +64,15 @@ func (r *TripRepository) List(ctx context.Context) ([]dto.Trip, error) {
 	}
 
 	return rows.DTO()
+}
+
+func (r *TripRepository) UpdateBooking(ctx context.Context, evt *event.SagaEnded) error {
+	return r.db.WithContext(ctx).
+		Where("id = ?", evt.Body.TripID).
+		Updates(&entity.Trip{
+			CarBookingID:    evt.Body.CarBookingID,
+			HotelBookingID:  evt.Body.HotelBookingID,
+			FlightBookingID: evt.Body.FlightBookingID,
+			Status:          "BOOKED",
+		}).Error
 }

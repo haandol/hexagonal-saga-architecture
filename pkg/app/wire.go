@@ -29,6 +29,14 @@ func provideTripDB(cfg config.Config) *gorm.DB {
 	return db
 }
 
+func provideTripConsumer(
+	cfg config.Config,
+	tripService *service.TripService,
+) *consumer.TripConsumer {
+	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
+	return consumer.NewTripConsumer(kafkaConsumer, tripService)
+}
+
 var provideProducer = wire.NewSet(
 	producer.NewKafkaProducer,
 	wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)),
@@ -53,10 +61,11 @@ var provideRouters = wire.NewSet(
 func InitTripApp(cfg config.Config) port.App {
 	wire.Build(
 		provideTripDB,
-		provideRepositories,
-		provideRestServices,
 		provideRouters,
+		provideTripConsumer,
+		provideRestServices,
 		provideProducer,
+		provideRepositories,
 		NewServer,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),

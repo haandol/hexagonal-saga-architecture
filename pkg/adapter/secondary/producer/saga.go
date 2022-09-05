@@ -168,7 +168,7 @@ func (p *SagaProducer) PublishAbortSaga(ctx context.Context, d dto.Saga, reason 
 	return nil
 }
 
-func (p *SagaProducer) PublishSagaEnded(ctx context.Context, cmd *command.EndSaga) error {
+func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dto.Saga) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
 		"func", "PublishSagaEnded",
@@ -179,11 +179,15 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, cmd *command.EndSag
 			Name:          "SagaEnded",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: cmd.CorrelationID,
+			CorrelationID: corrID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaEndedBody{
-			SagaID: cmd.Body.SagaID,
+			SagaID:          d.ID,
+			TripID:          d.TripID,
+			CarBookingID:    d.CarBookingID,
+			HotelBookingID:  d.HotelBookingID,
+			FlightBookingID: d.FlightBookingID,
 		},
 	}
 	if err := util.ValidateStruct(evt); err != nil {
@@ -194,7 +198,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, cmd *command.EndSag
 		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
 	}
 
-	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
+	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
 		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err.Error())
 		return err
 	}
@@ -205,7 +209,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, cmd *command.EndSag
 func (p *SagaProducer) PublishSagaAborted(ctx context.Context, cmd *command.AbortSaga) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
-		"func", "PublishSagaEnded",
+		"func", "PublishSagaAborted",
 	)
 
 	evt := &event.SagaAborted{

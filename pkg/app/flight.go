@@ -65,10 +65,6 @@ func (app *FlightApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	)
 	logger.Info("Cleaning up...")
 
-	for _, c := range app.consumers {
-		c.Close(ctx)
-	}
-
 	logger.Info("Closing producer...")
 	for _, producer := range app.producers {
 		if err := producer.Close(ctx); err != nil {
@@ -76,6 +72,12 @@ func (app *FlightApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		}
 	}
 	logger.Info("Producer connection closed.")
+
+	logger.Info("Closing consumers...")
+	for _, c := range app.consumers {
+		c.Close(ctx)
+	}
+	logger.Info("Consumer connection closed.")
 
 	logger.Info("Cleanup done.")
 }
