@@ -10,6 +10,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
+	"github.com/haandol/hexagonal/pkg/util"
 )
 
 func PublishBookCar(ctx context.Context, p producerport.Producer, d dto.Saga) error {
@@ -25,6 +26,9 @@ func PublishBookCar(ctx context.Context, p producerport.Producer, d dto.Saga) er
 			TripID: d.TripID,
 			CarID:  d.CarID,
 		},
+	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
 	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
@@ -52,6 +56,9 @@ func PublishBookHotel(ctx context.Context, p producerport.Producer, d dto.Saga) 
 			HotelID: d.HotelID,
 		},
 	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
 		return err
@@ -78,6 +85,9 @@ func PublishBookFlight(ctx context.Context, p producerport.Producer, d dto.Saga)
 			FlightID: d.FlightID,
 		},
 	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
 		return err
@@ -103,6 +113,9 @@ func PublishEndSaga(ctx context.Context, p producerport.Producer, d dto.Saga) er
 			SagaID: d.ID,
 		},
 	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
 		return err
@@ -115,7 +128,7 @@ func PublishEndSaga(ctx context.Context, p producerport.Producer, d dto.Saga) er
 	return nil
 }
 
-func PublishAbortSaga(ctx context.Context, p producerport.Producer, d dto.Saga) error {
+func PublishAbortSaga(ctx context.Context, p producerport.Producer, d dto.Saga, reason string, source string) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
 			Name:          "AbortSaga",
@@ -126,7 +139,12 @@ func PublishAbortSaga(ctx context.Context, p producerport.Producer, d dto.Saga) 
 		},
 		Body: command.AbortSagaBody{
 			SagaID: d.ID,
+			Reason: reason,
+			Source: source,
 		},
+	}
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
 	}
 	v, err := json.Marshal(cmd)
 	if err != nil {

@@ -3,7 +3,9 @@ package publisher
 import (
 	"context"
 	"encoding/json"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
@@ -17,21 +19,28 @@ func PublishSagaEnded(ctx context.Context, p producerport.Producer, cmd *command
 		"func", "PublishSagaEnded",
 	)
 
-	event := &event.SagaAborted{
+	evt := &event.SagaEnded{
 		Message: message.Message{
-			Name: "SagaEnded",
+			Name:          "SagaEnded",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: cmd.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.SagaAbortedBody{
+		Body: event.SagaEndedBody{
 			SagaID: cmd.Body.SagaID,
 		},
 	}
-	v, err := json.Marshal(event)
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
+	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", event, "err", err.Error())
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
 	}
 
 	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
-		logger.Errorw("failed to produce saga ended event", "event", event, "err", err.Error())
+		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err.Error())
 		return err
 	}
 
@@ -44,21 +53,30 @@ func PublishSagaAborted(ctx context.Context, p producerport.Producer, cmd *comma
 		"func", "PublishSagaEnded",
 	)
 
-	event := &event.SagaAborted{
+	evt := &event.SagaAborted{
 		Message: message.Message{
-			Name: "SagaEnded",
+			Name:          "SagaAborted",
+			Version:       "1.0.0",
+			ID:            uuid.NewString(),
+			CorrelationID: cmd.CorrelationID,
+			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaAbortedBody{
 			SagaID: cmd.Body.SagaID,
+			Reason: cmd.Body.Reason,
+			Source: cmd.Body.Source,
 		},
 	}
-	v, err := json.Marshal(event)
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
+	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", event, "err", err.Error())
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
 	}
 
 	if err := p.Produce(ctx, "trip-service", cmd.CorrelationID, v); err != nil {
-		logger.Errorw("failed to produce saga aborted event", "event", event, "err", err.Error())
+		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err.Error())
 		return err
 	}
 
