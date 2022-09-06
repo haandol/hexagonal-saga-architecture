@@ -18,11 +18,6 @@ const docTemplate = `{
     "paths": {
         "/trips": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "list all trips",
                 "consumes": [
                     "application/json"
@@ -47,11 +42,6 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "create new trip",
                 "consumes": [
                     "application/json"
@@ -65,13 +55,77 @@ const docTemplate = `{
                 "summary": "create new trip",
                 "parameters": [
                     {
-                        "description": "trip request",
-                        "name": "\"body\"",
+                        "description": "trip id is required",
+                        "name": "\"trip\"",
                         "in": "body",
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/dto.Trip"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Trip"
+                        }
+                    }
+                }
+            }
+        },
+        "/trips/{tripId}/recover/backward": {
+            "put": {
+                "description": "recover backward",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "recover backward",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "trip id",
+                        "name": "\"tripId\"",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Trip"
+                        }
+                    }
+                }
+            }
+        },
+        "/trips/{tripId}/recover/forward": {
+            "put": {
+                "description": "recover forward",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "recover forward",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "trip id",
+                        "name": "\"tripId\"",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -92,17 +146,26 @@ const docTemplate = `{
                 "carId",
                 "flightId",
                 "hotelId",
-                "status",
+                "id",
                 "userId"
             ],
             "properties": {
+                "carBookingId": {
+                    "type": "integer"
+                },
                 "carId": {
                     "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
                 },
+                "flightBookingId": {
+                    "type": "integer"
+                },
                 "flightId": {
+                    "type": "integer"
+                },
+                "hotelBookingId": {
                     "type": "integer"
                 },
                 "hotelId": {

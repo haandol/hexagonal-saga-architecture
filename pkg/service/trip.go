@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 
-	"github.com/google/uuid"
+	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
@@ -27,7 +28,7 @@ func NewTripService(
 }
 
 // create trip for the given user
-func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
+func (s *TripService) Create(ctx context.Context, corrID string, d *dto.Trip) (dto.Trip, error) {
 	logger := util.GetLogger().With(
 		"service", "TripService",
 		"method", "Create",
@@ -39,7 +40,51 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 		return dto.Trip{}, err
 	}
 
-	corrID := uuid.NewString() // TODO: use the client provided value
+	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
+	}
+
+	return trip, nil
+}
+
+func (s *TripService) RecoverForward(ctx context.Context, corrID string, tripID uint) (dto.Trip, error) {
+	logger := util.GetLogger().With(
+		"service", "TripService",
+		"method", "RecoverForward",
+	)
+
+	trip, err := s.tripRepository.GetByID(ctx, tripID)
+	if err != nil {
+		logger.Errorw("failed to get a trip", "corrID", corrID, "id", tripID, "err", err.Error())
+		return dto.Trip{}, err
+	}
+
+	if trip.Status == status.TripAborted || trip.Status == status.TripCompleted {
+		return dto.Trip{}, errors.New("trip is already completed or aborted")
+	}
+
+	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
+	}
+
+	return trip, nil
+}
+
+func (s *TripService) RecoverBackward(ctx context.Context, corrID string, tripID uint) (dto.Trip, error) {
+	logger := util.GetLogger().With(
+		"service", "TripService",
+		"method", "RecoverBackward",
+	)
+
+	trip, err := s.tripRepository.GetByID(ctx, tripID)
+	if err != nil {
+		logger.Errorw("failed to get a trip", "corrID", corrID, "id", tripID, "err", err.Error())
+		return dto.Trip{}, err
+	}
+
+	if trip.Status == status.TripAborted || trip.Status == status.TripCompleted {
+		return dto.Trip{}, errors.New("trip is already completed or aborted")
+	}
 
 	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())

@@ -85,3 +85,15 @@ func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) erro
 			Status: status.TripAborted,
 		}).Error
 }
+
+func (r *TripRepository) GetByID(ctx context.Context, id uint) (dto.Trip, error) {
+	row := &entity.Trip{}
+	result := r.db.WithContext(ctx).
+		Where("id = ?", id).
+		Take(row)
+	if result.Error != nil {
+		return dto.Trip{}, result.Error
+	}
+
+	return row.DTO()
+}

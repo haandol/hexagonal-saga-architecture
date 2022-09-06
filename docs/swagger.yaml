@@ -1,11 +1,17 @@
 definitions:
   dto.Trip:
     properties:
+      carBookingId:
+        type: integer
       carId:
         type: integer
       createdAt:
         type: string
+      flightBookingId:
+        type: integer
       flightId:
+        type: integer
+      hotelBookingId:
         type: integer
       hotelId:
         type: integer
@@ -21,7 +27,7 @@ definitions:
     - carId
     - flightId
     - hotelId
-    - status
+    - id
     - userId
     type: object
 info:
@@ -44,8 +50,6 @@ paths:
             items:
               $ref: '#/definitions/dto.Trip'
             type: array
-      security:
-      - BearerAuth: []
       summary: list all trips
       tags:
       - trips
@@ -54,9 +58,9 @@ paths:
       - application/json
       description: create new trip
       parameters:
-      - description: trip request
+      - description: trip id is required
         in: body
-        name: '"body"'
+        name: '"trip"'
         required: true
         schema:
           $ref: '#/definitions/dto.Trip'
@@ -67,9 +71,49 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.Trip'
-      security:
-      - BearerAuth: []
       summary: create new trip
+      tags:
+      - trips
+  /trips/{tripId}/recover/backward:
+    put:
+      consumes:
+      - application/json
+      description: recover backward
+      parameters:
+      - description: trip id
+        in: path
+        name: '"tripId"'
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Trip'
+      summary: recover backward
+      tags:
+      - trips
+  /trips/{tripId}/recover/forward:
+    put:
+      consumes:
+      - application/json
+      description: recover forward
+      parameters:
+      - description: trip id
+        in: path
+        name: '"tripId"'
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Trip'
+      summary: recover forward
       tags:
       - trips
 securityDefinitions:

@@ -12,4 +12,5 @@ type TripRepository interface {
 	List(ctx context.Context) ([]dto.Trip, error)
 	Complete(ctx context.Context, evt *event.SagaEnded) error
 	Abort(ctx context.Context, evt *event.SagaAborted) error
+	GetByID(ctx context.Context, id uint) (dto.Trip, error)
 }
