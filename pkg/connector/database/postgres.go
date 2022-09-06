@@ -8,7 +8,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -19,8 +19,8 @@ const (
 )
 
 func getDsn(cfg config.Database) string {
-	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FJakarta"
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name, postfix)
+	const dsn = "host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Seoul"
+	return fmt.Sprintf(dsn, cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port)
 }
 
 func initDb(cfg config.Database) {
@@ -28,7 +28,7 @@ func initDb(cfg config.Database) {
 		return
 	}
 
-	db, err := gorm.Open(mysql.Open(getDsn(cfg)), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(getDsn(cfg)), &gorm.Config{
 		PrepareStmt: true,
 	})
 	if err != nil {

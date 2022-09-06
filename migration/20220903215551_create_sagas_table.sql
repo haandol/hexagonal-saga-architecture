@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE sagas (
-  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   correlation_id VARCHAR(36) NOT NULL UNIQUE,
   trip_id BIGINT NOT NULL,
   car_id BIGINT NOT NULL,
@@ -12,19 +12,19 @@ CREATE TABLE sagas (
   flight_booking_id BIGINT NOT NULL,
   status VARCHAR(16) NOT NULL,
   history JSON NOT NULL,
-  created_at DATETIME NOT NULL,
-  updated_at DATETIME NOT NULL,
-  deleted_at DATETIME
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  deleted_at TIMESTAMP
+);
 -- +goose StatementEnd
 -- +goose StatementBegin
-CREATE INDEX idx_trip_id ON sagas (trip_id);
+CREATE INDEX sagas_trip_id ON sagas (trip_id);
 -- +goose StatementEnd
 -- +goose StatementBegin
-CREATE INDEX idx_corr_id ON sagas (correlation_id);
+CREATE INDEX sagas_corr_id ON sagas (correlation_id);
 -- +goose StatementEnd
 -- +goose StatementBegin
-CREATE INDEX idx_corr_id_status ON sagas (correlation_id, status);
+CREATE INDEX sagas_corr_id_status ON sagas (correlation_id, status);
 -- +goose StatementEnd
 
 -- +goose Down

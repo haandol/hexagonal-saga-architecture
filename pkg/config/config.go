@@ -32,15 +32,10 @@ type Database struct {
 	MaxIdleConnections int    `validate:"required,number"`
 }
 
-type Trace struct {
-	Host string
-}
-
 type Config struct {
 	App    App
 	Kafka  Kafka
 	TripDB Database
-	Trace  Trace
 }
 
 func BuildFromPath(envPath string) Config {
@@ -70,9 +65,6 @@ func BuildFromPath(envPath string) Config {
 			Password:           getEnv("DB_PASSWORD").String(),
 			MaxOpenConnections: getEnv("DB_MAX_OPEN_CONNECTIONS").Int(),
 			MaxIdleConnections: getEnv("DB_MAX_IDLE_CONNECTIONS").Int(),
-		},
-		Trace: Trace{
-			Host: getEnv("TRACE_HOST").String(),
 		},
 	}
 

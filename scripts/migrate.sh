@@ -8,8 +8,8 @@ cd migration
 
 echo $DB_USERNAME
 echo $DB_HOST:$DB_PORT
-export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME?parseTime=true"
+export GOOSE_DBSTRING="host=$DB_HOST user=$DB_USERNAME password=$DB_PASSWORD dbname=$DB_NAME port=$DB_PORT sslmode=disable"
 
-echo $(goose mysql status)
+echo $(goose postgres status)
 
-exec goose mysql up
+exec goose postgres up

@@ -70,12 +70,14 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("id = ?", saga.ID).
-		Updates(&entity.Saga{
-			CarBookingID: evt.Body.BookingID,
-			Status:       evt.Name,
-			History:      history,
+		Updates(map[string]interface{}{
+			"car_booking_id": evt.Body.BookingID,
+			"status":         evt.Name,
+			"history":        history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -106,12 +108,14 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", evt.CorrelationID).
-		Updates(&entity.Saga{
-			CarBookingID: 0,
-			Status:       evt.Name,
-			History:      history,
+		Updates(map[string]interface{}{
+			"car_booking_id": 0,
+			"status":         evt.Name,
+			"history":        history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -142,12 +146,14 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", evt.CorrelationID).
-		Updates(&entity.Saga{
-			HotelBookingID: evt.Body.BookingID,
-			Status:         evt.Name,
-			History:        history,
+		Updates(map[string]interface{}{
+			"hotel_booking_id": evt.Body.BookingID,
+			"status":           evt.Name,
+			"history":          history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -178,12 +184,14 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", evt.CorrelationID).
-		Updates(&entity.Saga{
-			HotelBookingID: 0,
-			Status:         evt.Name,
-			History:        history,
+		Updates(map[string]interface{}{
+			"hotel_booking_id": 0,
+			"status":           evt.Name,
+			"history":          history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -214,12 +222,14 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", evt.CorrelationID).
-		Updates(&entity.Saga{
-			FlightBookingID: evt.Body.BookingID,
-			Status:          evt.Name,
-			History:         history,
+		Updates(map[string]interface{}{
+			"flight_booking_id": evt.Body.BookingID,
+			"status":            evt.Name,
+			"history":           history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -250,12 +260,14 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", evt.CorrelationID).
-		Updates(&entity.Saga{
-			FlightBookingID: 0,
-			Status:          evt.Name,
-			History:         history,
+		Updates(map[string]interface{}{
+			"flight_booking_id": 0,
+			"status":            evt.Name,
+			"history":           history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -285,11 +297,13 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", cmd.CorrelationID).
-		Updates(&entity.Saga{
-			Status:  status.SagaEnded,
-			History: history,
+		Updates(map[string]interface{}{
+			"status":  status.SagaEnded,
+			"history": history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
@@ -319,11 +333,13 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
 		Model(row).
+		Table("sagas").
 		Clauses(clause.Returning{}).
+		Limit(1).
 		Where("correlation_id = ?", cmd.CorrelationID).
-		Updates(&entity.Saga{
-			Status:  status.SagaAborted,
-			History: history,
+		Updates(map[string]interface{}{
+			"status":  status.SagaAborted,
+			"history": history,
 		})
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
