@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/haandol/hexagonal/pkg/constant"
+	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"gorm.io/gorm"
@@ -26,14 +26,14 @@ func (r *CarRepository) Book(ctx context.Context, d *dto.CarBooking) (dto.CarBoo
 	if err != nil {
 		return dto.CarBooking{}, err
 	}
-	if booking.Status == constant.Booked {
+	if booking.Status == status.Booked {
 		return booking, nil
 	}
 
 	row := &entity.CarBooking{
 		TripID: d.TripID,
 		CarID:  d.CarID,
-		Status: constant.Booked,
+		Status: status.Booked,
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -49,7 +49,7 @@ func (r *CarRepository) CancelBooking(ctx context.Context, id uint) (dto.CarBook
 		Model(row).
 		Clauses(clause.Returning{}).
 		Where("id = ?", id).
-		Update("status", constant.Cancelled)
+		Update("status", status.Cancelled)
 	if result.Error != nil {
 		return dto.CarBooking{}, result.Error
 	}

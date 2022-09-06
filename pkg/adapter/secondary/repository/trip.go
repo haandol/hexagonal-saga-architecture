@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/haandol/hexagonal/pkg/constant"
+	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"github.com/haandol/hexagonal/pkg/message/event"
@@ -27,7 +27,7 @@ func (r *TripRepository) Create(ctx context.Context, d *dto.Trip) (dto.Trip, err
 		CarID:    d.CarID,
 		HotelID:  d.HotelID,
 		FlightID: d.FlightID,
-		Status:   constant.TripInitialized,
+		Status:   status.TripInitialized,
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -74,7 +74,7 @@ func (r *TripRepository) Complete(ctx context.Context, evt *event.SagaEnded) err
 			CarBookingID:    evt.Body.CarBookingID,
 			HotelBookingID:  evt.Body.HotelBookingID,
 			FlightBookingID: evt.Body.FlightBookingID,
-			Status:          constant.TripCompleted,
+			Status:          status.TripCompleted,
 		}).Error
 }
 
@@ -82,6 +82,6 @@ func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) erro
 	return r.db.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
-			Status: constant.TripAborted,
+			Status: status.TripAborted,
 		}).Error
 }

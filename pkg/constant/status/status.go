@@ -1,4 +1,4 @@
-package constant
+package status
 
 // for each service
 const (

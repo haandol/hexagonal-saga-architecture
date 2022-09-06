@@ -6,11 +6,13 @@ import (
 	"errors"
 
 	"github.com/haandol/hexagonal/pkg/constant"
+	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SagaRepository struct {
@@ -38,7 +40,7 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 		HotelID:       cmd.Body.HotelID,
 		FlightID:      cmd.Body.FlightID,
 		History:       history,
-		Status:        "STARTED",
+		Status:        status.SagaStarted,
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -65,7 +67,10 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("id = ?", saga.ID).
 		Updates(&entity.Saga{
 			CarBookingID: evt.Body.BookingID,
@@ -79,10 +84,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.CarBookingID = evt.Body.BookingID
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) (dto.Saga, error) {
@@ -101,7 +103,10 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			CarBookingID: 0,
@@ -115,10 +120,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.CarBookingID = 0
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) (dto.Saga, error) {
@@ -137,7 +139,10 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			HotelBookingID: evt.Body.BookingID,
@@ -151,10 +156,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.HotelBookingID = evt.Body.BookingID
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) (dto.Saga, error) {
@@ -173,7 +175,10 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			HotelBookingID: 0,
@@ -187,10 +192,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.HotelBookingID = 0
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) (dto.Saga, error) {
@@ -209,7 +211,10 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			FlightBookingID: evt.Body.BookingID,
@@ -223,10 +228,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.FlightBookingID = evt.Body.BookingID
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) (dto.Saga, error) {
@@ -245,7 +247,10 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", evt.CorrelationID).
 		Updates(&entity.Saga{
 			FlightBookingID: 0,
@@ -259,10 +264,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.FlightBookingID = 0
-	saga.Status = evt.Name
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Saga, error) {
@@ -280,10 +282,13 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", cmd.CorrelationID).
 		Updates(&entity.Saga{
-			Status:  "ENDED",
+			Status:  status.SagaEnded,
 			History: history,
 		})
 	if result.Error != nil {
@@ -293,9 +298,7 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.Status = "ENDED"
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto.Saga, error) {
@@ -313,10 +316,13 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 		return dto.Saga{}, err
 	}
 
+	row := &entity.Saga{}
 	result := r.db.WithContext(ctx).
+		Model(row).
+		Clauses(clause.Returning{}).
 		Where("correlation_id = ?", cmd.CorrelationID).
 		Updates(&entity.Saga{
-			Status:  "ABORTED",
+			Status:  status.SagaAborted,
 			History: history,
 		})
 	if result.Error != nil {
@@ -326,9 +332,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 		return dto.Saga{}, errors.New("no rows affected")
 	}
 
-	saga.Status = "ABORTED"
-
-	return saga, nil
+	return row.DTO()
 }
 
 func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error) {
