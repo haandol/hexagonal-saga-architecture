@@ -85,7 +85,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 	return saga, nil
 }
 
-func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) (dto.Saga, error) {
+func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
 		return dto.Saga{}, err
@@ -157,7 +157,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 	return saga, nil
 }
 
-func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) (dto.Saga, error) {
+func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
 		return dto.Saga{}, err
@@ -229,7 +229,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 	return saga, nil
 }
 
-func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) (dto.Saga, error) {
+func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
 		return dto.Saga{}, err

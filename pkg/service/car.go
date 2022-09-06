@@ -72,8 +72,8 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 		return err
 	}
 
-	if err := s.carProducer.PublishCarBookingCanceled(ctx, cmd.CorrelationID, booking); err != nil {
-		logger.Errorw("failed to publish car booking canceled", "booking", booking, "err", err.Error())
+	if err := s.carProducer.PublishCarBookingCancelled(ctx, cmd.CorrelationID, booking); err != nil {
+		logger.Errorw("failed to publish car booking cancelled", "booking", booking, "err", err.Error())
 		return err
 	}
 

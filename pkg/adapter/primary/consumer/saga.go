@@ -65,8 +65,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
 		return c.sagaService.ProcessCarBooking(ctx, evt)
-	case "CarBookingCanceled":
-		evt := &event.CarBookingCanceled{}
+	case "CarBookingCancelled":
+		evt := &event.CarBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
@@ -77,8 +77,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
 		return c.sagaService.ProcessHotelBooking(ctx, evt)
-	case "HotelBookingCanceled":
-		evt := &event.HotelBookingCanceled{}
+	case "HotelBookingCancelled":
+		evt := &event.HotelBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
@@ -89,8 +89,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}
 		return c.sagaService.ProcessFlightBooking(ctx, evt)
-	case "FlightBookingCanceled":
-		evt := &event.FlightBookingCanceled{}
+	case "FlightBookingCancelled":
+		evt := &event.FlightBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 		}

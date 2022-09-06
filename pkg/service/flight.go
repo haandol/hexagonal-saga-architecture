@@ -71,7 +71,7 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 		return err
 	}
 
-	if err := s.flightProducer.PublishFlightBookingCanceled(ctx, cmd.CorrelationID, booking); err != nil {
+	if err := s.flightProducer.PublishFlightBookingCancelled(ctx, cmd.CorrelationID, booking); err != nil {
 		return err
 	}
 

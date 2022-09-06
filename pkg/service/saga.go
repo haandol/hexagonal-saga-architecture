@@ -66,7 +66,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 	return nil
 }
 
-func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
+func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
 		"method", "CompensateCarBooking",
@@ -110,7 +110,7 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 	return nil
 }
 
-func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) error {
+func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
 		"method", "CompensateHotelBooking",
@@ -149,7 +149,7 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 	return nil
 }
 
-func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) error {
+func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) error {
 	logger := util.GetLogger().With(
 		"module", "SagaService",
 		"method", "CompensateFlightBooking",

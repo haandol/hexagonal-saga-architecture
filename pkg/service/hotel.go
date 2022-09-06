@@ -71,7 +71,7 @@ func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHot
 		return err
 	}
 
-	if err := s.hotelProducer.PublishHotelBookingCanceled(ctx, cmd.CorrelationID, booking); err != nil {
+	if err := s.hotelProducer.PublishHotelBookingCancelled(ctx, cmd.CorrelationID, booking); err != nil {
 		return err
 	}
 

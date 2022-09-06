@@ -48,10 +48,10 @@ func (p *CarProducer) PublishCarBooked(ctx context.Context, corrID string, d dto
 	return nil
 }
 
-func (p *CarProducer) PublishCarBookingCanceled(ctx context.Context, corrID string, d dto.CarBooking) error {
-	evt := &event.CarBookingCanceled{
+func (p *CarProducer) PublishCarBookingCancelled(ctx context.Context, corrID string, d dto.CarBooking) error {
+	evt := &event.CarBookingCancelled{
 		Message: message.Message{
-			Name:          "CarBookingCanceled",
+			Name:          "CarBookingCancelled",
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,

@@ -11,7 +11,7 @@ type HotelBookedBody struct {
 	BookingID uint `json:"bookingId" validate:"required"`
 }
 
-type HotelBookingCanceled struct {
+type HotelBookingCancelled struct {
 	message.Message
 	Body HotelBookedBody `json:"body" validate:"required"`
 }
