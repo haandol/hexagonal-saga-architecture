@@ -351,6 +351,22 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 	return row.DTO()
 }
 
+func (r *SagaRepository) UpdateStatusByTripID(ctx context.Context, tripID uint, s string) error {
+	result := r.db.WithContext(ctx).
+		Where("trip_id = ?", tripID).
+		Updates(&entity.Saga{
+			Status: s,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("no rows affected")
+	}
+
+	return nil
+}
+
 func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error) {
 	row := &entity.Saga{}
 

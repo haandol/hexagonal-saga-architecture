@@ -73,7 +73,11 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
 			return err
 		}
-		return c.sagaService.CompensateCarBooking(ctx, evt)
+		if err := c.sagaService.CompensateCarBooking(ctx, evt); err != nil {
+			logger.Errorw("Failed to compensate car booking", "err", err.Error())
+			return err
+		}
+		return c.sagaService.MarkAbort(ctx, evt.Body.TripID)
 	case "HotelBooked":
 		evt := &event.HotelBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {

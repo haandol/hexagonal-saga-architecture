@@ -18,4 +18,5 @@ type SagaRepository interface {
 	CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) (dto.Saga, error)
 	End(ctx context.Context, cmd *command.EndSaga) (dto.Saga, error)
 	Abort(ctx context.Context, cmd *command.AbortSaga) (dto.Saga, error)
+	UpdateStatusByTripID(ctx context.Context, tripID uint, s string) error
 }

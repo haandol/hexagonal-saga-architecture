@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
@@ -229,6 +230,20 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *SagaService) MarkAbort(ctx context.Context, tripID uint) error {
+	logger := util.GetLogger().With(
+		"module", "SagaService",
+		"method", "MarkAbort",
+	)
+
+	if err := s.sagaRepository.UpdateStatusByTripID(ctx, tripID, status.SagaAborted); err != nil {
+		logger.Errorw("failed to update saga status", "tripID", tripID, "err", err.Error())
+		return err
 	}
 
 	return nil

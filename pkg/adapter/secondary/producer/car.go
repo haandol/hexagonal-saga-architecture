@@ -37,6 +37,9 @@ func (p *CarProducer) PublishCarBooked(ctx context.Context, corrID string, d dto
 			BookingID: d.ID,
 		},
 	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
 	v, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -58,9 +61,13 @@ func (p *CarProducer) PublishCarBookingCancelled(ctx context.Context, corrID str
 			CorrelationID: corrID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.CarBookedBody{
+		Body: event.CarBookingCancelledBody{
 			BookingID: d.ID,
+			TripID:    d.TripID,
 		},
+	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
