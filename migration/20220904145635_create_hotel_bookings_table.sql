@@ -4,6 +4,7 @@ CREATE TABLE hotel_bookings (
   id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   trip_id BIGINT NOT NULL,
   hotel_id BIGINT NOT NULL,
+  status VARCHAR(16) NOT NULL,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,
   deleted_at DATETIME
@@ -13,7 +14,7 @@ CREATE TABLE hotel_bookings (
 CREATE INDEX idx_trip_id ON hotel_bookings (trip_id);
 -- +goose StatementEnd
 -- +goose StatementBegin
-CREATE INDEX idx_hotel_id ON hotel_bookings (hotel_id);
+CREATE INDEX idx_id_status ON hotel_bookings (id, status);
 -- +goose StatementEnd
 
 -- +goose Down

@@ -3,7 +3,7 @@ package dto
 import "time"
 
 type Trip struct {
-	ID              uint      `json:"id"`
+	ID              uint      `json:"id" binding:"required" validate:"required"`
 	UserID          uint      `json:"userId" binding:"required" validate:"required"`
 	CarID           uint      `json:"carId" binding:"required" validate:"required"`
 	HotelID         uint      `json:"hotelId" binding:"required" validate:"required"`

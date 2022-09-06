@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
@@ -20,9 +21,18 @@ func NewFlightRepository(db *gorm.DB) *FlightRepository {
 }
 
 func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking) (dto.FlightBooking, error) {
+	booking, err := r.GetByTripID(ctx, d.TripID)
+	if err != nil {
+		return dto.FlightBooking{}, err
+	}
+	if booking.Status == "BOOKED" {
+		return booking, nil
+	}
+
 	row := &entity.FlightBooking{
 		TripID:   d.TripID,
 		FlightID: d.FlightID,
+		Status:   "BOOKED",
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -35,13 +45,27 @@ func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking) (dto.
 func (r *FlightRepository) CancelBooking(ctx context.Context, id uint) (dto.FlightBooking, error) {
 	row := &entity.FlightBooking{}
 	result := r.db.WithContext(ctx).
+		Model(row).
 		Clauses(clause.Returning{}).
-		Where("id = ?", id).
-		Unscoped().
-		Delete(row, id)
+		Where("id = ? AND status", id, "BOOKED").
+		Update("status", "CANCELLED")
 	if result.Error != nil {
 		return dto.FlightBooking{}, result.Error
 	}
+	if result.RowsAffected == 0 {
+		return dto.FlightBooking{}, errors.New("booking not found")
+	}
 
+	return row.DTO()
+}
+
+func (r *FlightRepository) GetByTripID(ctx context.Context, tripID uint) (dto.FlightBooking, error) {
+	row := &entity.FlightBooking{}
+	result := r.db.WithContext(ctx).
+		Limit(1).
+		Find(&row, "trip_id = ?", tripID)
+	if result.Error != nil {
+		return dto.FlightBooking{}, result.Error
+	}
 	return row.DTO()
 }

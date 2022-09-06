@@ -23,6 +23,9 @@ CREATE INDEX idx_trip_id ON sagas (trip_id);
 -- +goose StatementBegin
 CREATE INDEX idx_corr_id ON sagas (correlation_id);
 -- +goose StatementEnd
+-- +goose StatementBegin
+CREATE INDEX idx_corr_id_status ON sagas (correlation_id, status);
+-- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
