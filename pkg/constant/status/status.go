@@ -10,8 +10,8 @@ const (
 // for trip
 const (
 	TripInitialized = "Initialized"
-	TripCompleted   = "Completed"
-	TripAborted     = "Aborted"
+	TripBooked      = "Booked"
+	TripCancelled   = "Cancelled"
 )
 
 // for saga

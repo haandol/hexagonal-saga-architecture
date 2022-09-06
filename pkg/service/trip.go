@@ -59,7 +59,7 @@ func (s *TripService) RecoverForward(ctx context.Context, corrID string, tripID 
 		return dto.Trip{}, err
 	}
 
-	if trip.Status == status.TripAborted || trip.Status == status.TripCompleted {
+	if trip.Status == status.TripCancelled || trip.Status == status.TripBooked {
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
@@ -82,7 +82,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, corrID string, tripID
 		return dto.Trip{}, err
 	}
 
-	if trip.Status == status.TripAborted || trip.Status == status.TripCompleted {
+	if trip.Status == status.TripCancelled || trip.Status == status.TripBooked {
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 

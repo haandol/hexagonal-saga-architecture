@@ -74,7 +74,7 @@ func (r *TripRepository) Complete(ctx context.Context, evt *event.SagaEnded) err
 			CarBookingID:    evt.Body.CarBookingID,
 			HotelBookingID:  evt.Body.HotelBookingID,
 			FlightBookingID: evt.Body.FlightBookingID,
-			Status:          status.TripCompleted,
+			Status:          status.TripBooked,
 		}).Error
 }
 
@@ -82,7 +82,7 @@ func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) erro
 	return r.db.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
-			Status: status.TripAborted,
+			Status: status.TripCancelled,
 		}).Error
 }
 
