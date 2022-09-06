@@ -57,54 +57,63 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		cmd := &command.StartSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.sagaService.Start(ctx, cmd)
 	case "CarBooked":
 		evt := &event.CarBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.ProcessCarBooking(ctx, evt)
 	case "CarBookingCancelled":
 		evt := &event.CarBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.CompensateCarBooking(ctx, evt)
 	case "HotelBooked":
 		evt := &event.HotelBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.ProcessHotelBooking(ctx, evt)
 	case "HotelBookingCancelled":
 		evt := &event.HotelBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.CompensateHotelBooking(ctx, evt)
 	case "FlightBooked":
 		evt := &event.FlightBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.ProcessFlightBooking(ctx, evt)
 	case "FlightBookingCancelled":
 		evt := &event.FlightBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			return err
 		}
 		return c.sagaService.CompensateFlightBooking(ctx, evt)
 	case "EndSaga":
 		cmd := &command.EndSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.sagaService.End(ctx, cmd)
 	case "AbortSaga":
 		cmd := &command.AbortSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.sagaService.Abort(ctx, cmd)
 	default:

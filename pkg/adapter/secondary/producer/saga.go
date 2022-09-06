@@ -63,6 +63,7 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) 
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelCarBookingBody{
+			TripID:    d.TripID,
 			BookingID: d.CarBookingID,
 		},
 	}
@@ -120,6 +121,7 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelHotelBookingBody{
+			TripID:    d.TripID,
 			BookingID: d.HotelBookingID,
 		},
 	}

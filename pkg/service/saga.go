@@ -205,23 +205,29 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 	case "saga":
 		if err := s.publisher.PublishCancelFlightBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelFlightBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 		if err := s.publisher.PublishCancelHotelBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 	case "flight":
 		if err := s.publisher.PublishCancelHotelBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 	case "hotel":
 		if err := s.publisher.PublishCancelCarBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err.Error())
+			return err
 		}
 	}
 

@@ -10,7 +10,7 @@ CREATE TABLE sagas (
   car_booking_id BIGINT NOT NULL,
   hotel_booking_id BIGINT NOT NULL,
   flight_booking_id BIGINT NOT NULL,
-  status VARCHAR(16) NOT NULL,
+  status VARCHAR(32) NOT NULL,
   history JSON NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,

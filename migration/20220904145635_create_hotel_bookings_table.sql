@@ -4,7 +4,7 @@ CREATE TABLE hotel_bookings (
   id SERIAL PRIMARY KEY,
   trip_id BIGINT NOT NULL,
   hotel_id BIGINT NOT NULL,
-  status VARCHAR(16) NOT NULL,
+  status VARCHAR(32) NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP

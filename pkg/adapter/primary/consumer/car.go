@@ -56,12 +56,14 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 		cmd := &command.BookCar{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.carService.Book(ctx, cmd)
 	case "CancelCarBooking":
 		cmd := &command.CancelCarBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.carService.CancelBooking(ctx, cmd)
 	default:

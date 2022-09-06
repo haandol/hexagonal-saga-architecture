@@ -17,7 +17,7 @@ type Saga struct {
 	CarBookingID    uint           `gorm:"type:bigint;"`
 	HotelBookingID  uint           `gorm:"type:bigint;"`
 	FlightBookingID uint           `gorm:"type:bigint;"`
-	Status          string         `gorm:"type:varchar(16);"`
+	Status          string         `gorm:"type:varchar(32);"`
 	History         datatypes.JSON `gorm:"type:json;"`
 	CreatedAt       time.Time      `gorm:"type:timestamp;<-:create;"`
 	UpdatedAt       time.Time      `gorm:"type:timestamp;"`

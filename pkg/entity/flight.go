@@ -10,7 +10,7 @@ type FlightBooking struct {
 	ID        uint      `gorm:"type:bigint;primaryKey;autoIncrement;<-:create;"`
 	TripID    uint      `gorm:"type:bigint;not null;"`
 	FlightID  uint      `gorm:"type:bigint;not null;"`
-	Status    string    `gorm:"type:varchar(16);not null;"`
+	Status    string    `gorm:"type:varchar(32);not null;"`
 	CreatedAt time.Time `gorm:"type:timestamp;<-:create;"`
 	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }

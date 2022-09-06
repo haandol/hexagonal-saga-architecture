@@ -56,12 +56,14 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 		cmd := &command.BookFlight{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.flightService.Book(ctx, cmd)
 	case "CancelFlightBooking":
 		cmd := &command.CancelFlightBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			return err
 		}
 		return c.flightService.CancelBooking(ctx, cmd)
 	default:

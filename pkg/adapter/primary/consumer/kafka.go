@@ -43,6 +43,7 @@ func BuildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.SeedBrokers(seeds...),
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
+		kgo.DisableAutoCommit(),
 		kgo.AllowAutoTopicCreation(), // TODO: only for the dev
 		kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, func() string {
 			return fmt.Sprintf("%s\t", time.Now().Format(time.RFC3339))
@@ -109,8 +110,14 @@ func (c *KafkaConsumer) Consume() {
 			err := c.handler(context.TODO(), message)
 			if err != nil {
 				logger.Errorw("Error handling message", "err", err.Error())
+				return
 			}
 		})
+
+		if err := c.client.CommitUncommittedOffsets(context.Background()); err != nil {
+			logger.Errorw("Error commit offsets", "err", err.Error())
+			continue
+		}
 	}
 }
 

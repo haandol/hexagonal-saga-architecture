@@ -38,6 +38,7 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 		HotelID: cmd.Body.HotelID,
 	}
 	booking, err := s.hotelRepository.Book(ctx, req)
+
 	if err != nil {
 		logger.Errorw("failed to book hotel", "req", req, "err", err.Error())
 
