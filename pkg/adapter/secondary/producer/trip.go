@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ func NewTripProducer(kafkaProducer *KafkaProducer) *TripProducer {
 func (p *TripProducer) PublishStartSaga(ctx context.Context, corrID string, d dto.Trip) error {
 	cmd := command.StartSaga{
 		Message: message.Message{
-			Name:          "StartSaga",
+			Name:          reflect.ValueOf(command.StartSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,

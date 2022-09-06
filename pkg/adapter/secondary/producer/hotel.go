@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +27,7 @@ func NewHotelProducer(kafkaProducer *KafkaProducer) *HotelProducer {
 func (p *HotelProducer) PublishHotelBooked(ctx context.Context, corrID string, d dto.HotelBooking) error {
 	evt := &event.HotelBooked{
 		Message: message.Message{
-			Name:          "HotelBooked",
+			Name:          reflect.ValueOf(event.HotelBooked{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
@@ -51,7 +52,7 @@ func (p *HotelProducer) PublishHotelBooked(ctx context.Context, corrID string, d
 func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context, corrID string, d dto.HotelBooking) error {
 	evt := &event.HotelBookingCancelled{
 		Message: message.Message{
-			Name:          "HotelBookingCancelled",
+			Name:          reflect.ValueOf(event.HotelBookingCancelled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
@@ -76,7 +77,7 @@ func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context, corrID
 func (p *HotelProducer) PublishAbortSaga(ctx context.Context, corrID string, tripID uint, reason string) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
-			Name:          "AbortSaga",
+			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,

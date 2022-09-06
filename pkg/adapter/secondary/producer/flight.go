@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +27,7 @@ func NewFlightProducer(kafkaProducer *KafkaProducer) *FlightProducer {
 func (p *FlightProducer) PublishFlightBooked(ctx context.Context, corrID string, d dto.FlightBooking) error {
 	evt := &event.FlightBooked{
 		Message: message.Message{
-			Name:          "FlightBooked",
+			Name:          reflect.ValueOf(event.FlightBooked{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
@@ -51,7 +52,7 @@ func (p *FlightProducer) PublishFlightBooked(ctx context.Context, corrID string,
 func (p *FlightProducer) PublishFlightBookingCancelled(ctx context.Context, corrID string, d dto.FlightBooking) error {
 	evt := &event.FlightBookingCancelled{
 		Message: message.Message{
-			Name:          "FlightBookingCancelled",
+			Name:          reflect.ValueOf(event.FlightBookingCancelled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
@@ -76,7 +77,7 @@ func (p *FlightProducer) PublishFlightBookingCancelled(ctx context.Context, corr
 func (p *FlightProducer) PublishAbortSaga(ctx context.Context, corrID string, tripID uint, reason string) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
-			Name:          "AbortSaga",
+			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,

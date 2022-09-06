@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +27,7 @@ func NewSagaProducer(kafkaProducer *KafkaProducer) *SagaProducer {
 func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookCar{
 		Message: message.Message{
-			Name:          "BookCar",
+			Name:          reflect.ValueOf(command.BookCar{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -55,7 +56,7 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) error {
 	cmd := &command.CancelCarBooking{
 		Message: message.Message{
-			Name:          "CancelCarBooking",
+			Name:          reflect.ValueOf(command.CancelCarBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -83,7 +84,7 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) 
 func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookHotel{
 		Message: message.Message{
-			Name:          "BookHotel",
+			Name:          reflect.ValueOf(command.BookHotel{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -112,7 +113,7 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga) error {
 	cmd := &command.CancelHotelBooking{
 		Message: message.Message{
-			Name:          "CancelHotelBooking",
+			Name:          reflect.ValueOf(command.CancelHotelBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -140,7 +141,7 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga
 func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error {
 	cmd := &command.BookFlight{
 		Message: message.Message{
-			Name:          "BookFlight",
+			Name:          reflect.ValueOf(command.BookFlight{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -169,7 +170,7 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error 
 func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Saga) error {
 	cmd := &command.CancelFlightBooking{
 		Message: message.Message{
-			Name:          "CancelFlightBooking",
+			Name:          reflect.ValueOf(command.CancelFlightBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -197,7 +198,7 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Sag
 func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 	cmd := &command.EndSaga{
 		Message: message.Message{
-			Name:          "EndSaga",
+			Name:          reflect.ValueOf(command.EndSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
@@ -230,7 +231,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dt
 
 	evt := &event.SagaEnded{
 		Message: message.Message{
-			Name:          "SagaEnded",
+			Name:          reflect.ValueOf(event.SagaEnded{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
@@ -268,7 +269,7 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d 
 
 	evt := &event.SagaAborted{
 		Message: message.Message{
-			Name:          "SagaAborted",
+			Name:          reflect.ValueOf(event.SagaAborted{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,

@@ -1,6 +1,8 @@
 package event
 
-import "github.com/haandol/hexagonal/pkg/message"
+import (
+	"github.com/haandol/hexagonal/pkg/message"
+)
 
 type CarBooked struct {
 	message.Message
