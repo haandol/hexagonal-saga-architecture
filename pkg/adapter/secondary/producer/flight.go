@@ -37,6 +37,9 @@ func (p *FlightProducer) PublishFlightBooked(ctx context.Context, corrID string,
 			BookingID: d.ID,
 		},
 	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
 	v, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -61,6 +64,9 @@ func (p *FlightProducer) PublishFlightBookingCancelled(ctx context.Context, corr
 		Body: event.FlightBookedBody{
 			BookingID: d.ID,
 		},
+	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
+	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type TripProducer struct {
@@ -38,7 +39,9 @@ func (p *TripProducer) PublishStartSaga(ctx context.Context, corrID string, d dt
 			FlightID: d.FlightID,
 		},
 	}
-
+	if err := util.ValidateStruct(cmd); err != nil {
+		return err
+	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
 		return err

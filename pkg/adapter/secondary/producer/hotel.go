@@ -37,6 +37,9 @@ func (p *HotelProducer) PublishHotelBooked(ctx context.Context, corrID string, d
 			BookingID: d.ID,
 		},
 	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
+	}
 	v, err := json.Marshal(evt)
 	if err != nil {
 		return err
@@ -61,6 +64,9 @@ func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context, corrID
 		Body: event.HotelBookedBody{
 			BookingID: d.ID,
 		},
+	}
+	if err := util.ValidateStruct(evt); err != nil {
+		return err
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
