@@ -290,7 +290,7 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d 
 		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
 	}
 
-	if err := p.Produce(ctx, "trip", corrID, v); err != nil {
+	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
 		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err.Error())
 	}
 
