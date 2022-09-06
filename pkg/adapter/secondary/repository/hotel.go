@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/entity"
 	"gorm.io/gorm"
@@ -25,14 +26,14 @@ func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking) (dto.Ho
 	if err != nil {
 		return dto.HotelBooking{}, err
 	}
-	if booking.Status == "BOOKED" {
+	if booking.Status == constant.Booked {
 		return booking, nil
 	}
 
 	row := &entity.HotelBooking{
 		TripID:  d.TripID,
 		HotelID: d.HotelID,
-		Status:  "BOOKED",
+		Status:  constant.Booked,
 	}
 	result := r.db.WithContext(ctx).Create(row)
 	if result.Error != nil {
@@ -47,8 +48,8 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, id uint) (dto.Hotel
 	result := r.db.WithContext(ctx).
 		Model(row).
 		Clauses(clause.Returning{}).
-		Where("id = ? AND status", id, "BOOKED").
-		Update("status", "CANCELLED")
+		Where("id = ?", id).
+		Update("status", constant.Cancelled)
 	if result.Error != nil {
 		return dto.HotelBooking{}, result.Error
 	}
@@ -62,8 +63,9 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, id uint) (dto.Hotel
 func (r *HotelRepository) GetByTripID(ctx context.Context, tripID uint) (dto.HotelBooking, error) {
 	row := &entity.HotelBooking{}
 	result := r.db.WithContext(ctx).
+		Where("trip_id = ?", tripID).
 		Limit(1).
-		Find(&row, "trip_id = ?", tripID)
+		Find(&row)
 	if result.Error != nil {
 		return dto.HotelBooking{}, result.Error
 	}
