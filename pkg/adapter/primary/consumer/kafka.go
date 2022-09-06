@@ -109,14 +109,12 @@ func (c *KafkaConsumer) Consume() {
 
 			err := c.handler(context.TODO(), message)
 			if err != nil {
-				logger.Errorw("Error handling message", "err", err.Error())
-				return
+				logger.Panicw("Error handling message", "err", err.Error())
 			}
 		})
 
 		if err := c.client.CommitUncommittedOffsets(context.Background()); err != nil {
-			logger.Errorw("Error commit offsets", "err", err.Error())
-			continue
+			logger.Panicw("Error commit offsets", "err", err.Error())
 		}
 	}
 }
