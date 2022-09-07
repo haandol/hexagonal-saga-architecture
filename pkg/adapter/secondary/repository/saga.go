@@ -120,7 +120,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"car_booking_id": 0,
 			"status":         evt.Name,
@@ -158,7 +158,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"hotel_booking_id": evt.Body.BookingID,
 			"status":           evt.Name,
@@ -196,7 +196,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"hotel_booking_id": 0,
 			"status":           evt.Name,
@@ -234,7 +234,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"flight_booking_id": evt.Body.BookingID,
 			"status":            evt.Name,
@@ -272,7 +272,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", evt.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"flight_booking_id": 0,
 			"status":            evt.Name,
@@ -313,7 +313,7 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", cmd.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"status":  status.SagaEnded,
 			"history": history,
@@ -353,7 +353,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 		Table("sagas").
 		Clauses(clause.Returning{}).
 		Limit(1).
-		Where("correlation_id = ?", cmd.CorrelationID).
+		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"status":  status.SagaAborted,
 			"history": history,
@@ -417,6 +417,7 @@ func (r *SagaRepository) GetByCorrelationID(ctx context.Context, id string) (dto
 
 	result := db.
 		Where("correlation_id = ?", id).
+		Limit(1).
 		Find(row)
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
