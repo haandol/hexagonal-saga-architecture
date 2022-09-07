@@ -108,7 +108,7 @@ func (c *KafkaConsumer) Consume() {
 
 			err := c.handler(context.TODO(), message)
 			if err != nil {
-				logger.Panicw("Error handling message", "err", err.Error())
+				logger.Errorw("Error handling message", "err", err.Error())
 			}
 		})
 	}

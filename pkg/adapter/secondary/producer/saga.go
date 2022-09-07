@@ -179,6 +179,7 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Sag
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelFlightBookingBody{
+			TripID:    d.TripID,
 			BookingID: d.FlightBookingID,
 		},
 	}
@@ -208,6 +209,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 		},
 		Body: command.EndSagaBody{
 			SagaID: d.ID,
+			TripID: d.TripID,
 		},
 	}
 	if err := util.ValidateStruct(cmd); err != nil {
@@ -278,8 +280,8 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d 
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaAbortedBody{
-			TripID: d.TripID,
 			SagaID: d.ID,
+			TripID: d.TripID,
 		},
 	}
 	if err := util.ValidateStruct(evt); err != nil {

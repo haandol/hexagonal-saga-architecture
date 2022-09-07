@@ -86,7 +86,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, corrID string, tripID
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+	if err := s.tripProducer.PublishAbortSaga(ctx, corrID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 

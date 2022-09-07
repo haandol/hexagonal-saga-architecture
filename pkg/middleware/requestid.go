@@ -11,9 +11,11 @@ const (
 
 func RequestId() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		xRequestId := uuid.NewString()
-		c.Request.Header.Set(xRequestIDKey, xRequestId)
-		c.Set(xRequestIDKey, xRequestId)
+		if c.Request.Header.Get(xRequestIDKey) == "" {
+			xRequestId := uuid.NewString()
+			c.Request.Header.Set(xRequestIDKey, xRequestId)
+			c.Set(xRequestIDKey, xRequestId)
+		}
 		c.Next()
 	}
 }

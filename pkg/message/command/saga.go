@@ -21,6 +21,7 @@ type EndSaga struct {
 
 type EndSagaBody struct {
 	SagaID uint `json:"sagaId" validate:"required"`
+	TripID uint `json:"tripId" validate:"required"`
 }
 
 type AbortSaga struct {

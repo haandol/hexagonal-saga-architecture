@@ -37,10 +37,12 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 	saga, err := s.sagaRepository.Start(ctx, cmd)
 	if err != nil {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
+		return err
 	}
 
 	if err := s.publisher.PublishBookCar(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
+		return err
 	}
 
 	return nil
@@ -62,6 +64,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 
 	if err := s.publisher.PublishBookHotel(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book hotel", "saga", saga, "error", err.Error())
+		return err
 	}
 
 	return nil
@@ -178,6 +181,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 	saga, err := s.sagaRepository.End(ctx, cmd)
 	if err != nil {
 		logger.Errorw("failed to end saga", "command", cmd, "err", err.Error())
+		return err
 	}
 
 	if err := s.publisher.PublishSagaEnded(ctx, cmd.CorrelationID, saga); err != nil {
@@ -203,7 +207,7 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 	}
 
 	switch cmd.Body.Source {
-	case "saga":
+	case "saga", "trip":
 		if err := s.publisher.PublishCancelFlightBooking(ctx, saga); err != nil {
 			logger.Errorw("failed to publish CancelFlightBooking", "command", cmd, "err", err.Error())
 			return err

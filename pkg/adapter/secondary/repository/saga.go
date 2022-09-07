@@ -25,7 +25,16 @@ func NewSagaRepository(db *gorm.DB) *SagaRepository {
 	}
 }
 
+// get or create saga
 func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto.Saga, error) {
+	saga, err := r.GetByTripID(ctx, cmd.Body.TripID)
+	if err != nil {
+		return dto.Saga{}, err
+	}
+	if saga.ID > 0 {
+		return saga, nil
+	}
+
 	history, err := json.Marshal(&[]any{
 		cmd,
 	})
@@ -62,7 +71,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -100,7 +109,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -138,7 +147,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -176,7 +185,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -214,7 +223,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -252,7 +261,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 	}
 	v = append(v, evt)
 
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -284,12 +293,16 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 	if err != nil {
 		return dto.Saga{}, err
 	}
+	if saga.Status == status.SagaEnded || saga.Status == status.SagaAborted {
+		return saga, nil
+	}
+
 	v := []any{}
 	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
 		return dto.Saga{}, err
 	}
 	v = append(v, cmd)
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -316,16 +329,20 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 }
 
 func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto.Saga, error) {
-	saga, err := r.GetByCorrelationID(ctx, cmd.CorrelationID)
+	saga, err := r.GetByTripID(ctx, cmd.Body.TripID)
 	if err != nil {
 		return dto.Saga{}, err
 	}
+	if saga.Status == status.SagaEnded || saga.Status == status.SagaAborted {
+		return saga, nil
+	}
+
 	v := []any{}
 	if err := json.Unmarshal([]byte(saga.History), &v); err != nil {
 		return dto.Saga{}, err
 	}
 	v = append(v, cmd)
-	history, err := json.Marshal(&v)
+	history, err := json.Marshal(v)
 	if err != nil {
 		return dto.Saga{}, err
 	}
@@ -367,7 +384,7 @@ func (r *SagaRepository) UpdateStatusByTripID(ctx context.Context, tripID uint, 
 	return nil
 }
 
-func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error) {
+func (r *SagaRepository) GetByTripID(ctx context.Context, id uint) (dto.Saga, error) {
 	row := &entity.Saga{}
 
 	var db *gorm.DB
@@ -378,8 +395,9 @@ func (r *SagaRepository) GetById(ctx context.Context, id uint) (dto.Saga, error)
 	}
 
 	result := db.
-		Where("id = ?", id).
-		Take(row)
+		Where("trip_id = ?", id).
+		Limit(1).
+		Find(row)
 	if result.Error != nil {
 		return dto.Saga{}, result.Error
 	}
