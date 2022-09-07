@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
@@ -52,7 +51,7 @@ func (r *TripRepository) Update(ctx context.Context, d *dto.Trip) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return errors.New("no rows affected")
+		return ErrNoRowAffected
 	}
 	return nil
 }

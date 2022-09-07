@@ -15,6 +15,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+var (
+	ErrNoRowAffected = errors.New("no row affected")
+)
+
 type SagaRepository struct {
 	db *gorm.DB
 }
@@ -92,7 +96,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -130,7 +134,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -168,7 +172,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -206,7 +210,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -244,7 +248,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -282,7 +286,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -322,7 +326,7 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) (dto.Sag
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -362,7 +366,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 		return dto.Saga{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.Saga{}, errors.New("no rows affected")
+		return dto.Saga{}, ErrNoRowAffected
 	}
 
 	return row.DTO()
@@ -378,7 +382,7 @@ func (r *SagaRepository) UpdateStatusByTripID(ctx context.Context, tripID uint, 
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return errors.New("no rows affected")
+		return ErrNoRowAffected
 	}
 
 	return nil

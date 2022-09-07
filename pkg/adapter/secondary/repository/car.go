@@ -11,6 +11,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+var (
+	ErrNoCarBookingFound = errors.New("no car-booking found")
+)
+
 type CarRepository struct {
 	db *gorm.DB
 }
@@ -54,7 +58,7 @@ func (r *CarRepository) CancelBooking(ctx context.Context, id uint) (dto.CarBook
 		return dto.CarBooking{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.CarBooking{}, errors.New("booking not found")
+		return dto.CarBooking{}, ErrNoCarBookingFound
 	}
 
 	return row.DTO()

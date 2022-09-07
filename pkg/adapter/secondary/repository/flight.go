@@ -11,6 +11,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+var (
+	ErrNoFlightBookingFound = errors.New("no flight-booking found")
+)
+
 type FlightRepository struct {
 	db *gorm.DB
 }
@@ -54,7 +58,7 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, id uint) (dto.Flig
 		return dto.FlightBooking{}, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return dto.FlightBooking{}, errors.New("booking not found")
+		return dto.FlightBooking{}, ErrNoFlightBookingFound
 	}
 
 	return row.DTO()
