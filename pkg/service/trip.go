@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/event"
@@ -28,7 +29,7 @@ func NewTripService(
 }
 
 // create trip for the given user
-func (s *TripService) Create(ctx context.Context, corrID string, d *dto.Trip) (dto.Trip, error) {
+func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
 	logger := util.GetLogger().With(
 		"service", "TripService",
 		"method", "Create",
@@ -40,6 +41,7 @@ func (s *TripService) Create(ctx context.Context, corrID string, d *dto.Trip) (d
 		return dto.Trip{}, err
 	}
 
+	corrID := ctx.Value(constant.CtxTraceKey).(string)
 	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
@@ -47,11 +49,13 @@ func (s *TripService) Create(ctx context.Context, corrID string, d *dto.Trip) (d
 	return trip, nil
 }
 
-func (s *TripService) RecoverForward(ctx context.Context, corrID string, tripID uint) (dto.Trip, error) {
+func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip, error) {
 	logger := util.GetLogger().With(
 		"service", "TripService",
 		"method", "RecoverForward",
 	)
+
+	corrID := ctx.Value(constant.CtxTraceKey).(string)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
@@ -70,11 +74,13 @@ func (s *TripService) RecoverForward(ctx context.Context, corrID string, tripID 
 	return trip, nil
 }
 
-func (s *TripService) RecoverBackward(ctx context.Context, corrID string, tripID uint) (dto.Trip, error) {
+func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Trip, error) {
 	logger := util.GetLogger().With(
 		"service", "TripService",
 		"method", "RecoverBackward",
 	)
+
+	corrID := ctx.Value(constant.CtxTraceKey).(string)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {

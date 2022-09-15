@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
@@ -52,11 +51,6 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 		return cerrors.New(constant.ErrBadRequest, err)
 	}
 
-	corrID := c.Request.Header.Get("X-Request-ID")
-	if corrID == "" {
-		corrID = uuid.NewString()
-	}
-
 	if err := util.ValidateStruct(req); err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, err)
 	}
@@ -64,7 +58,7 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
 	defer cancel()
 
-	trip, err := r.tripService.Create(ctx, corrID, req)
+	trip, err := r.tripService.Create(ctx, req)
 	if err != nil {
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
@@ -82,11 +76,6 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 // @Success 200 {object} dto.Trip
 // @Router /trips/{tripId}/recover/forward [put]
 func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
-	corrID := c.Request.Header.Get("X-Request-ID")
-	if corrID == "" {
-		return cerrors.New(constant.ErrBadRequest, errors.New("X-Request-ID is required"))
-	}
-
 	tripID, err := strconv.ParseUint(c.Param("tripId"), 10, 32)
 	if err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
@@ -95,7 +84,7 @@ func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
 	defer cancel()
 
-	trip, err := r.tripService.RecoverForward(ctx, corrID, uint(tripID))
+	trip, err := r.tripService.RecoverForward(ctx, uint(tripID))
 	if err != nil {
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
@@ -113,11 +102,6 @@ func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
 // @Success 200 {object} dto.Trip
 // @Router /trips/{tripId}/recover/backward [put]
 func (r *TripRouter) RecoverBackwardHandler(c *gin.Context) *cerrors.CodedError {
-	corrID := c.Request.Header.Get("X-Request-ID")
-	if corrID == "" {
-		return cerrors.New(constant.ErrBadRequest, errors.New("X-Request-ID is required"))
-	}
-
 	tripID, err := strconv.ParseUint(c.Param("tripId"), 10, 32)
 	if err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
@@ -126,7 +110,7 @@ func (r *TripRouter) RecoverBackwardHandler(c *gin.Context) *cerrors.CodedError 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
 	defer cancel()
 
-	trip, err := r.tripService.RecoverBackward(ctx, corrID, uint(tripID))
+	trip, err := r.tripService.RecoverBackward(ctx, uint(tripID))
 	if err != nil {
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}

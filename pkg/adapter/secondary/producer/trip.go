@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message"
@@ -24,6 +25,9 @@ func NewTripProducer(kafkaProducer *KafkaProducer) *TripProducer {
 }
 
 func (p *TripProducer) PublishStartSaga(ctx context.Context, corrID string, d dto.Trip) error {
+	ctx, seg := xray.BeginSubsegment(ctx, "## PublishStartSaga")
+	defer seg.Close(nil)
+
 	cmd := command.StartSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.StartSaga{}).Type().Name(),
@@ -40,14 +44,18 @@ func (p *TripProducer) PublishStartSaga(ctx context.Context, corrID string, d dt
 		},
 	}
 	if err := util.ValidateStruct(cmd); err != nil {
+		seg.AddError(err)
 		return err
 	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
+		seg.AddError(err)
 		return err
 	}
+	seg.AddMetadata("cmd", cmd)
 
 	if err := p.Produce(ctx, "saga-service", corrID, v); err != nil {
+		seg.AddError(err)
 		return err
 	}
 
@@ -55,6 +63,9 @@ func (p *TripProducer) PublishStartSaga(ctx context.Context, corrID string, d dt
 }
 
 func (p *TripProducer) PublishAbortSaga(ctx context.Context, corrID string, d dto.Trip) error {
+	ctx, seg := xray.BeginSubsegment(ctx, "## PublishAbortSaga")
+	defer seg.Close(nil)
+
 	cmd := command.AbortSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
@@ -70,14 +81,18 @@ func (p *TripProducer) PublishAbortSaga(ctx context.Context, corrID string, d dt
 		},
 	}
 	if err := util.ValidateStruct(cmd); err != nil {
+		seg.AddError(err)
 		return err
 	}
 	v, err := json.Marshal(cmd)
 	if err != nil {
+		seg.AddError(err)
 		return err
 	}
+	seg.AddMetadata("cmd", cmd)
 
 	if err := p.Produce(ctx, "saga-service", corrID, v); err != nil {
+		seg.AddError(err)
 		return err
 	}
 

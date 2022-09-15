@@ -89,10 +89,10 @@ func NewGinRouter(cfg config.Config) *GinRouter {
 	)
 
 	r := gin.Default()
-	r.Use(middleware.RequestId())
 	r.Use(middleware.LeakBucket(cfg.App))
 	r.Use(middleware.Timeout(cfg.App))
 	r.Use(middleware.Cors())
+	r.Use(middleware.XrayTracing())
 	r.Use(util.GinzapWithConfig(logger, &util.Config{
 		UTC:       false,
 		SkipPaths: []string{"/healthy"},
