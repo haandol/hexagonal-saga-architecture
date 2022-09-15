@@ -12,7 +12,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-const headerTraceID = "x-amzn-trace-id"
+const headerTraceID = "X-Amzn-Trace-Id"
 
 func XrayTracing() gin.HandlerFunc {
 	util.InitXray()
@@ -43,7 +43,7 @@ func captureRequestData(c *gin.Context, seg *xray.Segment) {
 	segmentRequest.XForwardedFor = hasXForwardedFor(r)
 	segmentRequest.ClientIP = clientIP(r)
 	segmentRequest.UserAgent = r.UserAgent()
-	c.Writer.Header().Set(headerTraceID, seg.TraceID)
+	c.Writer.Header().Set(headerTraceID, fmt.Sprintf("Root=%s", seg.TraceID))
 }
 
 // Write response data to segment

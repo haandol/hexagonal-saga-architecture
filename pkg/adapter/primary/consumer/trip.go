@@ -29,7 +29,7 @@ func NewTripConsumer(
 
 func (c *TripConsumer) Init() {
 	logger := util.GetLogger().With(
-		"module", "SagaConsumer",
+		"module", "TripConsumer",
 		"func", "Init",
 	)
 
@@ -50,24 +50,31 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## TripConsumer")
+	seg.AddMetadata("msg", msg)
+	defer seg.Close(nil)
 
 	switch msg.Name {
 	case "SagaEnded":
 		evt := &event.SagaEnded{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.tripService.ProcessSagaEnded(ctx, evt)
+		return c.tripService.ProcessSagaEnded(con, evt)
 	case "SagaAborted":
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.tripService.ProcessSagaAborted(ctx, evt)
+		return c.tripService.ProcessSagaAborted(con, evt)
 	default:
 		logger.Errorw("unknown command", "message", msg)
-		return errors.New("unknown command")
+		err := errors.New("unknown command")
+		seg.AddError(err)
+		return err
 	}
 }

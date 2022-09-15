@@ -31,16 +31,19 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 		"module", "SagaService",
 		"method", "Start",
 	)
-
 	logger.Infow("start saga", "command", cmd)
 
-	saga, err := s.sagaRepository.Start(ctx, cmd)
+	con, seg := util.BeginSubSegment(ctx, "## Start")
+	seg.AddMetadata("command", cmd)
+	defer seg.Close(nil)
+
+	saga, err := s.sagaRepository.Start(con, cmd)
 	if err != nil {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
 		return err
 	}
 
-	if err := s.publisher.PublishBookCar(ctx, saga); err != nil {
+	if err := s.publisher.PublishBookCar(con, saga); err != nil {
 		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
 		return err
 	}

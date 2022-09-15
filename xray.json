@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "description": "no",
+      "host": "*",
+      "http_method": "*",
+      "url_path": "*",
+      "fixed_target": 1,
+      "rate": 100
+    }
+  ],
+  "default": {
+    "fixed_target": 1,
+    "rate": 100
+  }
+}

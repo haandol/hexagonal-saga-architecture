@@ -69,7 +69,6 @@ linters:
     - depguard
     - dogsled
     - exportloopref
-    - funlen
     - gochecknoinits
     - goconst
     - gocritic

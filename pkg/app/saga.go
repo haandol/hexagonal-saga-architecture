@@ -43,6 +43,8 @@ func (app *SagaApp) Init() {
 	for _, c := range app.consumers {
 		c.Init()
 	}
+
+	util.InitXray()
 }
 
 func (app *SagaApp) Start() {

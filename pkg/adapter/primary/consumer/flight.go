@@ -50,24 +50,31 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	}
 
 	logger.Infow("Received command", "command", msg)
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## FlightConsumer")
+	seg.AddMetadata("msg", msg)
+	defer seg.Close(nil)
 
 	switch msg.Name {
 	case "BookFlight":
 		cmd := &command.BookFlight{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.flightService.Book(ctx, cmd)
+		return c.flightService.Book(con, cmd)
 	case "CancelFlightBooking":
 		cmd := &command.CancelFlightBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.flightService.CancelBooking(ctx, cmd)
+		return c.flightService.CancelBooking(con, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
-		return errors.New("unknown command")
+		err := errors.New("unknown command")
+		seg.AddError(err)
+		return err
 	}
 }

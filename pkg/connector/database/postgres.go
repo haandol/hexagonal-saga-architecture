@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	_ "github.com/lib/pq"
+
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
 
@@ -15,22 +18,30 @@ import (
 var gormDBs = make(map[string]*gorm.DB)
 
 const (
-	DbConnMaxLifeTime = 15 * time.Second
+	DBConnMaxLifeTime = 15 * time.Second
 )
 
-func getDsn(cfg config.Database) string {
-	const dsn = "host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Seoul"
-	return fmt.Sprintf(dsn, cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port)
+func getSQLDsn(cfg config.Database) string {
+	const dsn = "postgres://%s:%s@%s:%d/%s?sslmode=disable"
+	return fmt.Sprintf(dsn, cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 }
 
-func initDb(cfg config.Database) {
+func initDB(cfg config.Database) {
 	if _, exists := gormDBs[cfg.Name]; exists {
 		return
 	}
 
-	db, err := gorm.Open(postgres.Open(getDsn(cfg)), &gorm.Config{
-		PrepareStmt: true,
-	})
+	fmt.Println("dsn: ", getSQLDsn(cfg))
+	instrumentedDB, err := xray.SQLContext("postgres", getSQLDsn(cfg))
+	if err != nil {
+		fmt.Println("!!!!!!!!!!")
+		panic(err)
+	}
+
+	db, err := gorm.Open(
+		postgres.New(postgres.Config{Conn: instrumentedDB}),
+		&gorm.Config{PrepareStmt: true},
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +52,7 @@ func initDb(cfg config.Database) {
 func Connect(cfg config.Database) (*gorm.DB, error) {
 	logger := util.GetLogger()
 
-	initDb(cfg)
+	initDB(cfg)
 
 	gormDB := gormDBs[cfg.Name]
 
@@ -53,7 +64,7 @@ func Connect(cfg config.Database) (*gorm.DB, error) {
 
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConnections)
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConnections)
-	sqlDB.SetConnMaxLifetime(DbConnMaxLifeTime)
+	sqlDB.SetConnMaxLifetime(DBConnMaxLifeTime)
 
 	logger.Infow("connected to database", "host", cfg.Host, "port", cfg.Port, "name", cfg.Name)
 

@@ -51,77 +51,92 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## SagaConsumer")
+	seg.AddMetadata("msg", msg)
+	defer seg.Close(nil)
 
 	switch msg.Name {
 	case "StartSaga":
 		cmd := &command.StartSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.Start(ctx, cmd)
+		return c.sagaService.Start(con, cmd)
 	case "CarBooked":
 		evt := &event.CarBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.ProcessCarBooking(ctx, evt)
+		return c.sagaService.ProcessCarBooking(con, evt)
 	case "CarBookingCancelled":
 		evt := &event.CarBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		if err := c.sagaService.CompensateCarBooking(ctx, evt); err != nil {
+		if err := c.sagaService.CompensateCarBooking(con, evt); err != nil {
 			logger.Errorw("Failed to compensate car booking", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.MarkAbort(ctx, evt.Body.TripID)
+		return c.sagaService.MarkAbort(con, evt.Body.TripID)
 	case "HotelBooked":
 		evt := &event.HotelBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.ProcessHotelBooking(ctx, evt)
+		return c.sagaService.ProcessHotelBooking(con, evt)
 	case "HotelBookingCancelled":
 		evt := &event.HotelBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.CompensateHotelBooking(ctx, evt)
+		return c.sagaService.CompensateHotelBooking(con, evt)
 	case "FlightBooked":
 		evt := &event.FlightBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.ProcessFlightBooking(ctx, evt)
+		return c.sagaService.ProcessFlightBooking(con, evt)
 	case "FlightBookingCancelled":
 		evt := &event.FlightBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.CompensateFlightBooking(ctx, evt)
+		return c.sagaService.CompensateFlightBooking(con, evt)
 	case "EndSaga":
 		cmd := &command.EndSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.End(ctx, cmd)
+		return c.sagaService.End(con, cmd)
 	case "AbortSaga":
 		cmd := &command.AbortSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			seg.AddError(err)
 			return err
 		}
-		return c.sagaService.Abort(ctx, cmd)
+		return c.sagaService.Abort(con, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
-		return errors.New("unknown command")
+		err := errors.New("unknown command")
+		seg.AddError(err)
+		return err
 	}
 }

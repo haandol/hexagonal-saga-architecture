@@ -120,8 +120,13 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 		"method", "ProcessSagaEnded",
 	)
 
-	if err := s.tripRepository.Complete(ctx, evt); err != nil {
+	con, seg := util.BeginSubSegment(ctx, "## ProcessSagaEnded")
+	seg.AddMetadata("event", evt)
+	defer seg.Close(nil)
+
+	if err := s.tripRepository.Complete(con, evt); err != nil {
 		logger.Errorw("failed to update trip booking", "event", evt, "err", err.Error())
+		seg.AddError(err)
 		return err
 	}
 
@@ -134,8 +139,13 @@ func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAbo
 		"method", "ProcessSagaAborted",
 	)
 
+	ctx, seg := util.BeginSubSegment(ctx, "## ProcessSagaAborted")
+	seg.AddMetadata("event", evt)
+	defer seg.Close(nil)
+
 	if err := s.tripRepository.Abort(ctx, evt); err != nil {
 		logger.Errorw("failed to abort trip booking", "event", evt, "err", err.Error())
+		seg.AddError(err)
 		return err
 	}
 

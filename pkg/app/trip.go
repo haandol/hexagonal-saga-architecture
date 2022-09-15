@@ -77,6 +77,8 @@ func (app *TripApp) Init() {
 		c.Init()
 	}
 	logger.Info("consumers are initialized.")
+
+	util.InitXray()
 }
 
 func (app *TripApp) Start() {

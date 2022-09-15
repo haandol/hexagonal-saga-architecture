@@ -15,11 +15,11 @@ import (
 )
 
 type KafkaConsumer struct {
-	client           *kgo.Client
-	topic            string
-	messageExpirySec time.Duration
-	handler          consumerport.HandlerFunc
-	batchSize        int
+	client        *kgo.Client
+	topic         string
+	messageExpiry time.Duration
+	handler       consumerport.HandlerFunc
+	batchSize     int
 }
 
 func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaConsumer {
@@ -30,11 +30,11 @@ func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaCons
 	}
 
 	return &KafkaConsumer{
-		client:           client,
-		topic:            topic,
-		messageExpirySec: time.Duration(cfg.MessageExpirySec) * time.Second,
-		batchSize:        cfg.BatchSize,
-		handler:          nil,
+		client:        client,
+		topic:         topic,
+		messageExpiry: time.Duration(cfg.MessageExpirySec) * time.Second,
+		batchSize:     cfg.BatchSize,
+		handler:       nil,
 	}
 }
 
@@ -101,8 +101,8 @@ func (c *KafkaConsumer) Consume() {
 				Value:     record.Value,
 				Timestamp: record.Timestamp,
 			}
-			if c.messageExpirySec > 0 && time.Since(record.Timestamp) > c.messageExpirySec {
-				logger.Infow("Message expired", "expirySec", c.messageExpirySec, "key", key)
+			if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
+				logger.Infow("Message expired", "expirySec", c.messageExpiry, "key", key)
 				return
 			}
 

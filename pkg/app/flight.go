@@ -43,6 +43,8 @@ func (app *FlightApp) Init() {
 	for _, c := range app.consumers {
 		c.Init()
 	}
+
+	util.InitXray()
 }
 
 func (app *FlightApp) Start() {
