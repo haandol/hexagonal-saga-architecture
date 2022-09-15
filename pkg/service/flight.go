@@ -42,7 +42,7 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 		logger.Errorw("failed to book flight", "req", req, "err", err.Error())
 
 		go func(reason string) {
-			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.Body.TripID, reason); err != nil {
+			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason); err != nil {
 				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
 			}
 		}(err.Error())
@@ -50,7 +50,7 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 		return err
 	}
 
-	if err := s.flightProducer.PublishFlightBooked(ctx, cmd.CorrelationID, booking); err != nil {
+	if err := s.flightProducer.PublishFlightBooked(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
 		return err
 	}
 
@@ -70,7 +70,7 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 		logger.Errorw("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
 
 		go func(reason string) {
-			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.Body.TripID, reason); err != nil {
+			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason); err != nil {
 				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
 			}
 		}(err.Error())
@@ -78,7 +78,7 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 		return err
 	}
 
-	if err := s.flightProducer.PublishFlightBookingCancelled(ctx, cmd.CorrelationID, booking); err != nil {
+	if err := s.flightProducer.PublishFlightBookingCancelled(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
 		return err
 	}
 

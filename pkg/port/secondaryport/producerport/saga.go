@@ -14,6 +14,6 @@ type SagaProducer interface {
 	PublishBookFlight(ctx context.Context, d dto.Saga) error
 	PublishCancelFlightBooking(ctx context.Context, d dto.Saga) error
 	PublishEndSaga(ctx context.Context, d dto.Saga) error
-	PublishSagaEnded(ctx context.Context, corrID string, d dto.Saga) error
-	PublishSagaAborted(ctx context.Context, corrID string, d dto.Saga) error
+	PublishSagaEnded(ctx context.Context, corrID string, parentID string, d dto.Saga) error
+	PublishSagaAborted(ctx context.Context, corrID string, parentID string, d dto.Saga) error
 }

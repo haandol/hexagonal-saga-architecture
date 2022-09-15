@@ -51,7 +51,7 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## SagaConsumer")
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## SagaConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 

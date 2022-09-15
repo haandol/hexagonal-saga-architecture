@@ -50,7 +50,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## CarConsumer")
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## CarConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 

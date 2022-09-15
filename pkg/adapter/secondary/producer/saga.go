@@ -31,6 +31,7 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookCarBody{
@@ -60,6 +61,7 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) 
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelCarBookingBody{
@@ -89,6 +91,7 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookHotelBody{
@@ -118,6 +121,7 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelHotelBookingBody{
@@ -147,6 +151,7 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error 
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookFlightBody{
@@ -176,6 +181,7 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Sag
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelFlightBookingBody{
@@ -205,6 +211,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
+			ParentID:      util.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.EndSagaBody{
@@ -227,7 +234,9 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
-func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dto.Saga) error {
+func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
+	corrID string, parentID string, d dto.Saga,
+) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
 		"func", "PublishSagaEnded",
@@ -239,6 +248,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dt
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaEndedBody{
@@ -265,7 +275,9 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context, corrID string, d dt
 	return nil
 }
 
-func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d dto.Saga) error {
+func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
+	corrID string, parentID string, d dto.Saga,
+) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
 		"func", "PublishSagaAborted",
@@ -277,6 +289,7 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context, corrID string, d 
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.SagaAbortedBody{

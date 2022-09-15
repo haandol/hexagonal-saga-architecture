@@ -27,14 +27,21 @@ func InitXray() {
 	}
 }
 
-func BeginSegmentWithTraceID(ctx context.Context, traceID string, name string) (context.Context, *xray.Segment) {
+func BeginSegmentWithTraceID(ctx context.Context,
+	traceID string, parentID string, name string,
+) (context.Context, *xray.Segment) {
 	con, seg := xray.BeginSegment(ctx, name)
 
 	seg.TraceID = traceID
+	seg.ParentID = parentID
 
 	return con, seg
 }
 
 func BeginSubSegment(ctx context.Context, name string) (context.Context, *xray.Segment) {
 	return xray.BeginSubsegment(ctx, name)
+}
+
+func GetSegmentID(ctx context.Context) string {
+	return xray.GetSegment(ctx).ID
 }

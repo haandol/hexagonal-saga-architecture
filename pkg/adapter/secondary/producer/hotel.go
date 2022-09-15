@@ -24,13 +24,16 @@ func NewHotelProducer(kafkaProducer *KafkaProducer) *HotelProducer {
 	}
 }
 
-func (p *HotelProducer) PublishHotelBooked(ctx context.Context, corrID string, d dto.HotelBooking) error {
+func (p *HotelProducer) PublishHotelBooked(ctx context.Context,
+	corrID string, parentID string, d dto.HotelBooking,
+) error {
 	evt := &event.HotelBooked{
 		Message: message.Message{
 			Name:          reflect.ValueOf(event.HotelBooked{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.HotelBookedBody{
@@ -52,13 +55,16 @@ func (p *HotelProducer) PublishHotelBooked(ctx context.Context, corrID string, d
 	return nil
 }
 
-func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context, corrID string, d dto.HotelBooking) error {
+func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context,
+	corrID string, parentID string, d dto.HotelBooking,
+) error {
 	evt := &event.HotelBookingCancelled{
 		Message: message.Message{
 			Name:          reflect.ValueOf(event.HotelBookingCancelled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.HotelBookedBody{
@@ -80,13 +86,16 @@ func (p *HotelProducer) PublishHotelBookingCancelled(ctx context.Context, corrID
 	return nil
 }
 
-func (p *HotelProducer) PublishAbortSaga(ctx context.Context, corrID string, tripID uint, reason string) error {
+func (p *HotelProducer) PublishAbortSaga(ctx context.Context,
+	corrID string, parentID string, tripID uint, reason string,
+) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.AbortSagaBody{

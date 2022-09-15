@@ -50,7 +50,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## TripConsumer")
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## TripConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 

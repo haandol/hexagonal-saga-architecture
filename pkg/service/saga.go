@@ -33,17 +33,13 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 	)
 	logger.Infow("start saga", "command", cmd)
 
-	con, seg := util.BeginSubSegment(ctx, "## Start")
-	seg.AddMetadata("command", cmd)
-	defer seg.Close(nil)
-
-	saga, err := s.sagaRepository.Start(con, cmd)
+	saga, err := s.sagaRepository.Start(ctx, cmd)
 	if err != nil {
 		logger.Errorw("failed to create saga", "command", cmd, "err", err.Error())
 		return err
 	}
 
-	if err := s.publisher.PublishBookCar(con, saga); err != nil {
+	if err := s.publisher.PublishBookCar(ctx, saga); err != nil {
 		logger.Errorw("failed to publish book car", "saga", saga, "error", err.Error())
 		return err
 	}
@@ -87,7 +83,7 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 		return err
 	}
 
-	if err := s.publisher.PublishSagaAborted(ctx, evt.CorrelationID, saga); err != nil {
+	if err := s.publisher.PublishSagaAborted(ctx, evt.CorrelationID, evt.ParentID, saga); err != nil {
 		logger.Errorw("failed to publish SagaAborted", "event", evt, "err", err.Error())
 		return err
 	}
@@ -187,7 +183,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 		return err
 	}
 
-	if err := s.publisher.PublishSagaEnded(ctx, cmd.CorrelationID, saga); err != nil {
+	if err := s.publisher.PublishSagaEnded(ctx, cmd.CorrelationID, cmd.ParentID, saga); err != nil {
 		logger.Errorw("failed to publish SagaEnded", "command", cmd, "err", err.Error())
 		return err
 	}

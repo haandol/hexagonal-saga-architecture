@@ -42,7 +42,8 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 	}
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+	parentID := util.GetSegmentID(ctx)
+	if err := s.tripProducer.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
@@ -56,6 +57,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 	)
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
+	parentID := util.GetSegmentID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
@@ -67,7 +69,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripProducer.PublishStartSaga(ctx, corrID, trip); err != nil {
+	if err := s.tripProducer.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
@@ -81,6 +83,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 	)
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
+	parentID := util.GetSegmentID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
@@ -92,7 +95,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripProducer.PublishAbortSaga(ctx, corrID, trip); err != nil {
+	if err := s.tripProducer.PublishAbortSaga(ctx, corrID, parentID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
@@ -120,13 +123,8 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 		"method", "ProcessSagaEnded",
 	)
 
-	con, seg := util.BeginSubSegment(ctx, "## ProcessSagaEnded")
-	seg.AddMetadata("event", evt)
-	defer seg.Close(nil)
-
-	if err := s.tripRepository.Complete(con, evt); err != nil {
+	if err := s.tripRepository.Complete(ctx, evt); err != nil {
 		logger.Errorw("failed to update trip booking", "event", evt, "err", err.Error())
-		seg.AddError(err)
 		return err
 	}
 
@@ -139,13 +137,8 @@ func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAbo
 		"method", "ProcessSagaAborted",
 	)
 
-	ctx, seg := util.BeginSubSegment(ctx, "## ProcessSagaAborted")
-	seg.AddMetadata("event", evt)
-	defer seg.Close(nil)
-
 	if err := s.tripRepository.Abort(ctx, evt); err != nil {
 		logger.Errorw("failed to abort trip booking", "event", evt, "err", err.Error())
-		seg.AddError(err)
 		return err
 	}
 

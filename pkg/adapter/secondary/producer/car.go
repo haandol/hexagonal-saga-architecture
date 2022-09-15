@@ -24,13 +24,16 @@ func NewCarProducer(kafkaProducer *KafkaProducer) *CarProducer {
 	}
 }
 
-func (p *CarProducer) PublishCarBooked(ctx context.Context, corrID string, d dto.CarBooking) error {
+func (p *CarProducer) PublishCarBooked(ctx context.Context,
+	corrID string, parentID string, d dto.CarBooking,
+) error {
 	evt := &event.CarBooked{
 		Message: message.Message{
 			Name:          reflect.ValueOf(event.CarBooked{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.CarBookedBody{
@@ -52,13 +55,16 @@ func (p *CarProducer) PublishCarBooked(ctx context.Context, corrID string, d dto
 	return nil
 }
 
-func (p *CarProducer) PublishCarBookingCancelled(ctx context.Context, corrID string, d dto.CarBooking) error {
+func (p *CarProducer) PublishCarBookingCancelled(ctx context.Context,
+	corrID string, parentID string, d dto.CarBooking,
+) error {
 	evt := &event.CarBookingCancelled{
 		Message: message.Message{
 			Name:          reflect.ValueOf(event.CarBookingCancelled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: event.CarBookingCancelledBody{
@@ -81,13 +87,16 @@ func (p *CarProducer) PublishCarBookingCancelled(ctx context.Context, corrID str
 	return nil
 }
 
-func (p *CarProducer) PublishAbortSaga(ctx context.Context, corrID string, tripID uint, reason string) error {
+func (p *CarProducer) PublishAbortSaga(ctx context.Context,
+	corrID string, parentID string, tripID uint, reason string,
+) error {
 	cmd := &command.AbortSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
+			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.AbortSagaBody{

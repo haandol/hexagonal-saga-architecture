@@ -50,7 +50,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, "## FlightConsumer")
+	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## FlightConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 
