@@ -2,10 +2,12 @@ package consumer
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/haandol/hexagonal/pkg/config"
@@ -24,6 +26,10 @@ type KafkaConsumer struct {
 
 func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaConsumer {
 	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
+	if strings.Contains(cfg.Seeds[0], "9094") {
+		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))
+	}
+
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
 		log.Panic(err.Error())

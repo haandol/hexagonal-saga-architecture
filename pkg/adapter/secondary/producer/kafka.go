@@ -2,8 +2,10 @@ package producer
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,6 +21,10 @@ type KafkaProducer struct {
 
 func NewKafkaProducer(cfg config.Config) *KafkaProducer {
 	opts := BuildProducerOpts(cfg.Kafka.Seeds)
+	if strings.Contains(cfg.Kafka.Seeds[0], "9094") {
+		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))
+	}
+
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
 		panic(err)
