@@ -4,7 +4,7 @@ set -o allexport
 [ -f env/local.env ] && source env/local.env
 set +o allexport
 
-cd migration
+cd init
 
 echo $DB_USERNAME
 echo $DB_HOST:$DB_PORT
