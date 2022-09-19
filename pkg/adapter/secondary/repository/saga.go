@@ -38,6 +38,9 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) (dto
 	if saga.ID > 0 {
 		return saga, nil
 	}
+	if saga.Status == status.SagaAborted {
+		return dto.Saga{}, errors.New("the saga is aborting")
+	}
 
 	history, err := json.Marshal(&[]any{
 		cmd,
@@ -127,7 +130,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"car_booking_id": 0,
-			"status":         evt.Name,
+			"status":         status.SagaAborted,
 			"history":        history,
 		})
 	if result.Error != nil {
@@ -178,7 +181,9 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 	return row.DTO()
 }
 
-func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) (dto.Saga, error) {
+func (r *SagaRepository) CompensateHotelBooking(ctx context.Context,
+	evt *event.HotelBookingCancelled,
+) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
 		return dto.Saga{}, err
@@ -203,7 +208,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context, evt *event.
 		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"hotel_booking_id": 0,
-			"status":           evt.Name,
+			"status":           status.SagaAborted,
 			"history":          history,
 		})
 	if result.Error != nil {
@@ -254,7 +259,9 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 	return row.DTO()
 }
 
-func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) (dto.Saga, error) {
+func (r *SagaRepository) CompensateFlightBooking(ctx context.Context,
+	evt *event.FlightBookingCancelled,
+) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
 		return dto.Saga{}, err
@@ -279,7 +286,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context, evt *event
 		Where("id = ?", saga.ID).
 		Updates(map[string]interface{}{
 			"flight_booking_id": 0,
-			"status":            evt.Name,
+			"status":            status.SagaAborted,
 			"history":           history,
 		})
 	if result.Error != nil {

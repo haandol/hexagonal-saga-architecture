@@ -1,0 +1,42 @@
+@startuml saga
+
+title Error on booking hotel and compensate scenario
+
+autonumber 
+skinparam responseMessageBelowArrow true
+actor Client as cli
+participant TripSystem as trip
+participant SagaSystem as saga
+participant CarSystem as car
+participant HotelSystem as hotel
+
+cli -> trip : POST /v1/trip
+trip --> trip : create a trip record on DB
+trip -> saga : Publish command.StartSaga
+
+saga --> saga : create a saga record on DB
+
+saga -> car : Publish command.BookCar
+activate car
+car --> car: book a car for the trip
+car -> saga : Publish event.CarBooked
+deactivate car
+
+saga -> hotel : Publish command.BookHotel
+activate hotel
+hotel -[#red]-> hotel : <font color="red">Error on booking a hotel</font>
+hotel -> saga : Publish command.AbortSaga
+deactivate hotel
+
+saga --> saga : mark abort the saga for the trip
+
+saga -> car : Publish command.CancelCar
+activate car
+car --> car: cancel a car booking for the trip
+car -> saga : Publish event.CarCancelled
+deactivate car
+
+saga -> trip : Publish event.SagaAborted
+trip --> trip : abort a trip and update DB
+
+@enduml
