@@ -79,11 +79,5 @@ func Load() Config {
 	stage := getEnv("APP_STAGE").String()
 	log.Printf("Loading %s config\n", stage)
 
-	envPath := getEnv("DOTENV_PATH").String()
-	// use local.env for the only dev env
-	if stage == "" && envPath == "" {
-		return BuildFromPath("../../env/local.env")
-	}
-
-	return BuildFromPath(envPath)
+	return BuildFromPath("../../.env")
 }

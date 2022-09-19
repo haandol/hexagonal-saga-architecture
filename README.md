@@ -24,6 +24,12 @@ $ go mod tidy && go mod vendor
 $ docker-compose --profile backend up -d
 ```
 
+# Copy .env
+
+```bash
+$ cp env/local.env .env
+```
+
 # Schema migration
 
 Install Goose
