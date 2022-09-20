@@ -24,7 +24,7 @@ $ go mod tidy && go mod vendor
 $ docker-compose --profile backend up -d
 ```
 
-# Copy .env
+# Copy .env to project root folder
 
 ```bash
 $ cp env/local.env .env
