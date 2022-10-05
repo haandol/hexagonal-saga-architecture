@@ -8,22 +8,18 @@ import (
 	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/event"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type TripService struct {
-	tripProducer   producerport.TripProducer
 	tripRepository repositoryport.TripRepository
 }
 
 func NewTripService(
-	tripProducer producerport.TripProducer,
 	tripRepository repositoryport.TripRepository,
 ) *TripService {
 	return &TripService{
-		tripProducer:   tripProducer,
 		tripRepository: tripRepository,
 	}
 }
@@ -35,16 +31,12 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 		"method", "Create",
 	)
 
-	trip, err := s.tripRepository.Create(ctx, d)
+	corrID := ctx.Value(constant.CtxTraceKey).(string)
+	parentID := util.GetSegmentID(ctx)
+	trip, err := s.tripRepository.Create(ctx, corrID, parentID, d)
 	if err != nil {
 		logger.Errorw("failed to create trip", "trip", d, "err", err.Error())
 		return dto.Trip{}, err
-	}
-
-	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := util.GetSegmentID(ctx)
-	if err := s.tripProducer.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
-		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
 	return trip, nil
@@ -69,7 +61,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripProducer.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
+	if err := s.tripRepository.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
@@ -95,7 +87,9 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripProducer.PublishAbortSaga(ctx, corrID, parentID, trip); err != nil {
+	if err := s.tripRepository.PublishAbortSaga(ctx,
+		corrID, parentID, tripID, "force revert",
+	); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 

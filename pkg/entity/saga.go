@@ -23,7 +23,7 @@ type Saga struct {
 	UpdatedAt       time.Time      `gorm:"type:timestamp;"`
 }
 
-func (m Saga) DTO() (dto.Saga, error) {
+func (m Saga) DTO() dto.Saga {
 	return dto.Saga{
 		ID:              m.ID,
 		CorrelationID:   m.CorrelationID,
@@ -37,5 +37,5 @@ func (m Saga) DTO() (dto.Saga, error) {
 		Status:          m.Status,
 		History:         string(m.History),
 		CreatedAt:       m.CreatedAt,
-	}, nil
+	}
 }

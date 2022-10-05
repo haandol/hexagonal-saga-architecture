@@ -2,21 +2,27 @@ package app
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"os"
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
+	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type SagaApp struct {
+	server    *http.Server
 	consumers []consumerport.Consumer
 	producers []producerport.Producer
 }
 
 func NewSagaApp(
+	server *http.Server,
 	sagaConsumer *consumer.SagaConsumer,
 	sagaProducer *producer.SagaProducer,
 ) *SagaApp {
@@ -28,6 +34,7 @@ func NewSagaApp(
 	}
 
 	return &SagaApp{
+		server:    server,
 		consumers: consumers,
 		producers: producers,
 	}
@@ -43,6 +50,7 @@ func (app *SagaApp) Init() {
 	for _, c := range app.consumers {
 		c.Init()
 	}
+	logger.Info("consumers are initialized.")
 
 	util.InitXray()
 }
@@ -53,6 +61,19 @@ func (app *SagaApp) Start() {
 		"func", "Start",
 	)
 	logger.Info("Starting...")
+
+	if app.server != nil {
+		go func() {
+			logger.Infow("Started and serving HTTP", "addr", app.server.Addr, "pid", os.Getpid())
+			if err := app.server.ListenAndServe(); err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					logger.Info("server closed.")
+				} else {
+					logger.Panicw("ListenAndServe fail", "error", err)
+				}
+			}
+		}()
+	}
 
 	for _, c := range app.consumers {
 		go c.Consume()
@@ -67,7 +88,21 @@ func (app *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	)
 	logger.Info("Cleaning up...")
 
-	logger.Info("Closing producer...")
+	if app.server != nil {
+		logger.Info("Shutting down server...")
+		if err := app.server.Shutdown(ctx); err != nil {
+			logger.Error("Error on server shutdown:", err)
+		}
+		logger.Info("Server shutdown.")
+	}
+
+	logger.Info("Closing database connection...")
+	if err := database.Close(ctx); err != nil {
+		logger.Error("Error on database close:", err)
+	}
+	logger.Info("Database connection closed.")
+
+	logger.Info("Closing producers...")
 	for _, producer := range app.producers {
 		if err := producer.Close(ctx); err != nil {
 			logger.Error("Error on producer close:", err)

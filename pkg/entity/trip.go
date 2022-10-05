@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/haandol/hexagonal/pkg/dto"
-	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type Trip struct {
@@ -23,7 +22,7 @@ type Trip struct {
 
 type Trips []Trip
 
-func (m Trip) DTO() (dto.Trip, error) {
+func (m Trip) DTO() dto.Trip {
 	return dto.Trip{
 		ID:              m.ID,
 		UserID:          m.UserID,
@@ -35,20 +34,13 @@ func (m Trip) DTO() (dto.Trip, error) {
 		FlightBookingID: m.FlightBookingID,
 		Status:          m.Status,
 		CreatedAt:       m.CreatedAt,
-	}, nil
+	}
 }
 
-func (m Trips) DTO() ([]dto.Trip, error) {
-	logger := util.GetLogger()
-
+func (m Trips) DTO() []dto.Trip {
 	trips := make([]dto.Trip, 0)
 	for _, trip := range m {
-		t, err := trip.DTO()
-		if err != nil {
-			logger.Error(err.Error())
-			continue
-		}
-		trips = append(trips, t)
+		trips = append(trips, trip.DTO())
 	}
-	return trips, nil
+	return trips
 }

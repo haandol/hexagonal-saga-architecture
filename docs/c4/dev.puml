@@ -1,0 +1,27 @@
+@startuml architecture
+
+!include <awslib/AWSCommon>
+!include <awslib/general/all.puml>
+!include <awslib/Compute/EC2.puml>
+!include <awslib/Database/RDSPostgreSQLinstance.puml>
+!include <awslib/Analytics/ManagedStreamingforKafka.puml>
+
+skinparam linetype polyline
+
+package "DEV VPC" {
+  EC2(app, "Demo App", "EC2")
+  EC2(dev, "Saga App", "EC2")
+  ManagedStreamingforKafka(msk, "DEV Cluster", "MSK")
+  RDSPostgreSQLinstance(rds, "DEV Database", "RDS")
+}
+
+User(user, "Developer", "VDI")
+
+user --> dev
+user --> app
+app --> msk
+app --> rds
+dev --> msk
+dev --> rds
+
+@enduml

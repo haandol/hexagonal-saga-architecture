@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 
+	"github.com/aws/aws-xray-sdk-go/awsplugins/ecs"
 	"github.com/aws/aws-xray-sdk-go/strategy/sampling"
 	"github.com/aws/aws-xray-sdk-go/xray"
 )
@@ -17,9 +18,11 @@ func InitXray() {
 	}
 
 	initialized = true
+
+	ecs.Init()
+
 	s, _ := sampling.NewLocalizedStrategyFromFilePath("../../xray.json")
 	if err := xray.Configure(xray.Config{
-		DaemonAddr:       "127.0.0.1:2000", // default
 		ServiceVersion:   "1.2.3",
 		SamplingStrategy: s,
 	}); err != nil {
@@ -43,5 +46,9 @@ func BeginSubSegment(ctx context.Context, name string) (context.Context, *xray.S
 }
 
 func GetSegmentID(ctx context.Context) string {
-	return xray.GetSegment(ctx).ID
+	seg := xray.GetSegment(ctx)
+	if seg != nil {
+		return seg.ID
+	}
+	return ""
 }

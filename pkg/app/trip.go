@@ -3,19 +3,15 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
-	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
-	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
@@ -24,31 +20,21 @@ type TripApp struct {
 	routerGroup routerport.RouterGroup
 	routers     []routerport.Router
 	consumers   []consumerport.Consumer
-	producers   []producerport.Producer
-}
-
-func NewServer(cfg config.Config, h http.Handler) *http.Server {
-	return &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.App.Port),
-		Handler: h,
-	}
 }
 
 func NewTripApp(
 	server *http.Server,
 	ginRouter *router.GinRouter,
 	tripRouter *router.TripRouter,
+	efsRouter *router.EfsRouter,
 	tripConsumer *consumer.TripConsumer,
-	tripProducer *producer.TripProducer,
 ) *TripApp {
 	routers := []routerport.Router{
 		tripRouter,
+		efsRouter,
 	}
 	consumers := []consumerport.Consumer{
 		tripConsumer,
-	}
-	producers := []producerport.Producer{
-		tripProducer,
 	}
 
 	return &TripApp{
@@ -56,7 +42,6 @@ func NewTripApp(
 		routerGroup: ginRouter,
 		routers:     routers,
 		consumers:   consumers,
-		producers:   producers,
 	}
 }
 
@@ -123,14 +108,6 @@ func (app *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		logger.Error("Error on database close:", err)
 	}
 	logger.Info("Database connection closed.")
-
-	logger.Info("Closing producers...")
-	for _, producer := range app.producers {
-		if err := producer.Close(ctx); err != nil {
-			logger.Error("Error on producer close:", err)
-		}
-	}
-	logger.Info("Producer connection closed.")
 
 	logger.Info("Closing consumers...")
 	for _, c := range app.consumers {

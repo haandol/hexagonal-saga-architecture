@@ -5,22 +5,18 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/command"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type FlightService struct {
-	flightProducer   producerport.FlightProducer
 	flightRepository repositoryport.FlightRepository
 }
 
 func NewFlightService(
-	flightProducer producerport.FlightProducer,
 	flightRepository repositoryport.FlightRepository,
 ) *FlightService {
 	return &FlightService{
-		flightProducer:   flightProducer,
 		flightRepository: flightRepository,
 	}
 }
@@ -37,20 +33,17 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 		TripID:   cmd.Body.TripID,
 		FlightID: cmd.Body.FlightID,
 	}
-	booking, err := s.flightRepository.Book(ctx, req)
-	if err != nil {
+	if err := s.flightRepository.Book(ctx, req, cmd); err != nil {
 		logger.Errorw("failed to book flight", "req", req, "err", err.Error())
 
 		go func(reason string) {
-			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason); err != nil {
+			if err := s.flightRepository.PublishAbortSaga(ctx,
+				cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason,
+			); err != nil {
 				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
 			}
 		}(err.Error())
 
-		return err
-	}
-
-	if err := s.flightProducer.PublishFlightBooked(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
 		return err
 	}
 
@@ -65,20 +58,8 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 
 	logger.Infow("cancel flight booking", "command", cmd)
 
-	booking, err := s.flightRepository.CancelBooking(ctx, cmd.Body.BookingID)
-	if err != nil {
+	if err := s.flightRepository.CancelBooking(ctx, cmd); err != nil {
 		logger.Errorw("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
-
-		go func(reason string) {
-			if err := s.flightProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason); err != nil {
-				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
-			}
-		}(err.Error())
-
-		return err
-	}
-
-	if err := s.flightProducer.PublishFlightBookingCancelled(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
 		return err
 	}
 

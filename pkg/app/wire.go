@@ -7,12 +7,14 @@ import (
 
 	"github.com/google/wire"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
+	"github.com/haandol/hexagonal/pkg/adapter/primary/poller"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
+	"github.com/haandol/hexagonal/pkg/port/primaryport/pollerport"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
@@ -20,8 +22,15 @@ import (
 	"gorm.io/gorm"
 )
 
-// TripApp
-func provideTripDB(cfg config.Config) *gorm.DB {
+// Common
+var db *gorm.DB
+var kafkaProducer *producer.KafkaProducer
+
+func provideDB(cfg config.Config) *gorm.DB {
+	if db != nil {
+		return db
+	}
+
 	db, err := database.Connect(cfg.TripDB)
 	if err != nil {
 		panic(err)
@@ -29,17 +38,22 @@ func provideTripDB(cfg config.Config) *gorm.DB {
 	return db
 }
 
+func provideProducer(cfg config.Config) *producer.KafkaProducer {
+	if kafkaProducer != nil {
+		return kafkaProducer
+	}
+
+	kafkaProducer = producer.NewKafkaProducer(cfg)
+	return kafkaProducer
+}
+
+// TripApp
 func provideTripConsumer(
 	cfg config.Config,
 	tripService *service.TripService,
 ) *consumer.TripConsumer {
 	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
-}
-
-func provideTripProducer(cfg config.Config) *producer.TripProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewTripProducer(kafkaProducer)
 }
 
 var provideRepositories = wire.NewSet(
@@ -49,25 +63,32 @@ var provideRepositories = wire.NewSet(
 
 var provideRestServices = wire.NewSet(
 	service.NewTripService,
+	service.NewEfsService,
+)
+
+var provideTripRouters = wire.NewSet(
+	router.NewGinRouter,
+	wire.Bind(new(http.Handler), new(*router.GinRouter)),
+	router.NewServerForce,
+	wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)),
+	router.NewTripRouter,
+	router.NewEfsRouter,
 )
 
 var provideRouters = wire.NewSet(
 	router.NewGinRouter,
 	wire.Bind(new(http.Handler), new(*router.GinRouter)),
+	router.NewServer,
 	wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)),
-	router.NewTripRouter,
 )
 
 func InitTripApp(cfg config.Config) port.App {
 	wire.Build(
-		provideTripDB,
-		provideRouters,
+		provideDB,
+		provideTripRouters,
 		provideTripConsumer,
 		provideRestServices,
-		provideTripProducer,
-		wire.Bind(new(producerport.TripProducer), new(*producer.TripProducer)),
 		provideRepositories,
-		NewServer,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),
 	)
@@ -84,13 +105,14 @@ func provideSagaConsumer(
 }
 
 func provideSagaProducer(cfg config.Config) *producer.SagaProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
+	kafkaProducer := provideProducer(cfg)
 	return producer.NewSagaProducer(kafkaProducer)
 }
 
 func InitSagaApp(cfg config.Config) port.App {
 	wire.Build(
-		provideTripDB,
+		provideDB,
+		provideRouters,
 		provideSagaConsumer,
 		service.NewSagaService,
 		provideSagaProducer,
@@ -112,22 +134,32 @@ func provideCarConsumer(
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
 }
 
-func provideCarProducer(cfg config.Config) *producer.CarProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewCarProducer(kafkaProducer)
-}
-
 func InitCarApp(cfg config.Config) port.App {
 	wire.Build(
-		provideTripDB,
+		provideDB,
+		provideRouters,
 		provideCarConsumer,
-		service.NewCarService,
-		provideCarProducer,
-		wire.Bind(new(producerport.CarProducer), new(*producer.CarProducer)),
 		repository.NewCarRepository,
 		wire.Bind(new(repositoryport.CarRepository), new(*repository.CarRepository)),
+		service.NewCarService,
 		NewCarApp,
 		wire.Bind(new(port.App), new(*CarApp)),
+	)
+	return nil
+}
+
+func InitMessageRelayApp(cfg config.Config) port.App {
+	wire.Build(
+		provideDB,
+		poller.NewPoller,
+		wire.Bind(new(pollerport.Poller), new(*poller.Poller)),
+		provideProducer,
+		wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)),
+		repository.NewOutboxRepository,
+		wire.Bind(new(repositoryport.OutboxRepository), new(*repository.OutboxRepository)),
+		service.NewMessageRelayService,
+		NewMessageRelayApp,
+		wire.Bind(new(port.App), new(*MessageRelayApp)),
 	)
 	return nil
 }
@@ -141,20 +173,14 @@ func provideHotelConsumer(
 	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
 }
 
-func provideHotelProducer(cfg config.Config) *producer.HotelProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewHotelProducer(kafkaProducer)
-}
-
 func InitHotelApp(cfg config.Config) port.App {
 	wire.Build(
-		provideTripDB,
+		provideDB,
+		provideRouters,
 		provideHotelConsumer,
-		service.NewHotelService,
 		repository.NewHotelRepository,
 		wire.Bind(new(repositoryport.HotelRepository), new(*repository.HotelRepository)),
-		provideHotelProducer,
-		wire.Bind(new(producerport.HotelProducer), new(*producer.HotelProducer)),
+		service.NewHotelService,
 		NewHotelApp,
 		wire.Bind(new(port.App), new(*HotelApp)),
 	)
@@ -170,20 +196,14 @@ func provideFlightConsumer(
 	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
 }
 
-func provideFlightProducer(cfg config.Config) *producer.FlightProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewFlightProducer(kafkaProducer)
-}
-
 func InitFlightApp(cfg config.Config) port.App {
 	wire.Build(
-		provideTripDB,
+		provideDB,
+		provideRouters,
 		provideFlightConsumer,
-		service.NewFlightService,
 		repository.NewFlightRepository,
 		wire.Bind(new(repositoryport.FlightRepository), new(*repository.FlightRepository)),
-		provideFlightProducer,
-		wire.Bind(new(producerport.FlightProducer), new(*producer.FlightProducer)),
+		service.NewFlightService,
 		NewFlightApp,
 		wire.Bind(new(port.App), new(*FlightApp)),
 	)

@@ -15,12 +15,12 @@ type HotelBooking struct {
 	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }
 
-func (m HotelBooking) DTO() (dto.HotelBooking, error) {
+func (m HotelBooking) DTO() dto.HotelBooking {
 	return dto.HotelBooking{
 		ID:        m.ID,
 		TripID:    m.TripID,
 		HotelID:   m.HotelID,
 		Status:    m.Status,
 		CreatedAt: m.CreatedAt,
-	}, nil
+	}
 }

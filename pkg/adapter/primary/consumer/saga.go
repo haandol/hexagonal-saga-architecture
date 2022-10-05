@@ -47,7 +47,7 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Errorw("Failed to unmarshal command", "err", err.Error())
+		logger.Errorw("Failed to unmarshal command", "value", r.Value, "err", err.Error())
 	}
 
 	logger.Infow("Received command", "command", msg)

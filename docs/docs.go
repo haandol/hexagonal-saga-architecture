@@ -16,6 +16,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/efs": {
+            "get": {
+                "description": "list all files in the given path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "efs"
+                ],
+                "summary": "list files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/trips": {
             "get": {
                 "description": "list all trips",
@@ -56,7 +90,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "trip id is required",
-                        "name": "\"trip\"",
+                        "name": "trip",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -74,7 +108,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/trips/{tripId}/recover/backward": {
+        "/trips/{trip_id}/recover/backward": {
             "put": {
                 "description": "recover backward",
                 "consumes": [
@@ -91,7 +125,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "trip id",
-                        "name": "\"tripId\"",
+                        "name": "trip_id",
                         "in": "path",
                         "required": true
                     }
@@ -106,7 +140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/trips/{tripId}/recover/forward": {
+        "/trips/{trip_id}/recover/forward": {
             "put": {
                 "description": "recover forward",
                 "consumes": [
@@ -123,7 +157,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "trip id",
-                        "name": "\"tripId\"",
+                        "name": "trip_id",
                         "in": "path",
                         "required": true
                     }
@@ -201,8 +235,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Hexagonal API",
-	Description:      "hexagonal architecture example api server",
+	Title:            "Saga API",
+	Description:      "saga orchestration example api server",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

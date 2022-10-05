@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE sagas (
-  id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS sagas (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   correlation_id VARCHAR(36) NOT NULL UNIQUE,
   trip_id BIGINT NOT NULL,
   car_id BIGINT NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE sagas (
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 -- +goose StatementEnd
 -- +goose StatementBegin
 CREATE INDEX sagas_trip_id ON sagas (trip_id);

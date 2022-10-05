@@ -32,10 +32,32 @@ definitions:
     type: object
 info:
   contact: {}
-  description: hexagonal architecture example api server
-  title: Hexagonal API
+  description: saga orchestration example api server
+  title: Saga API
   version: "0.1"
 paths:
+  /efs:
+    get:
+      consumes:
+      - application/json
+      description: list all files in the given path
+      parameters:
+      - description: path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: list files
+      tags:
+      - efs
   /trips:
     get:
       consumes:
@@ -60,7 +82,7 @@ paths:
       parameters:
       - description: trip id is required
         in: body
-        name: '"trip"'
+        name: trip
         required: true
         schema:
           $ref: '#/definitions/dto.Trip'
@@ -74,7 +96,7 @@ paths:
       summary: create new trip
       tags:
       - trips
-  /trips/{tripId}/recover/backward:
+  /trips/{trip_id}/recover/backward:
     put:
       consumes:
       - application/json
@@ -82,7 +104,7 @@ paths:
       parameters:
       - description: trip id
         in: path
-        name: '"tripId"'
+        name: trip_id
         required: true
         type: integer
       produces:
@@ -95,7 +117,7 @@ paths:
       summary: recover backward
       tags:
       - trips
-  /trips/{tripId}/recover/forward:
+  /trips/{trip_id}/recover/forward:
     put:
       consumes:
       - application/json
@@ -103,7 +125,7 @@ paths:
       parameters:
       - description: trip id
         in: path
-        name: '"tripId"'
+        name: trip_id
         required: true
         type: integer
       produces:

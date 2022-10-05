@@ -1,12 +1,10 @@
-# HexagonalArchitecture
+# Saga demo app
 
-hexagonal architecture example for gophers
-
-this repository is for [Gin](https://github.com/gin-gonic/gin) based Rest API server example.
+saga demo app
 
 # Prerequisites
 
-- Go 1.18
+- Go 1.19
 - Docker
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
@@ -30,7 +28,7 @@ $ docker-compose --profile backend up -d
 $ cp env/local.env .env
 ```
 
-# Schema migration
+# Schema migration (Optional)
 
 Install Goose
 
@@ -42,19 +40,19 @@ $ go install github.com/pressly/goose/v3/cmd/goose@latest
 $ ./scripts/migrate.sh
 ```
 
-# Run Swagger
+# Run Swagger (Optional)
 
-install [swaggo/swag](https://github.com/swaggo/swag) 
+install [swaggo/swag](https://github.com/swaggo/swag)
 
 ```bash
-$ go install github.com/swaggo/swag/cmd/swag@1.8.4
+$ go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 ```bash
 $ ./script/swagger.sh
 ```
 
-# Run AWS Xray Daemon
+# Run AWS Xray Daemon (Optional)
 
 ```bash
 docker run \
@@ -70,13 +68,13 @@ docker run \
 
 # Run server
 
-run order service
+run local service. local service will instantiate all the services at once.
 
 ```bash
-$ cd cmd/order
+$ cd cmd/local
 $ go run main.go
 
-2022-08-28T08:35:14.686+0900	INFO	order/main.go:55
+2022-08-28T08:35:14.686+0900	INFO	local/main.go:55
 ```
 
 run server and open swagger on the browser
@@ -88,7 +86,7 @@ $ open http://localhost:8080/swagger/index.html
 ## Create trip record
 
 ```bash
-$ http --json -v post localhost:8080/v1/trips/ userId:=1 carId:=1 hotelId:=1 flightId:=1 status=INITIALIZED
+$ http --json -v post localhost:8080/v1/trips/ userId:=1 carId:=1 hotelId:=1 flightId:=1
 
 POST /v1/trips/ HTTP/1.1
 Accept: application/json, */*;q=0.5

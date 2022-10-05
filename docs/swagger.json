@@ -1,12 +1,46 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "hexagonal architecture example api server",
-        "title": "Hexagonal API",
+        "description": "saga orchestration example api server",
+        "title": "Saga API",
         "contact": {},
         "version": "0.1"
     },
     "paths": {
+        "/efs": {
+            "get": {
+                "description": "list all files in the given path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "efs"
+                ],
+                "summary": "list files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/trips": {
             "get": {
                 "description": "list all trips",
@@ -47,7 +81,7 @@
                 "parameters": [
                     {
                         "description": "trip id is required",
-                        "name": "\"trip\"",
+                        "name": "trip",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -65,7 +99,7 @@
                 }
             }
         },
-        "/trips/{tripId}/recover/backward": {
+        "/trips/{trip_id}/recover/backward": {
             "put": {
                 "description": "recover backward",
                 "consumes": [
@@ -82,7 +116,7 @@
                     {
                         "type": "integer",
                         "description": "trip id",
-                        "name": "\"tripId\"",
+                        "name": "trip_id",
                         "in": "path",
                         "required": true
                     }
@@ -97,7 +131,7 @@
                 }
             }
         },
-        "/trips/{tripId}/recover/forward": {
+        "/trips/{trip_id}/recover/forward": {
             "put": {
                 "description": "recover forward",
                 "consumes": [
@@ -114,7 +148,7 @@
                     {
                         "type": "integer",
                         "description": "trip id",
-                        "name": "\"tripId\"",
+                        "name": "trip_id",
                         "in": "path",
                         "required": true
                     }

@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/lib/pq"
-
-	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
 
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -22,8 +19,8 @@ const (
 )
 
 func getSQLDsn(cfg config.Database) string {
-	const dsn = "postgres://%s:%s@%s:%d/%s?sslmode=disable"
-	return fmt.Sprintf(dsn, cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
+	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FSeoul"
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name, postfix)
 }
 
 func initDB(cfg config.Database) {
@@ -32,14 +29,9 @@ func initDB(cfg config.Database) {
 	}
 
 	fmt.Println("dsn: ", getSQLDsn(cfg))
-	instrumentedDB, err := xray.SQLContext("postgres", getSQLDsn(cfg))
-	if err != nil {
-		fmt.Println("!!!!!!!!!!")
-		panic(err)
-	}
 
 	db, err := gorm.Open(
-		postgres.New(postgres.Config{Conn: instrumentedDB}),
+		mysql.Open(getSQLDsn(cfg)),
 		&gorm.Config{PrepareStmt: true},
 	)
 	if err != nil {

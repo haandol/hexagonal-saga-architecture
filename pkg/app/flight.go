@@ -2,34 +2,33 @@ package app
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"os"
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
-	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
+	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type FlightApp struct {
+	server    *http.Server
 	consumers []consumerport.Consumer
-	producers []producerport.Producer
 }
 
 func NewFlightApp(
+	server *http.Server,
 	flightConsumer *consumer.FlightConsumer,
-	flightProducer *producer.FlightProducer,
 ) *FlightApp {
 	consumers := []consumerport.Consumer{
 		flightConsumer,
 	}
-	producers := []producerport.Producer{
-		flightProducer,
-	}
 
 	return &FlightApp{
+		server:    server,
 		consumers: consumers,
-		producers: producers,
 	}
 }
 
@@ -43,6 +42,7 @@ func (app *FlightApp) Init() {
 	for _, c := range app.consumers {
 		c.Init()
 	}
+	logger.Info("consumers are initialized.")
 
 	util.InitXray()
 }
@@ -53,6 +53,19 @@ func (app *FlightApp) Start() {
 		"func", "Start",
 	)
 	logger.Info("Starting...")
+
+	if app.server != nil {
+		go func() {
+			logger.Infow("Started and serving HTTP", "addr", app.server.Addr, "pid", os.Getpid())
+			if err := app.server.ListenAndServe(); err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					logger.Info("server closed.")
+				} else {
+					logger.Panicw("ListenAndServe fail", "error", err)
+				}
+			}
+		}()
+	}
 
 	for _, c := range app.consumers {
 		go c.Consume()
@@ -67,13 +80,19 @@ func (app *FlightApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	)
 	logger.Info("Cleaning up...")
 
-	logger.Info("Closing producer...")
-	for _, producer := range app.producers {
-		if err := producer.Close(ctx); err != nil {
-			logger.Error("Error on producer close:", err)
+	if app.server != nil {
+		logger.Info("Shutting down server...")
+		if err := app.server.Shutdown(ctx); err != nil {
+			logger.Error("Error on server shutdown:", err)
 		}
+		logger.Info("Server shutdown.")
 	}
-	logger.Info("Producer connection closed.")
+
+	logger.Info("Closing database connection...")
+	if err := database.Close(ctx); err != nil {
+		logger.Error("Error on database close:", err)
+	}
+	logger.Info("Database connection closed.")
 
 	logger.Info("Closing consumers...")
 	for _, c := range app.consumers {

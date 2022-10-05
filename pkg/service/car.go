@@ -5,22 +5,18 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/command"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type CarService struct {
-	carProducer   producerport.CarProducer
 	carRepository repositoryport.CarRepository
 }
 
 func NewCarService(
-	carProducer producerport.CarProducer,
 	carRepository repositoryport.CarRepository,
 ) *CarService {
 	return &CarService{
-		carProducer:   carProducer,
 		carRepository: carRepository,
 	}
 }
@@ -37,21 +33,17 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 		TripID: cmd.Body.TripID,
 		CarID:  cmd.Body.CarID,
 	}
-	booking, err := s.carRepository.Book(ctx, req)
-	if err != nil {
+	if err := s.carRepository.Book(ctx, req, cmd); err != nil {
 		logger.Errorw("failed to book car", "req", req, "err", err.Error())
 
 		go func(reason string) {
-			if err := s.carProducer.PublishAbortSaga(ctx, cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason); err != nil {
+			if err := s.carRepository.PublishAbortSaga(ctx,
+				cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason,
+			); err != nil {
 				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
 			}
 		}(err.Error())
 
-		return err
-	}
-
-	if err := s.carProducer.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
-		logger.Errorw("failed to publish car booked", "booking", booking, "err", err.Error())
 		return err
 	}
 
@@ -66,14 +58,8 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 
 	logger.Infow("cancel car booking", "command", cmd)
 
-	booking, err := s.carRepository.CancelBooking(ctx, cmd.Body.BookingID)
-	if err != nil {
+	if err := s.carRepository.CancelBooking(ctx, cmd); err != nil {
 		logger.Errorw("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err.Error())
-		return err
-	}
-
-	if err := s.carProducer.PublishCarBookingCancelled(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
-		logger.Errorw("failed to publish car booking cancelled", "booking", booking, "err", err.Error())
 		return err
 	}
 

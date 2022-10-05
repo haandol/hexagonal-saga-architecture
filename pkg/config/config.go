@@ -14,6 +14,7 @@ type App struct {
 	RPS                     int    `validate:"required,number"`
 	TimeoutSec              int    `validate:"required,number,gte=0"`
 	GracefulShutdownTimeout int    `validate:"required,number,gte=0"`
+	DisableHTTP             bool   `default:"false"`
 }
 
 type Kafka struct {
@@ -51,6 +52,7 @@ func BuildFromPath(envPath string) Config {
 			RPS:                     getEnv("APP_RPS").Int(),
 			TimeoutSec:              getEnv("APP_TIMEOUT_SEC").Int(),
 			GracefulShutdownTimeout: getEnv("APP_GRACEFUL_SHUTDOWN_TIMEOUT").Int(),
+			DisableHTTP:             getEnv("APP_DISABLE_HTTP").Bool(),
 		},
 		Kafka: Kafka{
 			Seeds:            getEnv("KAFKA_SEEDS").Split(","),

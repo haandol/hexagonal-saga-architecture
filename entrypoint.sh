@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 env | sed 's/=\(.*\)$/="\1"/g' > env.tmp
 set -o allexport

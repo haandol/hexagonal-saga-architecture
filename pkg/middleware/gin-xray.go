@@ -14,10 +14,17 @@ import (
 
 const headerTraceID = "X-Amzn-Trace-Id"
 
-func XrayTracing() gin.HandlerFunc {
+func XrayTracing(skipPaths []string) gin.HandlerFunc {
 	util.InitXray()
 
 	return func(c *gin.Context) {
+		for _, skipPath := range skipPaths {
+			if strings.HasPrefix(c.Request.URL.Path, skipPath) {
+				c.Next()
+				return
+			}
+		}
+
 		name := fmt.Sprintf("%s:%s", c.Request.Method, c.Request.URL.Path)
 		ctx, seg := xray.BeginSegment(c.Request.Context(), name)
 		defer seg.Close(nil)

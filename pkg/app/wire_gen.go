@@ -9,6 +9,7 @@ package app
 import (
 	"github.com/google/wire"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
+	"github.com/haandol/hexagonal/pkg/adapter/primary/poller"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
@@ -26,68 +27,101 @@ import (
 
 func InitTripApp(cfg config.Config) port.App {
 	ginRouter := router.NewGinRouter(cfg)
-	server := NewServer(cfg, ginRouter)
-	tripProducer := provideTripProducer(cfg)
-	db := provideTripDB(cfg)
-	tripRepository := repository.NewTripRepository(db)
-	tripService := service.NewTripService(tripProducer, tripRepository)
+	server := router.NewServerForce(cfg, ginRouter)
+	gormDB := provideDB(cfg)
+	tripRepository := repository.NewTripRepository(gormDB)
+	tripService := service.NewTripService(tripRepository)
 	tripRouter := router.NewTripRouter(tripService)
+	efsService := service.NewEfsService()
+	efsRouter := router.NewEfsRouter(efsService)
 	tripConsumer := provideTripConsumer(cfg, tripService)
-	tripApp := NewTripApp(server, ginRouter, tripRouter, tripConsumer, tripProducer)
+	tripApp := NewTripApp(server, ginRouter, tripRouter, efsRouter, tripConsumer)
 	return tripApp
 }
 
 func InitSagaApp(cfg config.Config) port.App {
+	ginRouter := router.NewGinRouter(cfg)
+	server := router.NewServer(cfg, ginRouter)
 	sagaProducer := provideSagaProducer(cfg)
-	db := provideTripDB(cfg)
-	sagaRepository := repository.NewSagaRepository(db)
+	gormDB := provideDB(cfg)
+	sagaRepository := repository.NewSagaRepository(gormDB)
 	sagaService := service.NewSagaService(sagaProducer, sagaRepository)
 	sagaConsumer := provideSagaConsumer(cfg, sagaService)
-	sagaApp := NewSagaApp(sagaConsumer, sagaProducer)
+	sagaApp := NewSagaApp(server, sagaConsumer, sagaProducer)
 	return sagaApp
 }
 
 func InitCarApp(cfg config.Config) port.App {
-	carProducer := provideCarProducer(cfg)
-	db := provideTripDB(cfg)
-	carRepository := repository.NewCarRepository(db)
-	carService := service.NewCarService(carProducer, carRepository)
+	ginRouter := router.NewGinRouter(cfg)
+	server := router.NewServer(cfg, ginRouter)
+	gormDB := provideDB(cfg)
+	carRepository := repository.NewCarRepository(gormDB)
+	carService := service.NewCarService(carRepository)
 	carConsumer := provideCarConsumer(cfg, carService)
-	carApp := NewCarApp(carConsumer, carProducer)
+	carApp := NewCarApp(server, carConsumer)
 	return carApp
 }
 
+func InitMessageRelayApp(cfg config.Config) port.App {
+	producerKafkaProducer := provideProducer(cfg)
+	gormDB := provideDB(cfg)
+	outboxRepository := repository.NewOutboxRepository(gormDB)
+	messageRelayService := service.NewMessageRelayService(producerKafkaProducer, outboxRepository)
+	pollerPoller := poller.NewPoller(messageRelayService)
+	messageRelayApp := NewMessageRelayApp(pollerPoller, producerKafkaProducer)
+	return messageRelayApp
+}
+
 func InitHotelApp(cfg config.Config) port.App {
-	hotelProducer := provideHotelProducer(cfg)
-	db := provideTripDB(cfg)
-	hotelRepository := repository.NewHotelRepository(db)
-	hotelService := service.NewHotelService(hotelProducer, hotelRepository)
+	ginRouter := router.NewGinRouter(cfg)
+	server := router.NewServer(cfg, ginRouter)
+	gormDB := provideDB(cfg)
+	hotelRepository := repository.NewHotelRepository(gormDB)
+	hotelService := service.NewHotelService(hotelRepository)
 	hotelConsumer := provideHotelConsumer(cfg, hotelService)
-	hotelApp := NewHotelApp(hotelConsumer, hotelProducer)
+	hotelApp := NewHotelApp(server, hotelConsumer)
 	return hotelApp
 }
 
 func InitFlightApp(cfg config.Config) port.App {
-	flightProducer := provideFlightProducer(cfg)
-	db := provideTripDB(cfg)
-	flightRepository := repository.NewFlightRepository(db)
-	flightService := service.NewFlightService(flightProducer, flightRepository)
+	ginRouter := router.NewGinRouter(cfg)
+	server := router.NewServer(cfg, ginRouter)
+	gormDB := provideDB(cfg)
+	flightRepository := repository.NewFlightRepository(gormDB)
+	flightService := service.NewFlightService(flightRepository)
 	flightConsumer := provideFlightConsumer(cfg, flightService)
-	flightApp := NewFlightApp(flightConsumer, flightProducer)
+	flightApp := NewFlightApp(server, flightConsumer)
 	return flightApp
 }
 
 // wire.go:
 
-// TripApp
-func provideTripDB(cfg config.Config) *gorm.DB {
-	db, err := database.Connect(cfg.TripDB)
+// Common
+var db *gorm.DB
+
+var kafkaProducer *producer.KafkaProducer
+
+func provideDB(cfg config.Config) *gorm.DB {
+	if db != nil {
+		return db
+	}
+	db2, err := database.Connect(cfg.TripDB)
 	if err != nil {
 		panic(err)
 	}
-	return db
+	return db2
 }
 
+func provideProducer(cfg config.Config) *producer.KafkaProducer {
+	if kafkaProducer != nil {
+		return kafkaProducer
+	}
+
+	kafkaProducer = producer.NewKafkaProducer(cfg)
+	return kafkaProducer
+}
+
+// TripApp
 func provideTripConsumer(
 	cfg config.Config,
 	tripService *service.TripService,
@@ -96,16 +130,13 @@ func provideTripConsumer(
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
-func provideTripProducer(cfg config.Config) *producer.TripProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewTripProducer(kafkaProducer)
-}
-
 var provideRepositories = wire.NewSet(repository.NewTripRepository, wire.Bind(new(repositoryport.TripRepository), new(*repository.TripRepository)))
 
-var provideRestServices = wire.NewSet(service.NewTripService)
+var provideRestServices = wire.NewSet(service.NewTripService, service.NewEfsService)
 
-var provideRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter)
+var provideTripRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), router.NewServerForce, wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter, router.NewEfsRouter)
+
+var provideRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), router.NewServer, wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)))
 
 // SagaApp
 func provideSagaConsumer(
@@ -117,8 +148,8 @@ func provideSagaConsumer(
 }
 
 func provideSagaProducer(cfg config.Config) *producer.SagaProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewSagaProducer(kafkaProducer)
+	kafkaProducer2 := provideProducer(cfg)
+	return producer.NewSagaProducer(kafkaProducer2)
 }
 
 // CarApp
@@ -130,11 +161,6 @@ func provideCarConsumer(
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
 }
 
-func provideCarProducer(cfg config.Config) *producer.CarProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewCarProducer(kafkaProducer)
-}
-
 // HotelApp
 func provideHotelConsumer(
 	cfg config.Config,
@@ -144,11 +170,6 @@ func provideHotelConsumer(
 	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
 }
 
-func provideHotelProducer(cfg config.Config) *producer.HotelProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewHotelProducer(kafkaProducer)
-}
-
 // FlightApp
 func provideFlightConsumer(
 	cfg config.Config,
@@ -156,9 +177,4 @@ func provideFlightConsumer(
 ) *consumer.FlightConsumer {
 	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "flight", "flight-service")
 	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
-}
-
-func provideFlightProducer(cfg config.Config) *producer.FlightProducer {
-	kafkaProducer := producer.NewKafkaProducer(cfg)
-	return producer.NewFlightProducer(kafkaProducer)
 }

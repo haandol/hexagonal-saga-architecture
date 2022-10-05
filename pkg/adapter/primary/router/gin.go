@@ -1,7 +1,9 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/docs"
@@ -76,9 +78,9 @@ func getHandlerFunc(f any) gin.HandlerFunc {
 	}
 }
 
-// @title           Hexagonal API
+// @title           Saga API
 // @version         0.1
-// @description     hexagonal architecture example api server
+// @description     saga orchestration example api server
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -92,7 +94,7 @@ func NewGinRouter(cfg config.Config) *GinRouter {
 	r.Use(middleware.LeakBucket(cfg.App))
 	r.Use(middleware.Timeout(cfg.App))
 	r.Use(middleware.Cors())
-	r.Use(middleware.XrayTracing())
+	r.Use(middleware.XrayTracing([]string{"/healthy", "/swagger"}))
 	r.Use(util.GinzapWithConfig(logger, &util.Config{
 		UTC:       false,
 		SkipPaths: []string{"/healthy"},
@@ -110,5 +112,26 @@ func NewGinRouter(cfg config.Config) *GinRouter {
 
 	return &GinRouter{
 		r,
+	}
+}
+
+func NewServer(cfg config.Config, h http.Handler) *http.Server {
+	if cfg.App.DisableHTTP {
+		return nil
+	}
+
+	return &http.Server{
+		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
+		Handler:           h,
+		ReadHeaderTimeout: 30 * time.Second,
+	}
+}
+
+// NewServerForce create http.Server regardless of config
+func NewServerForce(cfg config.Config, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
+		Handler:           h,
+		ReadHeaderTimeout: 30 * time.Second,
 	}
 }

@@ -15,12 +15,12 @@ type FlightBooking struct {
 	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }
 
-func (m FlightBooking) DTO() (dto.FlightBooking, error) {
+func (m FlightBooking) DTO() dto.FlightBooking {
 	return dto.FlightBooking{
 		ID:        m.ID,
 		TripID:    m.TripID,
 		FlightID:  m.FlightID,
 		Status:    m.Status,
 		CreatedAt: m.CreatedAt,
-	}, nil
+	}
 }

@@ -15,12 +15,12 @@ type CarBooking struct {
 	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }
 
-func (m CarBooking) DTO() (dto.CarBooking, error) {
+func (m CarBooking) DTO() dto.CarBooking {
 	return dto.CarBooking{
 		ID:        m.ID,
 		TripID:    m.TripID,
 		CarID:     m.CarID,
 		Status:    m.Status,
 		CreatedAt: m.CreatedAt,
-	}, nil
+	}
 }

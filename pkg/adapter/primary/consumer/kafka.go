@@ -112,8 +112,10 @@ func (c *KafkaConsumer) Consume() {
 				return
 			}
 
-			err := c.handler(context.TODO(), message)
-			if err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if err := c.handler(ctx, message); err != nil {
+				// TODO: panic on production
 				logger.Errorw("Error handling message", "err", err.Error())
 			}
 		})

@@ -17,3 +17,8 @@ const (
 	ErrFailToCreateTrip = 40100
 	ErrFailToListTrip   = 40200
 )
+
+// Efs
+const (
+	ErrFailToListFiles = 50100
+)

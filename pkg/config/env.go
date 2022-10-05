@@ -30,6 +30,14 @@ func (e Env) Int() int {
 	return i
 }
 
+func (e Env) Bool() bool {
+	s := strings.ToLower(string(e))
+	if s == "true" {
+		return true
+	}
+	return false
+}
+
 func getEnv(key string) Env {
 	val, _ := os.LookupEnv(key)
 	return Env(val)

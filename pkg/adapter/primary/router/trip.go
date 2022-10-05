@@ -42,7 +42,7 @@ func (r *TripRouter) Route(rg routerport.RouterGroup) {
 // @Tags trips
 // @Accept json
 // @Produce json
-// @Param "trip" body dto.Trip true "trip id is required"
+// @Param trip body dto.Trip true "trip id is required"
 // @Success 200 {object} dto.Trip
 // @Router /trips [post]
 func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
@@ -72,11 +72,11 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 // @Tags trips
 // @Accept json
 // @Produce json
-// @Param "tripId" path uint true "trip id"
+// @Param trip_id path int true "trip id"
 // @Success 200 {object} dto.Trip
-// @Router /trips/{tripId}/recover/forward [put]
+// @Router /trips/{trip_id}/recover/forward [put]
 func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
-	tripID, err := strconv.ParseUint(c.Param("tripId"), 10, 32)
+	tripID, err := strconv.Atoi(c.Param("tripId"))
 	if err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
 	}
@@ -98,11 +98,11 @@ func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
 // @Tags trips
 // @Accept json
 // @Produce json
-// @Param "tripId" path uint true "trip id"
+// @Param trip_id path int true "trip id"
 // @Success 200 {object} dto.Trip
-// @Router /trips/{tripId}/recover/backward [put]
+// @Router /trips/{trip_id}/recover/backward [put]
 func (r *TripRouter) RecoverBackwardHandler(c *gin.Context) *cerrors.CodedError {
-	tripID, err := strconv.ParseUint(c.Param("tripId"), 10, 32)
+	tripID, err := strconv.Atoi(c.Param("tripId"))
 	if err != nil {
 		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
 	}
