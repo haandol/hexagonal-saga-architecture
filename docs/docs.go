@@ -235,8 +235,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Saga API",
-	Description:      "saga orchestration example api server",
+	Title:            "Hexagonal Saga API",
+	Description:      "hexagonal saga orchestration example api server",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

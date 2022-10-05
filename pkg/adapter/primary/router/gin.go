@@ -78,9 +78,9 @@ func getHandlerFunc(f any) gin.HandlerFunc {
 	}
 }
 
-// @title           Saga API
+// @title           Hexagonal Saga API
 // @version         0.1
-// @description     saga orchestration example api server
+// @description     hexagonal saga orchestration example api server
 
 // @securityDefinitions.apikey BearerAuth
 // @in header

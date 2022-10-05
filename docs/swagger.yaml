@@ -32,8 +32,8 @@ definitions:
     type: object
 info:
   contact: {}
-  description: saga orchestration example api server
-  title: Saga API
+  description: hexagonal saga orchestration example api server
+  title: Hexagonal Saga API
   version: "0.1"
 paths:
   /efs:

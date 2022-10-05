@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "saga orchestration example api server",
-        "title": "Saga API",
+        "description": "hexagonal saga orchestration example api server",
+        "title": "Hexagonal Saga API",
         "contact": {},
         "version": "0.1"
     },

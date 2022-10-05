@@ -1,11 +1,12 @@
-# Saga demo app
+# Hexagonal Saga demo app
 
-saga demo app
+hexagonal saga demo app
 
 # Prerequisites
 
-- Go 1.19
 - Docker
+- Go 1.18+
+- MySQL 8.x
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
 - [Ginkgo](https://onsi.github.io/ginkgo/), Gomega and [GoMock](https://github.com/golang/mock) for testing
