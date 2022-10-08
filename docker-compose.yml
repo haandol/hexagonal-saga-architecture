@@ -31,7 +31,7 @@ services:
   kafka:
     depends_on:
       - zookeeper
-    image: bitnami/kafka
+    image: bitnami/kafka:2.8.1
     restart: always
     profiles:
       - backend
