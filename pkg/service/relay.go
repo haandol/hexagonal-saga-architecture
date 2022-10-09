@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"sync"
 
+	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
+	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type MessageRelayService struct {
@@ -22,26 +25,43 @@ func NewMessageRelayService(
 	}
 }
 
-func (s *MessageRelayService) Relay(ctx context.Context) (int, error) {
-	var num int
+func (s *MessageRelayService) Relay(ctx context.Context, batchSize int) error {
+	logger := util.GetLogger().With(
+		"module", "MessageRelayService",
+		"func", "Relay",
+	)
+
+	var numSent int
 
 	// TODO: group by kafkaKey and send them parallell
-	messages, err := s.outboxRepository.QueryUnsent(ctx)
+	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	for i, m := range messages {
-		if err := s.producer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
-			return num, err
-		}
+	var wg sync.WaitGroup
 
-		if err := s.outboxRepository.Delete(ctx, m.ID); err != nil {
-			return num, err
-		}
+	for _, msg := range messages {
+		wg.Add(1)
+		go func(m dto.Outbox) {
+			defer wg.Done()
+			if err := s.producer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
+				logger.Errorw("failed to produce message", "err", err)
+				return
+			}
 
-		num = i
+			if err := s.outboxRepository.MarkSent(ctx, m.ID); err != nil {
+				logger.Errorw("failed to mark message as sent", "err", err)
+				return
+			}
+			numSent++
+		}(msg)
+	}
+	wg.Wait()
+
+	if numSent > 0 {
+		logger.Infow("sent messages", "numSent", numSent)
 	}
 
-	return num, nil
+	return nil
 }

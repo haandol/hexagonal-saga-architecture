@@ -67,7 +67,7 @@ func InitMessageRelayApp(cfg config.Config) port.App {
 	gormDB := provideDB(cfg)
 	outboxRepository := repository.NewOutboxRepository(gormDB)
 	messageRelayService := service.NewMessageRelayService(producerKafkaProducer, outboxRepository)
-	pollerPoller := poller.NewPoller(messageRelayService)
+	pollerPoller := poller.NewPoller(cfg, messageRelayService)
 	messageRelayApp := NewMessageRelayApp(pollerPoller, producerKafkaProducer)
 	return messageRelayApp
 }

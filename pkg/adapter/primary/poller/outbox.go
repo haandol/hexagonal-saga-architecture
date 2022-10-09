@@ -4,27 +4,34 @@ import (
 	"context"
 	"time"
 
+	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/service"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type Poller struct {
-	closing      chan bool
-	closed       chan error
-	relayService *service.MessageRelayService
+	closing       chan bool
+	closed        chan error
+	batchSize     int
+	batchInterval time.Duration
+	relayService  *service.MessageRelayService
 }
 
 func NewPoller(
+	cfg config.Config,
 	relayService *service.MessageRelayService,
 ) *Poller {
 	return &Poller{
-		closing:      make(chan bool),
-		closed:       make(chan error),
-		relayService: relayService,
+		closing:       make(chan bool),
+		closed:        make(chan error),
+		batchSize:     cfg.Relay.FetchSize,
+		batchInterval: time.Duration(cfg.Relay.FetchIntervalMil) * time.Millisecond,
+		relayService:  relayService,
 	}
 }
 
-func (c *Poller) Init() {}
+func (c *Poller) Init() {
+}
 
 func (c *Poller) Poll() {
 	logger := util.GetLogger().With(
@@ -41,15 +48,11 @@ func (c *Poller) Poll() {
 		default:
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			defer cancel()
-			num, err := c.relayService.Relay(ctx)
-			if err != nil {
+			if err := c.relayService.Relay(ctx, c.batchSize); err != nil {
 				logger.Errorw("Failed to relay messages", "err", err)
 				return
 			}
-			if num > 0 {
-				logger.Infow("sent messages", "num", num)
-			}
-			time.Sleep(1 * time.Second)
+			time.Sleep(c.batchInterval)
 		}
 	}
 }

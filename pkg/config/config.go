@@ -33,10 +33,16 @@ type Database struct {
 	MaxIdleConnections int    `validate:"required,number"`
 }
 
+type Relay struct {
+	FetchSize        int `validate:"required,number"`
+	FetchIntervalMil int `validate:"required,number"`
+}
+
 type Config struct {
 	App    App
 	Kafka  Kafka
 	TripDB Database
+	Relay  Relay
 }
 
 func BuildFromPath(envPath string) Config {
@@ -67,6 +73,10 @@ func BuildFromPath(envPath string) Config {
 			Password:           getEnv("DB_PASSWORD").String(),
 			MaxOpenConnections: getEnv("DB_MAX_OPEN_CONNECTIONS").Int(),
 			MaxIdleConnections: getEnv("DB_MAX_IDLE_CONNECTIONS").Int(),
+		},
+		Relay: Relay{
+			FetchSize:        getEnv("RELAY_FETCH_SIZE").Int(),
+			FetchIntervalMil: getEnv("RELAY_FETCH_INTERVAL_MIL").Int(),
 		},
 	}
 

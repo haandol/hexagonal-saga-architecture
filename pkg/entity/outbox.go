@@ -12,6 +12,7 @@ type Outbox struct {
 	KafkaTopic string         `gorm:"type:varchar(256);<-:create;"`
 	KafkaKey   string         `gorm:"type:varchar(100);<-:create;"`
 	KafkaValue datatypes.JSON `gorm:"type:json;<-:create;"`
+	IsSent     bool           `gorm:"type:bool;default:false;"`
 	CreatedAt  time.Time      `gorm:"type:timestamp;<-:create;"`
 	UpdatedAt  time.Time      `gorm:"type:timestamp;"`
 }
@@ -24,6 +25,7 @@ func (m *Outbox) DTO() dto.Outbox {
 		KafkaTopic: m.KafkaTopic,
 		KafkaKey:   m.KafkaKey,
 		KafkaValue: string(m.KafkaValue),
+		IsSent:     m.IsSent,
 		CreatedAt:  m.CreatedAt,
 	}
 }

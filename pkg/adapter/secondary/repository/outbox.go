@@ -18,10 +18,11 @@ func NewOutboxRepository(db *gorm.DB) *OutboxRepository {
 	}
 }
 
-func (r *OutboxRepository) QueryUnsent(ctx context.Context) ([]dto.Outbox, error) {
+func (r *OutboxRepository) QueryUnsent(ctx context.Context, batchSize int) ([]dto.Outbox, error) {
 	rows := entity.Outboxes{}
 	result := r.db.WithContext(ctx).
-		Limit(100).
+		Where("is_sent = ?", false).
+		Limit(batchSize).
 		Order("id ASC").
 		Find(&rows)
 	if result.Error != nil {
@@ -31,11 +32,11 @@ func (r *OutboxRepository) QueryUnsent(ctx context.Context) ([]dto.Outbox, error
 	return rows.DTO(), nil
 }
 
-func (r *OutboxRepository) Delete(ctx context.Context, id uint) error {
+func (r *OutboxRepository) MarkSent(ctx context.Context, id uint) error {
 	row := entity.Outbox{
-		ID: id,
+		IsSent: true,
 	}
 	return r.db.WithContext(ctx).
-		Unscoped().
-		Delete(&row).Error
+		Where("id = ?", id).
+		Updates(&row).Error
 }

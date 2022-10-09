@@ -4,9 +4,10 @@ import "time"
 
 type Outbox struct {
 	ID         uint      `json:"id"`
-	KafkaTopic string    `json:"kafka_topic" binding:"required" validate:"required"`
-	KafkaKey   string    `json:"kafka_key" binding:"required" validate:"required"`
-	KafkaValue string    `json:"kafka_value" binding:"required" validate:"required,json"`
+	KafkaTopic string    `json:"kafkaTopic" binding:"required" validate:"required"`
+	KafkaKey   string    `json:"kafkaKey" binding:"required" validate:"required"`
+	KafkaValue string    `json:"kafkaValue" binding:"required" validate:"required,json"`
+	IsSent     bool      `json:"isSent"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
