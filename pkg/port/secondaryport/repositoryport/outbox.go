@@ -8,5 +8,5 @@ import (
 
 type OutboxRepository interface {
 	QueryUnsent(ctx context.Context, batchSize int) ([]dto.Outbox, error)
-	MarkSent(ctx context.Context, id uint) error
+	MarkSentInBatch(ctx context.Context, ids []uint) error
 }

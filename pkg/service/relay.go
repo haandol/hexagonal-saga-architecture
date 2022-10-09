@@ -31,14 +31,16 @@ func (s *MessageRelayService) Relay(ctx context.Context, batchSize int) error {
 		"func", "Relay",
 	)
 
-	var numSent int
-
 	// TODO: group by kafkaKey and send them parallell
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
 		return err
 	}
+	if len(messages) == 0 {
+		return nil
+	}
 
+	var sentIDs []uint
 	var wg sync.WaitGroup
 
 	for _, msg := range messages {
@@ -49,18 +51,16 @@ func (s *MessageRelayService) Relay(ctx context.Context, batchSize int) error {
 				logger.Errorw("failed to produce message", "err", err)
 				return
 			}
-
-			if err := s.outboxRepository.MarkSent(ctx, m.ID); err != nil {
-				logger.Errorw("failed to mark message as sent", "err", err)
-				return
-			}
-			numSent++
+			sentIDs = append(sentIDs, m.ID)
 		}(msg)
 	}
 	wg.Wait()
 
-	if numSent > 0 {
-		logger.Infow("sent messages", "numSent", numSent)
+	logger.Infow("sent messages", "total", len(messages), "sent", len(sentIDs))
+
+	if err := s.outboxRepository.MarkSentInBatch(ctx, sentIDs); err != nil {
+		logger.Errorw("failed to mark message as sent", "err", err)
+		return err
 	}
 
 	return nil

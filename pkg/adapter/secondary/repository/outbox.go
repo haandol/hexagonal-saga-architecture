@@ -32,11 +32,9 @@ func (r *OutboxRepository) QueryUnsent(ctx context.Context, batchSize int) ([]dt
 	return rows.DTO(), nil
 }
 
-func (r *OutboxRepository) MarkSent(ctx context.Context, id uint) error {
-	row := entity.Outbox{
-		IsSent: true,
-	}
+func (r *OutboxRepository) MarkSentInBatch(ctx context.Context, ids []uint) error {
 	return r.db.WithContext(ctx).
-		Where("id = ?", id).
-		Updates(&row).Error
+		Model(&entity.Outbox{}).
+		Where("id IN ?", ids).
+		UpdateColumn("is_sent", true).Error
 }
