@@ -3,23 +3,23 @@ module github.com/haandol/hexagonal
 go 1.18
 
 require (
-	github.com/aws/aws-xray-sdk-go v1.7.0
-	github.com/gin-contrib/cors v1.3.1
+	github.com/aws/aws-xray-sdk-go v1.7.1
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/timeout v0.0.3
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-playground/validator/v10 v10.11.0
+	github.com/go-playground/validator/v10 v10.11.1
 	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/joho/godotenv v1.4.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
-	github.com/swaggo/gin-swagger v1.5.1
+	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.4
-	github.com/twmb/franz-go v1.7.0
+	github.com/twmb/franz-go v1.8.0
 	go.uber.org/ratelimit v0.2.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.23.0
 	gorm.io/datatypes v1.0.7
-	gorm.io/driver/mysql v1.3.4
-	gorm.io/gorm v1.23.6
+	gorm.io/driver/mysql v1.4.1
+	gorm.io/gorm v1.24.0
 )
 
 require (
