@@ -238,7 +238,6 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.Cance
 	}
 
 	return nil
-
 }
 
 func (r *FlightRepository) GetByID(ctx context.Context, id uint) (dto.FlightBooking, error) {
