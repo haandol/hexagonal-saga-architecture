@@ -5,13 +5,17 @@ CREATE TABLE IF NOT EXISTS outboxes (
   kafka_topic VARCHAR(256) NOT NULL,
   kafka_key VARCHAR(100) NOT NULL,
   kafka_value JSON,
+  published BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 -- +goose StatementEnd
 -- +goose StatementBegin
-CREATE INDEX outbox_kafka_topic ON outboxes (kafka_topic);
+CREATE INDEX outbox_published ON outboxes (published);
+-- +goose StatementEnd
+-- +goose StatementBegin
+CREATE INDEX outbox_kafka_topic_key ON outboxes (kafka_topic, kafka_key);
 -- +goose StatementEnd
 
 -- +goose Down
