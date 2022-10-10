@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 env | sed 's/=\(.*\)$/="\1"/g' > env.tmp
 set -o allexport
@@ -7,4 +7,4 @@ source env.tmp
 set +o allexport
 rm env.tmp
 
-exec ./api
+exec ./app
