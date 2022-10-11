@@ -51,7 +51,7 @@ func (c *Poller) Poll() {
 
 			messages, err := c.relayService.Fetch(ctx, c.batchSize)
 			if err != nil {
-				logger.Errorw("Failed to relay messages", "err", err)
+				logger.Errorw("Failed to fetch messages", "err", err)
 				return
 			}
 
