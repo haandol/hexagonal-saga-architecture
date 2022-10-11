@@ -32,10 +32,7 @@ func (e Env) Int() int {
 
 func (e Env) Bool() bool {
 	s := strings.ToLower(string(e))
-	if s == "true" {
-		return true
-	}
-	return false
+	return s == "true"
 }
 
 func getEnv(key string) Env {
