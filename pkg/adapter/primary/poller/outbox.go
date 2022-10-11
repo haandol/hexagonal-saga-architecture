@@ -55,7 +55,7 @@ func (c *Poller) Poll() {
 				return
 			}
 
-			if err := c.relayService.Produce(ctx, messages); err != nil {
+			if err := c.relayService.Relay(ctx, messages); err != nil {
 				logger.Errorw("Failed to relay messages", "err", err)
 				return
 			}

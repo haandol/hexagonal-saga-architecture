@@ -41,7 +41,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 	return messages, nil
 }
 
-func (s *MessageRelayService) Produce(ctx context.Context, messages []dto.Outbox) error {
+func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) error {
 	logger := util.GetLogger().With(
 		"module", "MessageRelayService",
 		"func", "Relay",
