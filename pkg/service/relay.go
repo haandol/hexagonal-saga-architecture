@@ -25,20 +25,27 @@ func NewMessageRelayService(
 	}
 }
 
-func (s *MessageRelayService) Relay(ctx context.Context, batchSize int) error {
+func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.Outbox, error) {
 	logger := util.GetLogger().With(
 		"module", "MessageRelayService",
-		"func", "Relay",
+		"func", "Fetch",
 	)
 
 	// TODO: group by kafkaKey and send them parallell
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
-		return err
+		logger.Errorw("failed to query unsent messages", "err", err.Error())
+		return []dto.Outbox{}, err
 	}
-	if len(messages) == 0 {
-		return nil
-	}
+
+	return messages, nil
+}
+
+func (s *MessageRelayService) Produce(ctx context.Context, messages []dto.Outbox) error {
+	logger := util.GetLogger().With(
+		"module", "MessageRelayService",
+		"func", "Relay",
+	)
 
 	var sentIDs []uint
 	var wg sync.WaitGroup
@@ -56,11 +63,15 @@ func (s *MessageRelayService) Relay(ctx context.Context, batchSize int) error {
 	}
 	wg.Wait()
 
-	logger.Infow("sent messages", "total", len(messages), "sent", len(sentIDs))
+	if len(messages) > 0 {
+		logger.Infow("sent messages", "total", len(messages), "sent", len(sentIDs))
+	}
 
-	if err := s.outboxRepository.MarkSentInBatch(ctx, sentIDs); err != nil {
-		logger.Errorw("failed to mark message as sent", "err", err)
-		return err
+	if len(sentIDs) > 0 {
+		if err := s.outboxRepository.MarkSentInBatch(ctx, sentIDs); err != nil {
+			logger.Errorw("failed to mark message as sent", "err", err)
+			return err
+		}
 	}
 
 	return nil

@@ -48,10 +48,18 @@ func (c *Poller) Poll() {
 		default:
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			defer cancel()
-			if err := c.relayService.Relay(ctx, c.batchSize); err != nil {
+
+			messages, err := c.relayService.Fetch(ctx, c.batchSize)
+			if err != nil {
 				logger.Errorw("Failed to relay messages", "err", err)
 				return
 			}
+
+			if err := c.relayService.Produce(ctx, messages); err != nil {
+				logger.Errorw("Failed to relay messages", "err", err)
+				return
+			}
+
 			time.Sleep(c.batchInterval)
 		}
 	}
