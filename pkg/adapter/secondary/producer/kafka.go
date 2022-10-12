@@ -19,7 +19,7 @@ type KafkaProducer struct {
 	pool   *sync.Pool
 }
 
-func NewKafkaProducer(cfg config.Config) *KafkaProducer {
+func NewKafkaProducer(cfg *config.Config) *KafkaProducer {
 	opts := BuildProducerOpts(cfg.Kafka.Seeds)
 	if strings.Contains(cfg.Kafka.Seeds[0], "9094") {
 		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))
@@ -53,7 +53,7 @@ func BuildProducerOpts(seeds []string) []kgo.Opt {
 	}
 }
 
-func (p KafkaProducer) newRecord(topic string, key string, val []byte) *kgo.Record {
+func (p KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
 	r := p.pool.Get().(*kgo.Record)
 	r.Topic = topic
 	r.Key = []byte(key)
@@ -61,7 +61,7 @@ func (p KafkaProducer) newRecord(topic string, key string, val []byte) *kgo.Reco
 	return r
 }
 
-func (p *KafkaProducer) Produce(ctx context.Context, topic string, key string, val []byte) error {
+func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []byte) error {
 	logger := util.GetLogger().With(
 		"module", "KafkaProducer",
 		"func", "Produce",

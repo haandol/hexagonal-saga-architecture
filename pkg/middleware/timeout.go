@@ -8,7 +8,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 )
 
-func Timeout(cfg config.App) gin.HandlerFunc {
+func Timeout(cfg *config.App) gin.HandlerFunc {
 	return timeout.New(
 		timeout.WithTimeout(time.Duration(cfg.TimeoutSec)*time.Second),
 		timeout.WithHandler(func(c *gin.Context) {

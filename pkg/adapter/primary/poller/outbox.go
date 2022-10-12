@@ -18,7 +18,7 @@ type Poller struct {
 }
 
 func NewPoller(
-	cfg config.Config,
+	cfg *config.Config,
 	relayService *service.MessageRelayService,
 ) *Poller {
 	return &Poller{

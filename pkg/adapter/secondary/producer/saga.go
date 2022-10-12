@@ -24,7 +24,7 @@ func NewSagaProducer(kafkaProducer *KafkaProducer) *SagaProducer {
 	}
 }
 
-func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishBookCar(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.BookCar{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookCar{}).Type().Name(),
@@ -54,7 +54,7 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
-func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.CancelCarBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelCarBooking{}).Type().Name(),
@@ -84,7 +84,7 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d dto.Saga) 
 	return nil
 }
 
-func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishBookHotel(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.BookHotel{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookHotel{}).Type().Name(),
@@ -114,7 +114,7 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d dto.Saga) error {
 	return nil
 }
 
-func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.CancelHotelBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelHotelBooking{}).Type().Name(),
@@ -144,7 +144,7 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d dto.Saga
 	return nil
 }
 
-func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishBookFlight(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.BookFlight{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookFlight{}).Type().Name(),
@@ -174,7 +174,7 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d dto.Saga) error 
 	return nil
 }
 
-func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.CancelFlightBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelFlightBooking{}).Type().Name(),
@@ -204,7 +204,7 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d dto.Sag
 	return nil
 }
 
-func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
+func (p *SagaProducer) PublishEndSaga(ctx context.Context, d *dto.Saga) error {
 	cmd := &command.EndSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.EndSaga{}).Type().Name(),
@@ -235,7 +235,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d dto.Saga) error {
 }
 
 func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
-	corrID string, parentID string, d dto.Saga,
+	corrID string, parentID string, d *dto.Saga,
 ) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",
@@ -276,7 +276,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 }
 
 func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
-	corrID string, parentID string, d dto.Saga,
+	corrID string, parentID string, d *dto.Saga,
 ) error {
 	logger := util.GetLogger().With(
 		"module", "Publisher",

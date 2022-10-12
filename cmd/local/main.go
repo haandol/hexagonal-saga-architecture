@@ -16,7 +16,7 @@ import (
 var applications []port.App
 
 // bootstrap - register apps
-func bootstrap(cfg config.Config) {
+func bootstrap(cfg *config.Config) {
 	applications = append(applications, app.InitTripApp(cfg))
 	applications = append(applications, app.InitSagaApp(cfg))
 	applications = append(applications, app.InitCarApp(cfg))
@@ -55,7 +55,7 @@ func main() {
 	logger.Infow("\n==== Config ====\n\n", "config", cfg)
 
 	logger.Info("Bootstraping apps...")
-	bootstrap(cfg)
+	bootstrap(&cfg)
 
 	logger.Info("Initializing apps...")
 	initialize()

@@ -18,11 +18,11 @@ type MessageRelayApp struct {
 
 func NewMessageRelayApp(
 	poller pollerport.Poller,
-	producer *producer.KafkaProducer,
+	kafkaProducer *producer.KafkaProducer,
 ) *MessageRelayApp {
 	return &MessageRelayApp{
 		poller:   poller,
-		producer: producer,
+		producer: kafkaProducer,
 	}
 }
 

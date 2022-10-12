@@ -26,7 +26,7 @@ import (
 var db *gorm.DB
 var kafkaProducer *producer.KafkaProducer
 
-func provideDB(cfg config.Config) *gorm.DB {
+func provideDB(cfg *config.Config) *gorm.DB {
 	if db != nil {
 		return db
 	}
@@ -38,7 +38,7 @@ func provideDB(cfg config.Config) *gorm.DB {
 	return db
 }
 
-func provideProducer(cfg config.Config) *producer.KafkaProducer {
+func provideProducer(cfg *config.Config) *producer.KafkaProducer {
 	if kafkaProducer != nil {
 		return kafkaProducer
 	}
@@ -49,10 +49,10 @@ func provideProducer(cfg config.Config) *producer.KafkaProducer {
 
 // TripApp
 func provideTripConsumer(
-	cfg config.Config,
+	cfg *config.Config,
 	tripService *service.TripService,
 ) *consumer.TripConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "trip", "trip-service")
+	kafkaConsumer := consumer.NewKafkaConsumer(&cfg.Kafka, "trip", "trip-service")
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
@@ -82,7 +82,7 @@ var provideRouters = wire.NewSet(
 	wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)),
 )
 
-func InitTripApp(cfg config.Config) port.App {
+func InitTripApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		provideTripRouters,
@@ -97,19 +97,19 @@ func InitTripApp(cfg config.Config) port.App {
 
 // SagaApp
 func provideSagaConsumer(
-	cfg config.Config,
+	cfg *config.Config,
 	sagaService *service.SagaService,
 ) *consumer.SagaConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "saga", "saga-service")
+	kafkaConsumer := consumer.NewKafkaConsumer(&cfg.Kafka, "saga", "saga-service")
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
-func provideSagaProducer(cfg config.Config) *producer.SagaProducer {
+func provideSagaProducer(cfg *config.Config) *producer.SagaProducer {
 	kafkaProducer := provideProducer(cfg)
 	return producer.NewSagaProducer(kafkaProducer)
 }
 
-func InitSagaApp(cfg config.Config) port.App {
+func InitSagaApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		provideRouters,
@@ -127,14 +127,14 @@ func InitSagaApp(cfg config.Config) port.App {
 
 // CarApp
 func provideCarConsumer(
-	cfg config.Config,
+	cfg *config.Config,
 	carService *service.CarService,
 ) *consumer.CarConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "car", "car-service")
+	kafkaConsumer := consumer.NewKafkaConsumer(&cfg.Kafka, "car", "car-service")
 	return consumer.NewCarConsumer(kafkaConsumer, carService)
 }
 
-func InitCarApp(cfg config.Config) port.App {
+func InitCarApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		provideRouters,
@@ -148,7 +148,7 @@ func InitCarApp(cfg config.Config) port.App {
 	return nil
 }
 
-func InitMessageRelayApp(cfg config.Config) port.App {
+func InitMessageRelayApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		poller.NewPoller,
@@ -166,14 +166,14 @@ func InitMessageRelayApp(cfg config.Config) port.App {
 
 // HotelApp
 func provideHotelConsumer(
-	cfg config.Config,
+	cfg *config.Config,
 	hotelService *service.HotelService,
 ) *consumer.HotelConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "hotel", "hotel-service")
+	kafkaConsumer := consumer.NewKafkaConsumer(&cfg.Kafka, "hotel", "hotel-service")
 	return consumer.NewHotelConsumer(kafkaConsumer, hotelService)
 }
 
-func InitHotelApp(cfg config.Config) port.App {
+func InitHotelApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		provideRouters,
@@ -189,14 +189,14 @@ func InitHotelApp(cfg config.Config) port.App {
 
 // FlightApp
 func provideFlightConsumer(
-	cfg config.Config,
+	cfg *config.Config,
 	flightService *service.FlightService,
 ) *consumer.FlightConsumer {
-	kafkaConsumer := consumer.NewKafkaConsumer(cfg.Kafka, "flight", "flight-service")
+	kafkaConsumer := consumer.NewKafkaConsumer(&cfg.Kafka, "flight", "flight-service")
 	return consumer.NewFlightConsumer(kafkaConsumer, flightService)
 }
 
-func InitFlightApp(cfg config.Config) port.App {
+func InitFlightApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
 		provideRouters,

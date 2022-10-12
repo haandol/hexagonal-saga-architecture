@@ -85,14 +85,14 @@ func getHandlerFunc(f any) gin.HandlerFunc {
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-func NewGinRouter(cfg config.Config) *GinRouter {
+func NewGinRouter(cfg *config.Config) *GinRouter {
 	logger := util.GetLogger().With(
 		"module", "GinRouter",
 	)
 
 	r := gin.Default()
-	r.Use(middleware.LeakBucket(cfg.App))
-	r.Use(middleware.Timeout(cfg.App))
+	r.Use(middleware.LeakBucket(&cfg.App))
+	r.Use(middleware.Timeout(&cfg.App))
 	r.Use(middleware.Cors())
 	r.Use(middleware.XrayTracing([]string{"/healthy", "/swagger"}))
 	r.Use(util.GinzapWithConfig(logger, &util.Config{
@@ -115,7 +115,7 @@ func NewGinRouter(cfg config.Config) *GinRouter {
 	}
 }
 
-func NewServer(cfg config.Config, h http.Handler) *http.Server {
+func NewServer(cfg *config.Config, h http.Handler) *http.Server {
 	if cfg.App.DisableHTTP {
 		return nil
 	}
@@ -128,7 +128,7 @@ func NewServer(cfg config.Config, h http.Handler) *http.Server {
 }
 
 // NewServerForce create http.Server regardless of config
-func NewServerForce(cfg config.Config, h http.Handler) *http.Server {
+func NewServerForce(cfg *config.Config, h http.Handler) *http.Server {
 	return &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.App.Port),
 		Handler:           h,

@@ -24,7 +24,7 @@ type KafkaConsumer struct {
 	batchSize     int
 }
 
-func NewKafkaConsumer(cfg config.Kafka, groupID string, topic string) *KafkaConsumer {
+func NewKafkaConsumer(cfg *config.Kafka, groupID, topic string) *KafkaConsumer {
 	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
 	if strings.Contains(cfg.Seeds[0], "9094") {
 		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))

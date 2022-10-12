@@ -9,7 +9,7 @@ import (
 	"go.uber.org/ratelimit"
 )
 
-func LeakBucket(cfg config.App) gin.HandlerFunc {
+func LeakBucket(cfg *config.App) gin.HandlerFunc {
 	logger := util.GetLogger().With(
 		"module", "Middleware",
 		"func", "LeakBucket",
