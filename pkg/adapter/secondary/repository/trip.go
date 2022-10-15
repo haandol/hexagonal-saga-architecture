@@ -19,24 +19,19 @@ import (
 )
 
 type TripRepository struct {
-	db *gorm.DB
+	BaseRepository
 }
 
 func NewTripRepository(db *gorm.DB) *TripRepository {
 	return &TripRepository{
-		db: db,
+		BaseRepository: BaseRepository{DB: db},
 	}
 }
 
 func (r *TripRepository) PublishStartSaga(ctx context.Context,
 	corrID string, parentID string, d dto.Trip,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.StartSaga{
 		Message: message.Message{
@@ -74,12 +69,7 @@ func (r *TripRepository) PublishStartSaga(ctx context.Context,
 func (r *TripRepository) PublishAbortSaga(ctx context.Context,
 	corrID string, parentID string, tripID uint, reason string,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.AbortSaga{
 		Message: message.Message{
@@ -116,7 +106,7 @@ func (r *TripRepository) PublishAbortSaga(ctx context.Context,
 func (r *TripRepository) Create(ctx context.Context, corrID, parentID string, d *dto.Trip) (dto.Trip, error) {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return dto.Trip{}, err
 	}
@@ -154,7 +144,7 @@ func (r *TripRepository) Create(ctx context.Context, corrID, parentID string, d 
 }
 
 func (r *TripRepository) Update(ctx context.Context, d *dto.Trip) error {
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Where("id = ? AND user_id = ?", d.ID, d.UserID).
 		Updates(&entity.Trip{
 			ID:       d.ID,
@@ -175,7 +165,7 @@ func (r *TripRepository) Update(ctx context.Context, d *dto.Trip) error {
 
 func (r *TripRepository) List(ctx context.Context) ([]dto.Trip, error) {
 	var rows entity.Trips
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Limit(10).
 		Order("id desc").
 		Find(&rows)
@@ -187,7 +177,7 @@ func (r *TripRepository) List(ctx context.Context) ([]dto.Trip, error) {
 }
 
 func (r *TripRepository) Complete(ctx context.Context, evt *event.SagaEnded) error {
-	return r.db.WithContext(ctx).
+	return r.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
 			CarBookingID:    evt.Body.CarBookingID,
@@ -198,7 +188,7 @@ func (r *TripRepository) Complete(ctx context.Context, evt *event.SagaEnded) err
 }
 
 func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) error {
-	return r.db.WithContext(ctx).
+	return r.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
 			Status: status.TripCancelled,
@@ -207,7 +197,7 @@ func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) erro
 
 func (r *TripRepository) GetByID(ctx context.Context, id uint) (dto.Trip, error) {
 	row := &entity.Trip{}
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Where("id = ?", id).
 		Take(row)
 	if result.Error != nil {

@@ -24,24 +24,19 @@ var (
 )
 
 type FlightRepository struct {
-	db *gorm.DB
+	BaseRepository
 }
 
 func NewFlightRepository(db *gorm.DB) *FlightRepository {
 	return &FlightRepository{
-		db: db,
+		BaseRepository{DB: db},
 	}
 }
 
 func (r *FlightRepository) PublishFlightBooked(ctx context.Context,
 	corrID string, parentID string, d dto.FlightBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.FlightBooked{
 		Message: message.Message{
@@ -76,12 +71,7 @@ func (r *FlightRepository) PublishFlightBooked(ctx context.Context,
 func (r *FlightRepository) PublishAbortSaga(ctx context.Context,
 	corrID string, parentID string, tripID uint, reason string,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.AbortSaga{
 		Message: message.Message{
@@ -118,12 +108,7 @@ func (r *FlightRepository) PublishAbortSaga(ctx context.Context,
 func (r *FlightRepository) PublishFlightBookingCancelled(ctx context.Context,
 	corrID string, parentID string, d dto.FlightBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.FlightBookingCancelled{
 		Message: message.Message{
@@ -159,7 +144,7 @@ func (r *FlightRepository) PublishFlightBookingCancelled(ctx context.Context,
 func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking, cmd *command.BookFlight) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -203,7 +188,7 @@ func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking, cmd *
 func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.CancelFlightBooking) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -242,7 +227,7 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.Cance
 
 func (r *FlightRepository) GetByID(ctx context.Context, id uint) (dto.FlightBooking, error) {
 	row := &entity.FlightBooking{}
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Where("id = ?", id).
 		Limit(1).
 		Find(&row)
@@ -253,8 +238,10 @@ func (r *FlightRepository) GetByID(ctx context.Context, id uint) (dto.FlightBook
 }
 
 func (r *FlightRepository) GetByTripID(ctx context.Context, tripID uint) (dto.FlightBooking, error) {
+	db := r.WithContext(ctx)
+
 	row := &entity.FlightBooking{}
-	result := r.db.WithContext(ctx).
+	result := db.
 		Where("trip_id = ?", tripID).
 		Limit(1).
 		Find(&row)

@@ -24,24 +24,19 @@ var (
 )
 
 type HotelRepository struct {
-	db *gorm.DB
+	BaseRepository
 }
 
 func NewHotelRepository(db *gorm.DB) *HotelRepository {
 	return &HotelRepository{
-		db: db,
+		BaseRepository{DB: db},
 	}
 }
 
 func (r *HotelRepository) PublishHotelBooked(ctx context.Context,
 	corrID string, parentID string, d dto.HotelBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.HotelBooked{
 		Message: message.Message{
@@ -76,12 +71,7 @@ func (r *HotelRepository) PublishHotelBooked(ctx context.Context,
 func (r *HotelRepository) PublishAbortSaga(ctx context.Context,
 	corrID string, parentID string, tripID uint, reason string,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.AbortSaga{
 		Message: message.Message{
@@ -118,12 +108,7 @@ func (r *HotelRepository) PublishAbortSaga(ctx context.Context,
 func (r *HotelRepository) PublishHotelBookingCancelled(ctx context.Context,
 	corrID string, parentID string, d dto.HotelBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.HotelBookingCancelled{
 		Message: message.Message{
@@ -159,7 +144,7 @@ func (r *HotelRepository) PublishHotelBookingCancelled(ctx context.Context,
 func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking, cmd *command.BookHotel) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -203,7 +188,7 @@ func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking, cmd *co
 func (r *HotelRepository) CancelBooking(ctx context.Context, cmd *command.CancelHotelBooking) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -241,8 +226,10 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, cmd *command.Cancel
 }
 
 func (r *HotelRepository) GetByID(ctx context.Context, id uint) (dto.HotelBooking, error) {
+	db := r.WithContext(ctx)
+
 	row := &entity.HotelBooking{}
-	result := r.db.WithContext(ctx).
+	result := db.
 		Where("id = ?", id).
 		Limit(1).
 		Find(&row)
@@ -253,8 +240,10 @@ func (r *HotelRepository) GetByID(ctx context.Context, id uint) (dto.HotelBookin
 }
 
 func (r *HotelRepository) GetByTripID(ctx context.Context, tripID uint) (dto.HotelBooking, error) {
+	db := r.WithContext(ctx)
+
 	row := &entity.HotelBooking{}
-	result := r.db.WithContext(ctx).
+	result := db.
 		Where("trip_id = ?", tripID).
 		Limit(1).
 		Find(&row)

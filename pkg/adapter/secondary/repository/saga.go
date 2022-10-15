@@ -24,22 +24,17 @@ var (
 )
 
 type SagaRepository struct {
-	db *gorm.DB
+	BaseRepository
 }
 
 func NewSagaRepository(db *gorm.DB) *SagaRepository {
 	return &SagaRepository{
-		db: db,
+		BaseRepository: BaseRepository{DB: db},
 	}
 }
 
 func (r *SagaRepository) PublishBookCar(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.BookCar{
 		Message: message.Message{
@@ -73,12 +68,7 @@ func (r *SagaRepository) PublishBookCar(ctx context.Context, corrID, parentID st
 }
 
 func (r *SagaRepository) PublishBookHotel(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.BookHotel{
 		Message: message.Message{
@@ -112,12 +102,7 @@ func (r *SagaRepository) PublishBookHotel(ctx context.Context, corrID, parentID 
 }
 
 func (r *SagaRepository) PublishBookFlight(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.BookFlight{
 		Message: message.Message{
@@ -151,12 +136,7 @@ func (r *SagaRepository) PublishBookFlight(ctx context.Context, corrID, parentID
 }
 
 func (r *SagaRepository) PublishEndSaga(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.EndSaga{
 		Message: message.Message{
@@ -190,12 +170,7 @@ func (r *SagaRepository) PublishEndSaga(ctx context.Context, corrID, parentID st
 }
 
 func (r *SagaRepository) PublishSagaEnded(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.SagaEnded{
 		Message: message.Message{
@@ -232,12 +207,7 @@ func (r *SagaRepository) PublishSagaEnded(ctx context.Context, corrID, parentID 
 }
 
 func (r *SagaRepository) PublishSagaAborted(ctx context.Context, corrID, parentID string, d dto.Saga) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.SagaAborted{
 		Message: message.Message{
@@ -274,7 +244,7 @@ func (r *SagaRepository) PublishSagaAborted(ctx context.Context, corrID, parentI
 func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -333,7 +303,7 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) erro
 func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -395,7 +365,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -456,7 +426,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -533,7 +503,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context,
 	}
 
 	row := &entity.Saga{}
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Model(row).
 		Table("sagas").
 		Limit(1).
@@ -556,7 +526,7 @@ func (r *SagaRepository) CompensateHotelBooking(ctx context.Context,
 func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -633,7 +603,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context,
 	}
 
 	row := &entity.Saga{}
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Model(row).
 		Table("sagas").
 		Limit(1).
@@ -656,7 +626,7 @@ func (r *SagaRepository) CompensateFlightBooking(ctx context.Context,
 func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -736,7 +706,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 	}
 
 	row := &entity.Saga{}
-	result := r.db.WithContext(ctx).
+	result := r.WithContext(ctx).
 		Model(row).
 		Table("sagas").
 		Limit(1).
@@ -756,12 +726,7 @@ func (r *SagaRepository) Abort(ctx context.Context, cmd *command.AbortSaga) (dto
 }
 
 func (r *SagaRepository) UpdateStatusByTripID(ctx context.Context, tripID uint, s string) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	result := db.
 		Where("trip_id = ?", tripID).
@@ -779,15 +744,9 @@ func (r *SagaRepository) UpdateStatusByTripID(ctx context.Context, tripID uint, 
 }
 
 func (r *SagaRepository) GetByTripID(ctx context.Context, id uint) (dto.Saga, error) {
+	db := r.WithContext(ctx)
+
 	row := &entity.Saga{}
-
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
-
 	result := db.
 		Where("trip_id = ?", id).
 		Limit(1).
@@ -800,15 +759,9 @@ func (r *SagaRepository) GetByTripID(ctx context.Context, id uint) (dto.Saga, er
 }
 
 func (r *SagaRepository) GetByCorrelationID(ctx context.Context, id string) (dto.Saga, error) {
+	db := r.WithContext(ctx)
+
 	row := &entity.Saga{}
-
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
-
 	result := db.
 		Where("correlation_id = ?", id).
 		Limit(1).

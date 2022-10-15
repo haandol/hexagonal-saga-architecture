@@ -24,24 +24,19 @@ var (
 )
 
 type CarRepository struct {
-	db *gorm.DB
+	BaseRepository
 }
 
 func NewCarRepository(db *gorm.DB) *CarRepository {
 	return &CarRepository{
-		db: db,
+		BaseRepository{DB: db},
 	}
 }
 
 func (r *CarRepository) PublishCarBooked(ctx context.Context,
 	corrID string, parentID string, d dto.CarBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.CarBooked{
 		Message: message.Message{
@@ -76,12 +71,7 @@ func (r *CarRepository) PublishCarBooked(ctx context.Context,
 func (r *CarRepository) PublishAbortSaga(ctx context.Context,
 	corrID string, parentID string, tripID uint, reason string,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &command.AbortSaga{
 		Message: message.Message{
@@ -118,12 +108,7 @@ func (r *CarRepository) PublishAbortSaga(ctx context.Context,
 func (r *CarRepository) PublishCarBookingCancelled(ctx context.Context,
 	corrID string, parentID string, d dto.CarBooking,
 ) error {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	evt := &event.CarBookingCancelled{
 		Message: message.Message{
@@ -161,7 +146,7 @@ func (r *CarRepository) Book(ctx context.Context,
 ) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -204,7 +189,7 @@ func (r *CarRepository) Book(ctx context.Context,
 func (r *CarRepository) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
 	panicked := true
 
-	tx := r.db.WithContext(ctx).Begin()
+	tx := r.WithContext(ctx).Begin()
 	if err := tx.Error; err != nil {
 		return err
 	}
@@ -242,12 +227,7 @@ func (r *CarRepository) CancelBooking(ctx context.Context, cmd *command.CancelCa
 }
 
 func (r *CarRepository) GetByID(ctx context.Context, id uint) (dto.CarBooking, error) {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	row := &entity.CarBooking{}
 	result := db.
@@ -261,12 +241,7 @@ func (r *CarRepository) GetByID(ctx context.Context, id uint) (dto.CarBooking, e
 }
 
 func (r *CarRepository) GetByTripID(ctx context.Context, tripID uint) (dto.CarBooking, error) {
-	var db *gorm.DB
-	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
-		db = tx
-	} else {
-		db = r.db.WithContext(ctx)
-	}
+	db := r.WithContext(ctx)
 
 	row := &entity.CarBooking{}
 	result := db.
