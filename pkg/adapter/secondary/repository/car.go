@@ -69,7 +69,7 @@ func (r *CarRepository) PublishCarBooked(ctx context.Context,
 }
 
 func (r *CarRepository) PublishAbortSaga(ctx context.Context,
-	corrID string, parentID string, tripID uint, reason string,
+	cmd *command.BookCar, reason string,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -78,12 +78,12 @@ func (r *CarRepository) PublishAbortSaga(ctx context.Context,
 			Name:          reflect.ValueOf(command.AbortSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: corrID,
-			ParentID:      parentID,
+			CorrelationID: cmd.CorrelationID,
+			ParentID:      cmd.ParentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.AbortSagaBody{
-			TripID: tripID,
+			TripID: cmd.Body.TripID,
 			Reason: reason,
 			Source: "car",
 		},
@@ -141,49 +141,25 @@ func (r *CarRepository) PublishCarBookingCancelled(ctx context.Context,
 	return db.Create(row).Error
 }
 
-func (r *CarRepository) Book(ctx context.Context,
-	d *dto.CarBooking, cmd *command.BookCar,
-) error {
-	panicked := true
-
-	tx := r.WithContext(ctx).Begin()
-	if err := tx.Error; err != nil {
-		return err
-	}
-	defer func() {
-		if r := recover(); r != nil || panicked {
-			tx.Rollback()
-		}
-	}()
-
-	txCtx := context.WithValue(ctx, constant.TX("tx"), tx)
-
-	if booking, err := r.GetByTripID(txCtx, d.TripID); err != nil {
-		return err
+func (r *CarRepository) Book(ctx context.Context, d *dto.CarBooking) (dto.CarBooking, error) {
+	if booking, err := r.GetByTripID(ctx, d.TripID); err != nil {
+		return dto.CarBooking{}, err
 	} else if booking.Status == status.Booked {
-		return nil
+		return booking, nil
 	}
 
+	db := r.WithContext(ctx)
 	row := &entity.CarBooking{
 		TripID: d.TripID,
 		CarID:  d.CarID,
 		Status: status.Booked,
 	}
-	if result := tx.Create(row); result.Error != nil {
-		return result.Error
+	result := db.Create(row)
+	if result.Error != nil {
+		return dto.CarBooking{}, result.Error
 	}
 
-	if err := r.PublishCarBooked(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
-		return err
-	}
-
-	if err := tx.Commit().Error; err == nil {
-		panicked = false
-	} else {
-		return err
-	}
-
-	return nil
+	return row.DTO(), nil
 }
 
 func (r *CarRepository) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {

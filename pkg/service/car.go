@@ -26,26 +26,49 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 		"service", "CarService",
 		"method", "Book",
 	)
+	logger.Debugw("Book car", "command", cmd)
 
-	logger.Infow("Book car", "command", cmd)
+	// Transaction Begins
+	panicked := true
+	txCtx, err := s.carRepository.BeginTx(ctx)
+	if err != nil {
+		logger.Errorw("Failed to begin transaction", "err", err.Error())
+		return err
+	}
+	defer func() {
+		if r := recover(); r != nil || panicked {
+			if err := s.carRepository.RollbackTx(txCtx); err != nil {
+				logger.Errorw("Failed to rollback transaction", "err", err.Error())
+			}
+		}
+	}()
 
 	req := &dto.CarBooking{
 		TripID: cmd.Body.TripID,
 		CarID:  cmd.Body.CarID,
 	}
-	if err := s.carRepository.Book(ctx, req, cmd); err != nil {
-		logger.Errorw("failed to book car", "req", req, "err", err.Error())
+	booking, err := s.carRepository.Book(txCtx, req)
+	if err != nil {
+		logger.Errorw("Failed to book car", "req", req, "err", err.Error())
 
-		go func(reason string) {
-			if err := s.carRepository.PublishAbortSaga(ctx,
-				cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason,
-			); err != nil {
-				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err.Error())
-			}
-		}(err.Error())
+		if err := s.carRepository.PublishAbortSaga(txCtx, cmd, err.Error()); err != nil {
+			logger.Errorw("Failed to publish AbortSaga", "command", cmd, "err", err.Error())
+			return err
+		}
+	} else {
+		if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
+			logger.Errorw("Failed to publish CarBooked", "booking", booking, "err", err.Error())
+			return err
+		}
+	}
 
+	if err := s.carRepository.CommitTx(txCtx); err == nil {
+		panicked = false
+	} else {
+		logger.Errorw("Failed to commit transaction", "err", err.Error())
 		return err
 	}
+	// Transaction Ends
 
 	return nil
 }

@@ -20,7 +20,7 @@ func (r BaseRepository) WithContext(ctx context.Context) *gorm.DB {
 	}
 }
 
-func (r BaseRepository) TXBegin(ctx context.Context) (context.Context, error) {
+func (r BaseRepository) BeginTx(ctx context.Context) (context.Context, error) {
 	if _, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
 		return ctx, errors.New("transaction already exists")
 	}
@@ -33,7 +33,7 @@ func (r BaseRepository) TXBegin(ctx context.Context) (context.Context, error) {
 	return context.WithValue(ctx, constant.TX("tx"), tx), nil
 }
 
-func (r BaseRepository) TXCommit(ctx context.Context) error {
+func (r BaseRepository) CommitTx(ctx context.Context) error {
 	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
 		return tx.Commit().Error
 	}
@@ -41,7 +41,7 @@ func (r BaseRepository) TXCommit(ctx context.Context) error {
 	return errors.New("no transaction found")
 }
 
-func (r BaseRepository) TXRollback(ctx context.Context) error {
+func (r BaseRepository) RollbackTx(ctx context.Context) error {
 	if tx, ok := ctx.Value(constant.TX("tx")).(*gorm.DB); ok {
 		return tx.Rollback().Error
 	}

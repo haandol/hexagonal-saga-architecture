@@ -8,6 +8,7 @@ import (
 )
 
 type TripRepository interface {
+	BaseRepository
 	Create(ctx context.Context, corrID, parentID string, d *dto.Trip) (dto.Trip, error)
 	List(ctx context.Context) ([]dto.Trip, error)
 	Complete(ctx context.Context, evt *event.SagaEnded) error

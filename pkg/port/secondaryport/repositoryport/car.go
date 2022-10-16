@@ -8,7 +8,9 @@ import (
 )
 
 type CarRepository interface {
-	Book(ctx context.Context, d *dto.CarBooking, cmd *command.BookCar) error
+	BaseRepository
+	Book(ctx context.Context, d *dto.CarBooking) (dto.CarBooking, error)
 	CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error
-	PublishAbortSaga(ctx context.Context, corrID, parentID string, tripID uint, reason string) error
+	PublishAbortSaga(ctx context.Context, cmd *command.BookCar, reason string) error
+	PublishCarBooked(ctx context.Context, corrID, parentID string, d dto.CarBooking) error
 }
