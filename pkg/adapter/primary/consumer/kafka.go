@@ -24,6 +24,8 @@ type KafkaConsumer struct {
 	batchSize     int
 }
 
+const ConsumerTimeout = 30 * time.Second
+
 func NewKafkaConsumer(cfg *config.Kafka, groupID, topic string) *KafkaConsumer {
 	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
 	if strings.Contains(cfg.Seeds[0], "9094") {
@@ -49,6 +51,7 @@ func BuildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.SeedBrokers(seeds...),
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
+		kgo.DisableAutoCommit(),
 		kgo.AllowAutoTopicCreation(), // TODO: only for the dev
 		kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, func() string {
 			return fmt.Sprintf("%s\t", time.Now().Format(time.RFC3339))
@@ -89,12 +92,15 @@ func (c *KafkaConsumer) Consume() {
 
 	for {
 		logger.Infow("Polling...", "topic", c.topic)
-		fetches := c.client.PollRecords(context.Background(), c.batchSize)
+		ctx := context.Background()
+
+		fetches := c.client.PollRecords(ctx, c.batchSize)
 		if fetches.IsClientClosed() {
+			logger.Infow("Client closed", "topic", c.topic)
 			return
 		}
 		if errs := fetches.Errors(); len(errs) > 0 {
-			logger.Panicw("failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
+			logger.Panicw("Failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
 		}
 
 		fetches.EachRecord(func(record *kgo.Record) {
@@ -108,17 +114,18 @@ func (c *KafkaConsumer) Consume() {
 				Timestamp: record.Timestamp,
 			}
 			if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
-				logger.Infow("Message expired", "expirySec", c.messageExpiry, "key", key)
+				logger.Warnw("Message expired", "expirySec", c.messageExpiry, "key", key)
 				return
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-			defer cancel()
 			if err := c.handler(ctx, message); err != nil {
-				// TODO: panic on production
-				logger.Errorw("Error handling message", "err", err.Error())
+				logger.Panicw("Error handling message", "err", err.Error())
 			}
 		})
+
+		if err := c.client.CommitUncommittedOffsets(ctx); err != nil {
+			logger.Panicw("Failed to commit offsets", "topic", c.topic, "err", err.Error())
+		}
 	}
 }
 
