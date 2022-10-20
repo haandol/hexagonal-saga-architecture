@@ -33,7 +33,7 @@ func NewSagaRepository(db *gorm.DB) *SagaRepository {
 	}
 }
 
-func (r *SagaRepository) PublishBookCar(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishBookCar(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &command.BookCar{
@@ -67,7 +67,7 @@ func (r *SagaRepository) PublishBookCar(ctx context.Context, corrID, parentID st
 	return db.Create(row).Error
 }
 
-func (r *SagaRepository) PublishBookHotel(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishBookHotel(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &command.BookHotel{
@@ -101,7 +101,7 @@ func (r *SagaRepository) PublishBookHotel(ctx context.Context, corrID, parentID 
 	return db.Create(row).Error
 }
 
-func (r *SagaRepository) PublishBookFlight(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishBookFlight(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &command.BookFlight{
@@ -135,7 +135,7 @@ func (r *SagaRepository) PublishBookFlight(ctx context.Context, corrID, parentID
 	return db.Create(row).Error
 }
 
-func (r *SagaRepository) PublishEndSaga(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishEndSaga(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &command.EndSaga{
@@ -169,7 +169,7 @@ func (r *SagaRepository) PublishEndSaga(ctx context.Context, corrID, parentID st
 	return db.Create(row).Error
 }
 
-func (r *SagaRepository) PublishSagaEnded(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishSagaEnded(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &event.SagaEnded{
@@ -206,7 +206,7 @@ func (r *SagaRepository) PublishSagaEnded(ctx context.Context, corrID, parentID 
 	return db.Create(row).Error
 }
 
-func (r *SagaRepository) PublishSagaAborted(ctx context.Context, corrID, parentID string, d dto.Saga) error {
+func (r *SagaRepository) PublishSagaAborted(ctx context.Context, corrID, parentID string, d *dto.Saga) error {
 	db := r.WithContext(ctx)
 
 	evt := &event.SagaAborted{
@@ -287,7 +287,8 @@ func (r *SagaRepository) Start(ctx context.Context, cmd *command.StartSaga) erro
 		return result.Error
 	}
 
-	if err := r.PublishBookCar(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishBookCar(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 
@@ -349,7 +350,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 		return ErrNoRowAffected
 	}
 
-	if err := r.PublishBookHotel(txCtx, evt.CorrelationID, evt.ParentID, saga); err != nil {
+	if err := r.PublishBookHotel(txCtx, evt.CorrelationID, evt.ParentID, &saga); err != nil {
 		return err
 	}
 
@@ -410,7 +411,7 @@ func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.Ca
 		return ErrNoRowAffected
 	}
 
-	if err := r.PublishSagaAborted(txCtx, evt.CorrelationID, evt.ParentID, saga); err != nil {
+	if err := r.PublishSagaAborted(txCtx, evt.CorrelationID, evt.ParentID, &saga); err != nil {
 		return err
 	}
 
@@ -471,7 +472,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 		return ErrNoRowAffected
 	}
 
-	if err := r.PublishBookFlight(txCtx, evt.CorrelationID, evt.ParentID, saga); err != nil {
+	if err := r.PublishBookFlight(txCtx, evt.CorrelationID, evt.ParentID, &saga); err != nil {
 		return err
 	}
 
@@ -571,7 +572,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 		return ErrNoRowAffected
 	}
 
-	if err := r.PublishEndSaga(txCtx, evt.CorrelationID, evt.ParentID, saga); err != nil {
+	if err := r.PublishEndSaga(txCtx, evt.CorrelationID, evt.ParentID, &saga); err != nil {
 		return err
 	}
 
@@ -673,7 +674,7 @@ func (r *SagaRepository) End(ctx context.Context, cmd *command.EndSaga) error {
 		return ErrNoRowAffected
 	}
 
-	if err := r.PublishSagaEnded(txCtx, cmd.CorrelationID, cmd.ParentID, saga); err != nil {
+	if err := r.PublishSagaEnded(txCtx, cmd.CorrelationID, cmd.ParentID, &saga); err != nil {
 		return err
 	}
 

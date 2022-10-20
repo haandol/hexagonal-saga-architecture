@@ -29,7 +29,7 @@ func NewTripRepository(db *gorm.DB) *TripRepository {
 }
 
 func (r *TripRepository) PublishStartSaga(ctx context.Context,
-	corrID string, parentID string, d dto.Trip,
+	corrID string, parentID string, d *dto.Trip,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -130,7 +130,8 @@ func (r *TripRepository) Create(ctx context.Context, corrID, parentID string, d 
 		return dto.Trip{}, result.Error
 	}
 
-	if err := r.PublishStartSaga(txCtx, corrID, parentID, row.DTO()); err != nil {
+	trip := row.DTO()
+	if err := r.PublishStartSaga(txCtx, corrID, parentID, &trip); err != nil {
 		return dto.Trip{}, err
 	}
 

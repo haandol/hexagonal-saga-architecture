@@ -34,7 +34,7 @@ func NewFlightRepository(db *gorm.DB) *FlightRepository {
 }
 
 func (r *FlightRepository) PublishFlightBooked(ctx context.Context,
-	corrID string, parentID string, d dto.FlightBooking,
+	corrID string, parentID string, d *dto.FlightBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -106,7 +106,7 @@ func (r *FlightRepository) PublishAbortSaga(ctx context.Context,
 }
 
 func (r *FlightRepository) PublishFlightBookingCancelled(ctx context.Context,
-	corrID string, parentID string, d dto.FlightBooking,
+	corrID string, parentID string, d *dto.FlightBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -172,7 +172,8 @@ func (r *FlightRepository) Book(ctx context.Context, d *dto.FlightBooking, cmd *
 		return result.Error
 	}
 
-	if err := r.PublishFlightBooked(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishFlightBooked(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 
@@ -212,7 +213,8 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.Cance
 		return ErrNoFlightBookingFound
 	}
 
-	if err := r.PublishFlightBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishFlightBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 

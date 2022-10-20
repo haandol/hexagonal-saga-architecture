@@ -62,7 +62,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripRepository.PublishStartSaga(ctx, corrID, parentID, trip); err != nil {
+	if err := s.tripRepository.PublishStartSaga(ctx, corrID, parentID, &trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 

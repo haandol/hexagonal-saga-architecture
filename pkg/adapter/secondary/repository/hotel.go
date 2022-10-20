@@ -34,7 +34,7 @@ func NewHotelRepository(db *gorm.DB) *HotelRepository {
 }
 
 func (r *HotelRepository) PublishHotelBooked(ctx context.Context,
-	corrID string, parentID string, d dto.HotelBooking,
+	corrID string, parentID string, d *dto.HotelBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -106,7 +106,7 @@ func (r *HotelRepository) PublishAbortSaga(ctx context.Context,
 }
 
 func (r *HotelRepository) PublishHotelBookingCancelled(ctx context.Context,
-	corrID string, parentID string, d dto.HotelBooking,
+	corrID string, parentID string, d *dto.HotelBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -172,7 +172,8 @@ func (r *HotelRepository) Book(ctx context.Context, d *dto.HotelBooking, cmd *co
 		return result.Error
 	}
 
-	if err := r.PublishHotelBooked(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishHotelBooked(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 
@@ -212,7 +213,8 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, cmd *command.Cancel
 		return ErrNoHotelBookingFound
 	}
 
-	if err := r.PublishHotelBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishHotelBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 

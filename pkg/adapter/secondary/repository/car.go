@@ -34,7 +34,7 @@ func NewCarRepository(db *gorm.DB) *CarRepository {
 }
 
 func (r *CarRepository) PublishCarBooked(ctx context.Context,
-	corrID string, parentID string, d dto.CarBooking,
+	corrID string, parentID string, d *dto.CarBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -106,7 +106,7 @@ func (r *CarRepository) PublishAbortSaga(ctx context.Context,
 }
 
 func (r *CarRepository) PublishCarBookingCancelled(ctx context.Context,
-	corrID string, parentID string, d dto.CarBooking,
+	corrID string, parentID string, d *dto.CarBooking,
 ) error {
 	db := r.WithContext(ctx)
 
@@ -189,7 +189,8 @@ func (r *CarRepository) CancelBooking(ctx context.Context, cmd *command.CancelCa
 		return ErrNoCarBookingFound
 	}
 
-	if err := r.PublishCarBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, row.DTO()); err != nil {
+	booking := row.DTO()
+	if err := r.PublishCarBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 

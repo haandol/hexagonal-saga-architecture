@@ -57,7 +57,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 			return err
 		}
 	} else {
-		if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, booking); err != nil {
+		if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 			logger.Errorw("Failed to publish CarBooked", "booking", booking, "err", err.Error())
 			return err
 		}
