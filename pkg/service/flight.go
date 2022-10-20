@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
@@ -14,7 +15,7 @@ type FlightService struct {
 }
 
 func NewFlightService(
-	flightRepository repositoryport.FlightRepository,
+	flightRepository *repository.FlightRepository,
 ) *FlightService {
 	return &FlightService{
 		flightRepository: flightRepository,
@@ -22,7 +23,7 @@ func NewFlightService(
 }
 
 func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "FlightService",
 		"method", "Book",
 	)
@@ -51,7 +52,7 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 }
 
 func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFlightBooking) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "FlightService",
 		"method", "CancelBooking",
 	)

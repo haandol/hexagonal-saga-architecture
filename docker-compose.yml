@@ -20,18 +20,16 @@ services:
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
   zookeeper:
-    image: bitnami/zookeeper
+    image: zookeeper
     restart: always
     profiles:
       - backend
     ports:
       - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
     depends_on:
       - zookeeper
-    image: bitnami/kafka:2.8.1
+    image: bitnami/kafka:2.6.0
     restart: always
     profiles:
       - backend

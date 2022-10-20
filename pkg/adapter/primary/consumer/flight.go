@@ -50,7 +50,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## FlightConsumer")
+	ctx, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## FlightConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 
@@ -62,7 +62,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 			seg.AddError(err)
 			return err
 		}
-		return c.flightService.Book(con, cmd)
+		return c.flightService.Book(ctx, cmd)
 	case "CancelFlightBooking":
 		cmd := &command.CancelFlightBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
@@ -70,7 +70,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 			seg.AddError(err)
 			return err
 		}
-		return c.flightService.CancelBooking(con, cmd)
+		return c.flightService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")

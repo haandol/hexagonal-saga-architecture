@@ -16,9 +16,9 @@ import (
 )
 
 type SagaApp struct {
-	server    *http.Server
-	consumers []consumerport.Consumer
-	producers []producerport.Producer
+	server       *http.Server
+	sagaConsumer consumerport.Consumer
+	sagaProducer producerport.Producer
 }
 
 func NewSagaApp(
@@ -26,17 +26,10 @@ func NewSagaApp(
 	sagaConsumer *consumer.SagaConsumer,
 	sagaProducer *producer.SagaProducer,
 ) *SagaApp {
-	consumers := []consumerport.Consumer{
-		sagaConsumer,
-	}
-	producers := []producerport.Producer{
-		sagaProducer,
-	}
-
 	return &SagaApp{
-		server:    server,
-		consumers: consumers,
-		producers: producers,
+		server:       server,
+		sagaConsumer: sagaConsumer,
+		sagaProducer: sagaProducer,
 	}
 }
 
@@ -47,10 +40,9 @@ func (app *SagaApp) Init() {
 	)
 	logger.Info("Initializing...")
 
-	for _, c := range app.consumers {
-		c.Init()
-	}
-	logger.Info("consumers are initialized.")
+	logger.Info("Initializing Consumer...")
+	app.sagaConsumer.Init()
+	logger.Info("Consumer initialized.")
 
 	util.InitXray()
 }
@@ -75,9 +67,7 @@ func (app *SagaApp) Start() {
 		}()
 	}
 
-	for _, c := range app.consumers {
-		go c.Consume()
-	}
+	go app.sagaConsumer.Consume()
 }
 
 func (app *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
@@ -102,17 +92,15 @@ func (app *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	}
 	logger.Info("Database connection closed.")
 
-	logger.Info("Closing producers...")
-	for _, producer := range app.producers {
-		if err := producer.Close(ctx); err != nil {
-			logger.Error("Error on producer close:", err)
-		}
+	logger.Info("Closing producer...")
+	if err := app.sagaProducer.Close(ctx); err != nil {
+		logger.Error("Error on producer close:", err)
 	}
 	logger.Info("Producer connection closed.")
 
-	logger.Info("Closing consumers...")
-	for _, c := range app.consumers {
-		c.Close(ctx)
+	logger.Info("Closing consumer...")
+	if err := app.sagaConsumer.Close(ctx); err != nil {
+		logger.Error("Error on consumer close:", err)
 	}
 	logger.Info("Consumer connection closed.")
 

@@ -15,7 +15,7 @@ func NewEfsService() *EfsService {
 }
 
 func (s *EfsService) List(ctx context.Context, path string) ([]string, error) {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"module", "EfsService",
 		"func", "List",
 	)

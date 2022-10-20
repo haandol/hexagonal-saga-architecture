@@ -47,11 +47,10 @@ func cleanup(ctx context.Context) {
 }
 
 func main() {
-	logger := util.GetLogger().With(
+	cfg := config.Load()
+	logger := util.InitLogger(cfg.App.Stage).With(
 		"module", "main",
 	)
-
-	cfg := config.Load()
 	logger.Infow("\n==== Config ====\n\n", "config", cfg)
 
 	logger.Info("Bootstraping apps...")

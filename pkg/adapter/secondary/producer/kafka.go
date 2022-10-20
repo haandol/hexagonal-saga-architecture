@@ -62,7 +62,7 @@ func (p KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
 }
 
 func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []byte) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"module", "KafkaProducer",
 		"func", "Produce",
 	)

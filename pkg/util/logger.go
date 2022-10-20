@@ -1,7 +1,8 @@
 package util
 
 import (
-	"os"
+	"context"
+	"strings"
 	"sync"
 
 	"go.uber.org/zap"
@@ -15,21 +16,34 @@ type Logger struct {
 	*zap.SugaredLogger
 }
 
-func GetLogger() *Logger {
+func InitLogger(stage string) *Logger {
 	once.Do(func() {
-		if "production" == os.Getenv("STAGE") {
-			l, _ := zap.NewProduction()
-			logger = &Logger{
-				l.Sugar(),
-			}
-		} else {
+		if strings.EqualFold(stage, "local") {
 			cfg := zap.NewDevelopmentConfig()
 			cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 			l, _ := cfg.Build()
 			logger = &Logger{
 				l.Sugar(),
 			}
+		} else {
+			l, _ := zap.NewProduction()
+			logger = &Logger{
+				l.Sugar(),
+			}
 		}
 	})
+	logger.Infow("Logger initialized", "stage", stage)
+
 	return logger
+}
+
+func GetLogger() *Logger {
+	return logger
+}
+
+func (l *Logger) WithContext(ctx context.Context) *zap.SugaredLogger {
+	segID := GetSegmentID(ctx)
+	return logger.With(
+		"TraceId", segID,
+	)
 }

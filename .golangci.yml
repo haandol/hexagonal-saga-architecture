@@ -71,7 +71,7 @@ linters:
     - depguard
     - dogsled
 #    - dupl
-    - errcheck
+#    - errcheck
     - exportloopref
     - funlen
     - gochecknoinits

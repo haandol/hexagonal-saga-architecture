@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
@@ -14,7 +15,7 @@ type CarService struct {
 }
 
 func NewCarService(
-	carRepository repositoryport.CarRepository,
+	carRepository *repository.CarRepository,
 ) *CarService {
 	return &CarService{
 		carRepository: carRepository,
@@ -22,7 +23,7 @@ func NewCarService(
 }
 
 func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "CarService",
 		"method", "Book",
 	)
@@ -74,7 +75,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 }
 
 func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "CarService",
 		"method", "CancelBooking",
 	)

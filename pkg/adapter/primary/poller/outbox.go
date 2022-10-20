@@ -9,7 +9,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-type Poller struct {
+type OutboxPoller struct {
 	closing       chan bool
 	closed        chan error
 	batchSize     int
@@ -17,11 +17,11 @@ type Poller struct {
 	relayService  *service.MessageRelayService
 }
 
-func NewPoller(
+func NewOutboxPoller(
 	cfg *config.Config,
 	relayService *service.MessageRelayService,
-) *Poller {
-	return &Poller{
+) *OutboxPoller {
+	return &OutboxPoller{
 		closing:       make(chan bool),
 		closed:        make(chan error),
 		batchSize:     cfg.Relay.FetchSize,
@@ -30,12 +30,12 @@ func NewPoller(
 	}
 }
 
-func (c *Poller) Init() {
+func (c *OutboxPoller) Init() {
 }
 
-func (c *Poller) Poll() {
+func (c *OutboxPoller) Poll() {
 	logger := util.GetLogger().With(
-		"module", "Poller",
+		"module", "OutboxPoller",
 		"func", "Poll",
 	)
 
@@ -65,7 +65,7 @@ func (c *Poller) Poll() {
 	}
 }
 
-func (c *Poller) Close(ctx context.Context) error {
+func (c *OutboxPoller) Close(ctx context.Context) error {
 	c.closing <- true
 	return <-c.closed
 }

@@ -50,7 +50,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## HotelConsumer")
+	ctx, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## HotelConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 
@@ -62,7 +62,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 			seg.AddError(err)
 			return err
 		}
-		return c.hotelService.Book(con, cmd)
+		return c.hotelService.Book(ctx, cmd)
 	case "CancelHotelBooking":
 		cmd := &command.CancelHotelBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
@@ -70,7 +70,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 			seg.AddError(err)
 			return err
 		}
-		return c.hotelService.CancelBooking(con, cmd)
+		return c.hotelService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")

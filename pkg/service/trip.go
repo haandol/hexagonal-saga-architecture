@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
@@ -17,7 +18,7 @@ type TripService struct {
 }
 
 func NewTripService(
-	tripRepository repositoryport.TripRepository,
+	tripRepository *repository.TripRepository,
 ) *TripService {
 	return &TripService{
 		tripRepository: tripRepository,
@@ -26,7 +27,7 @@ func NewTripService(
 
 // create trip for the given user
 func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "Create",
 	)
@@ -43,7 +44,7 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 }
 
 func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "RecoverForward",
 	)
@@ -69,7 +70,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 }
 
 func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "RecoverBackward",
 	)
@@ -97,7 +98,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 }
 
 func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "List",
 	)
@@ -112,7 +113,7 @@ func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
 }
 
 func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "ProcessSagaEnded",
 	)
@@ -126,7 +127,7 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 }
 
 func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAborted) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "TripService",
 		"method", "ProcessSagaAborted",
 	)

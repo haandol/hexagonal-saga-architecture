@@ -50,9 +50,9 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## CarConsumer")
-	seg.AddMetadata("msg", msg)
+	ctx, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## CarConsumer")
 	defer seg.Close(nil)
+	seg.AddMetadata("msg", msg)
 
 	switch msg.Name {
 	case "BookCar":
@@ -62,7 +62,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 			seg.AddError(err)
 			return err
 		}
-		return c.carService.Book(con, cmd)
+		return c.carService.Book(ctx, cmd)
 	case "CancelCarBooking":
 		cmd := &command.CancelCarBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
@@ -70,7 +70,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 			seg.AddError(err)
 			return err
 		}
-		return c.carService.CancelBooking(con, cmd)
+		return c.carService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")

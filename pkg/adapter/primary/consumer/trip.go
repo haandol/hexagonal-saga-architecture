@@ -50,7 +50,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
-	con, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## TripConsumer")
+	ctx, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## TripConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 
@@ -62,7 +62,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			seg.AddError(err)
 			return err
 		}
-		return c.tripService.ProcessSagaEnded(con, evt)
+		return c.tripService.ProcessSagaEnded(ctx, evt)
 	case "SagaAborted":
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
@@ -70,7 +70,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 			seg.AddError(err)
 			return err
 		}
-		return c.tripService.ProcessSagaAborted(con, evt)
+		return c.tripService.ProcessSagaAborted(ctx, evt)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")

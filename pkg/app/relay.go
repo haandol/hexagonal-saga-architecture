@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/haandol/hexagonal/pkg/adapter/primary/poller"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/pollerport"
@@ -12,17 +13,17 @@ import (
 )
 
 type MessageRelayApp struct {
-	poller   pollerport.Poller
-	producer producerport.Producer
+	outboxPoller pollerport.Poller
+	producer     producerport.Producer
 }
 
 func NewMessageRelayApp(
-	poller pollerport.Poller,
+	outboxPoller *poller.OutboxPoller,
 	kafkaProducer *producer.KafkaProducer,
 ) *MessageRelayApp {
 	return &MessageRelayApp{
-		poller:   poller,
-		producer: kafkaProducer,
+		outboxPoller: outboxPoller,
+		producer:     kafkaProducer,
 	}
 }
 
@@ -43,7 +44,7 @@ func (app *MessageRelayApp) Start() {
 	)
 	logger.Info("Starting...")
 
-	go app.poller.Poll()
+	go app.outboxPoller.Poll()
 }
 
 func (app *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
@@ -55,7 +56,7 @@ func (app *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	logger.Info("Cleaning up...")
 
 	logger.Info("Closing poller...")
-	if err := app.poller.Close(ctx); err != nil {
+	if err := app.outboxPoller.Close(ctx); err != nil {
 		logger.Error("Failed to close poller", "error", err)
 	}
 	logger.Info("Poller stopped.")

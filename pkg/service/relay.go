@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
+	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
@@ -11,16 +13,16 @@ import (
 )
 
 type MessageRelayService struct {
-	producer         producerport.Producer
+	kafkaProducer    producerport.Producer
 	outboxRepository repositoryport.OutboxRepository
 }
 
 func NewMessageRelayService(
-	producer producerport.Producer,
-	outboxRepository repositoryport.OutboxRepository,
+	kafkaProducer *producer.KafkaProducer,
+	outboxRepository *repository.OutboxRepository,
 ) *MessageRelayService {
 	return &MessageRelayService{
-		producer:         producer,
+		kafkaProducer:    kafkaProducer,
 		outboxRepository: outboxRepository,
 	}
 }
@@ -42,7 +44,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 }
 
 func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) error {
-	logger := util.GetLogger().With(
+	logger := util.GetLogger().WithContext(ctx).With(
 		"module", "MessageRelayService",
 		"func", "Relay",
 	)
@@ -54,7 +56,7 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 		wg.Add(1)
 		go func(m dto.Outbox) {
 			defer wg.Done()
-			if err := s.producer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
+			if err := s.kafkaProducer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
 				logger.Errorw("failed to produce message", "err", err)
 				return
 			}

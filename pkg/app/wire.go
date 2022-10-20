@@ -14,23 +14,17 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
-	"github.com/haandol/hexagonal/pkg/port/primaryport/pollerport"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"gorm.io/gorm"
 )
 
 // Common
-var db *gorm.DB
-var kafkaProducer *producer.KafkaProducer
+var (
+	kafkaProducer *producer.KafkaProducer
+)
 
 func provideDB(cfg *config.Config) *gorm.DB {
-	if db != nil {
-		return db
-	}
-
 	db, err := database.Connect(cfg.TripDB)
 	if err != nil {
 		panic(err)
@@ -56,16 +50,6 @@ func provideTripConsumer(
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
-var provideRepositories = wire.NewSet(
-	repository.NewTripRepository,
-	wire.Bind(new(repositoryport.TripRepository), new(*repository.TripRepository)),
-)
-
-var provideRestServices = wire.NewSet(
-	service.NewTripService,
-	service.NewEfsService,
-)
-
 var provideTripRouters = wire.NewSet(
 	router.NewGinRouter,
 	wire.Bind(new(http.Handler), new(*router.GinRouter)),
@@ -87,8 +71,9 @@ func InitTripApp(cfg *config.Config) port.App {
 		provideDB,
 		provideTripRouters,
 		provideTripConsumer,
-		provideRestServices,
-		provideRepositories,
+		service.NewTripService,
+		service.NewEfsService,
+		repository.NewTripRepository,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),
 	)
@@ -116,9 +101,7 @@ func InitSagaApp(cfg *config.Config) port.App {
 		provideSagaConsumer,
 		service.NewSagaService,
 		provideSagaProducer,
-		wire.Bind(new(producerport.SagaProducer), new(*producer.SagaProducer)),
 		repository.NewSagaRepository,
-		wire.Bind(new(repositoryport.SagaRepository), new(*repository.SagaRepository)),
 		NewSagaApp,
 		wire.Bind(new(port.App), new(*SagaApp)),
 	)
@@ -140,7 +123,6 @@ func InitCarApp(cfg *config.Config) port.App {
 		provideRouters,
 		provideCarConsumer,
 		repository.NewCarRepository,
-		wire.Bind(new(repositoryport.CarRepository), new(*repository.CarRepository)),
 		service.NewCarService,
 		NewCarApp,
 		wire.Bind(new(port.App), new(*CarApp)),
@@ -151,12 +133,9 @@ func InitCarApp(cfg *config.Config) port.App {
 func InitMessageRelayApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
-		poller.NewPoller,
-		wire.Bind(new(pollerport.Poller), new(*poller.Poller)),
+		poller.NewOutboxPoller,
 		provideProducer,
-		wire.Bind(new(producerport.Producer), new(*producer.KafkaProducer)),
 		repository.NewOutboxRepository,
-		wire.Bind(new(repositoryport.OutboxRepository), new(*repository.OutboxRepository)),
 		service.NewMessageRelayService,
 		NewMessageRelayApp,
 		wire.Bind(new(port.App), new(*MessageRelayApp)),
@@ -179,7 +158,6 @@ func InitHotelApp(cfg *config.Config) port.App {
 		provideRouters,
 		provideHotelConsumer,
 		repository.NewHotelRepository,
-		wire.Bind(new(repositoryport.HotelRepository), new(*repository.HotelRepository)),
 		service.NewHotelService,
 		NewHotelApp,
 		wire.Bind(new(port.App), new(*HotelApp)),
@@ -202,7 +180,6 @@ func InitFlightApp(cfg *config.Config) port.App {
 		provideRouters,
 		provideFlightConsumer,
 		repository.NewFlightRepository,
-		wire.Bind(new(repositoryport.FlightRepository), new(*repository.FlightRepository)),
 		service.NewFlightService,
 		NewFlightApp,
 		wire.Bind(new(port.App), new(*FlightApp)),
