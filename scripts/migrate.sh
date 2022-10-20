@@ -12,4 +12,4 @@ export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME
 
 echo $(goose mysql status)
 
-exec goose mysql up
+exec goose mysql $1
