@@ -90,7 +90,12 @@ func NewGinRouter(cfg *config.Config) *GinRouter {
 		"module", "GinRouter",
 	)
 
+	if cfg.App.Stage != "local" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
 	r.Use(middleware.LeakBucket(&cfg.App))
 	r.Use(middleware.Timeout(&cfg.App))
 	r.Use(middleware.Cors())
