@@ -1,6 +1,6 @@
 module github.com/haandol/hexagonal
 
-go 1.18
+go 1.19
 
 require (
 	github.com/aws/aws-xray-sdk-go v1.7.1
@@ -14,12 +14,14 @@ require (
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.4
-	github.com/twmb/franz-go v1.8.0
+	github.com/twmb/franz-go v1.9.0
+	github.com/twmb/franz-go/plugin/kzap v1.1.1
 	go.uber.org/ratelimit v0.2.0
 	go.uber.org/zap v1.23.0
 	gorm.io/datatypes v1.0.7
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
+	moul.io/zapgorm2 v1.1.3
 )
 
 require (

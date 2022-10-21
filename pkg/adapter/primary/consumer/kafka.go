@@ -4,9 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -14,6 +12,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/plugin/kzap"
 )
 
 type KafkaConsumer struct {
@@ -27,7 +26,7 @@ type KafkaConsumer struct {
 const ConsumerTimeout = 30 * time.Second
 
 func NewKafkaConsumer(cfg *config.Kafka, groupID, topic string) *KafkaConsumer {
-	opts := BuildConsumerOpts(cfg.Seeds, groupID, topic)
+	opts := buildConsumerOpts(cfg.Seeds, groupID, topic)
 	if strings.Contains(cfg.Seeds[0], "9094") {
 		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))
 	}
@@ -46,16 +45,17 @@ func NewKafkaConsumer(cfg *config.Kafka, groupID, topic string) *KafkaConsumer {
 	}
 }
 
-func BuildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
+func buildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 	return []kgo.Opt{
 		kgo.SeedBrokers(seeds...),
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
 		kgo.DisableAutoCommit(),
 		kgo.AllowAutoTopicCreation(), // TODO: only for the dev
-		kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, func() string {
-			return fmt.Sprintf("%s\t", time.Now().Format(time.RFC3339))
-		})),
+		kgo.WithLogger(kzap.New(
+			util.GetLogger().With("package", "consumer").Desugar(),
+			kzap.Level(kgo.LogLevelInfo),
+		)),
 	}
 }
 
@@ -100,7 +100,7 @@ func (c *KafkaConsumer) Consume() {
 			return
 		}
 		if errs := fetches.Errors(); len(errs) > 0 {
-			logger.Panicw("Failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
+			logger.Panicw("failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
 		}
 
 		fetches.EachRecord(func(record *kgo.Record) {
@@ -114,17 +114,17 @@ func (c *KafkaConsumer) Consume() {
 				Timestamp: record.Timestamp,
 			}
 			if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
-				logger.Warnw("Message expired", "expirySec", c.messageExpiry, "key", key)
+				logger.Warnw("message expired", "expirySec", c.messageExpiry, "key", key)
 				return
 			}
 
 			if err := c.handler(ctx, message); err != nil {
-				logger.Panicw("Error handling message", "err", err.Error())
+				logger.Panicw("error handling message", "err", err.Error())
 			}
 		})
 
 		if err := c.client.CommitUncommittedOffsets(ctx); err != nil {
-			logger.Panicw("Failed to commit offsets", "topic", c.topic, "err", err.Error())
+			logger.Panicw("failed to commit offsets", "topic", c.topic, "err", err.Error())
 		}
 	}
 }
