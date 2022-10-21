@@ -23,6 +23,10 @@ func (e Env) Split(sep string) (r []string) {
 }
 
 func (e Env) Int() int {
+	if string(e) == "" {
+		return 0
+	}
+
 	i, err := strconv.Atoi(string(e))
 	if err != nil {
 		panic(fmt.Sprintf("Error converting env %v to int: %s", string(e), err.Error()))
