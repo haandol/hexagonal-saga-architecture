@@ -3,15 +3,13 @@ package producer
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
-	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/plugin/kzap"
 )
 
 type KafkaProducer struct {
@@ -47,9 +45,10 @@ func BuildProducerOpts(seeds []string) []kgo.Opt {
 		kgo.ProducerLinger(0),
 		kgo.AllowAutoTopicCreation(), // for dev only
 		kgo.ProducerBatchCompression(kgo.GzipCompression()),
-		kgo.WithLogger(kgo.BasicLogger(os.Stderr, kgo.LogLevelInfo, func() string {
-			return fmt.Sprintf("%s\t", time.Now().Format(time.RFC3339))
-		})),
+		kgo.WithLogger(kzap.New(
+			util.GetLogger().With("package", "producer").Desugar(),
+			kzap.Level(kgo.LogLevelInfo),
+		)),
 	}
 }
 
