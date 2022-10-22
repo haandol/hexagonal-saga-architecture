@@ -6,8 +6,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     restart: always
     platform: linux/amd64
-    profiles:
-      - backend
+    profiles: [backend]
     ports:
       - '3306:3306'
     environment:
@@ -22,8 +21,7 @@ services:
   zookeeper:
     image: zookeeper
     restart: always
-    profiles:
-      - backend
+    profiles: [backend]
     ports:
       - '2181:2181'
   kafka:
@@ -52,8 +50,7 @@ services:
       - kafka
     image: provectuslabs/kafka-ui
     restart: always
-    profiles:
-      - backend
+    profiles: [backend]
     ports:
       - '8080:8080'
     environment:
@@ -62,13 +59,21 @@ services:
   saga:
     depends_on:
       - mysql
-      - redis
       - kafka
     build:
       context: .
-      target: dev
       dockerfile: ./Dockerfile.dev
     profiles: [dev]
+    command: [air]
+    volumes:
+      - .:/src
+  wire:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    profiles: [wire]
+    working_dir: /src/pkg/app
+    command: [wire]
     volumes:
       - .:/src
   migrate:
@@ -76,9 +81,17 @@ services:
       - mysql
     build:
       context: .
-      target: migrate
       dockerfile: ./Dockerfile.dev
     profiles: [migrate]
+    command: [./scripts/migrate.sh]
+    volumes:
+      - .:/src
+  swagger:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    command: [./scripts/swagger.sh]
+    profiles: [swagger]
     volumes:
       - .:/src
 

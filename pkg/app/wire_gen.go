@@ -101,7 +101,7 @@ var (
 )
 
 func provideDB(cfg *config.Config) *gorm.DB {
-	db, err := database.Connect(cfg.TripDB)
+	db, err := database.Connect(&cfg.TripDB)
 	if err != nil {
 		panic(err)
 	}

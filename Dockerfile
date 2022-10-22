@@ -7,11 +7,6 @@ ENV PATH /go/bin:$PATH
 ENV GONOSUMDB github.com/haandol
 ENV GOPRIVATE github.com/haandol
 
-# create ssh directory
-RUN mkdir ~/.ssh
-RUN touch ~/.ssh/known_hosts
-RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-
 # manage dependencies
 COPY go.* ./
 RUN go mod download
