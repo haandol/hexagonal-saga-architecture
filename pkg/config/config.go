@@ -45,8 +45,12 @@ type Config struct {
 	Relay  Relay
 }
 
-func BuildFromPath(envPath string) Config {
-	if err := godotenv.Load(envPath); err != nil {
+// Load config.Config from environment variables for each stage
+func Load() Config {
+	stage := getEnv("APP_STAGE").String()
+	log.Printf("Loading %s config\n", stage)
+
+	if err := godotenv.Load(); err != nil {
 		log.Panic("Error loading .env file")
 	}
 
@@ -84,12 +88,5 @@ func BuildFromPath(envPath string) Config {
 		log.Panicf("Error validating config: %s", err.Error())
 	}
 	return cfg
-}
 
-// Load config.Config from environment variables for each stage
-func Load() Config {
-	stage := getEnv("APP_STAGE").String()
-	log.Printf("Loading %s config\n", stage)
-
-	return BuildFromPath("../../.env")
 }
