@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 set -o allexport
-[ -f ./.env ] && source ./.env
+[ -f ./.env ] && . ./.env
 set +o allexport
 
 cd init

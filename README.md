@@ -10,12 +10,9 @@ hexagonal saga demo app
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
 - [Ginkgo](https://onsi.github.io/ginkgo/), Gomega and [GoMock](https://github.com/golang/mock) for testing
+- [swaggo/swag](https://github.com/swaggo/swag)
 
 # Installation
-
-```bash
-$ go mod tidy && go mod vendor
-```
 
 # Run infrastructure
 
@@ -23,34 +20,30 @@ $ go mod tidy && go mod vendor
 $ docker-compose --profile backend up -d
 ```
 
-# Copy .env to project root folder
+# Run services
+
+## Copy .env to project root folder
 
 ```bash
 $ cp env/local.env .env
 ```
 
-# Schema migration (Optional)
-
-Install Goose
+## Run service
 
 ```bash
-$ go install github.com/pressly/goose/v3/cmd/goose@latest
+$ docker compose --profile dev up --build
 ```
 
+## Schema migration
+
 ```bash
-$ ./scripts/migrate.sh up
+$ docker compose --profile migrate up --build
 ```
 
-# Run Swagger (Optional)
-
-install [swaggo/swag](https://github.com/swaggo/swag)
+## Build swagger docs (Optional)
 
 ```bash
-$ go install github.com/swaggo/swag/cmd/swag@latest
-```
-
-```bash
-$ ./script/swagger.sh
+$ docker compose --profile swagger up --build
 ```
 
 # Run AWS Xray Daemon (Optional)
@@ -67,27 +60,18 @@ docker run \
   amazon/aws-xray-daemon -o -n ap-northeast-2
 ```
 
-# Run server
+# Try it out
 
-run local service. local service will instantiate all the services at once.
-
-```bash
-$ cd cmd/local
-$ go run main.go
-
-2022-08-28T08:35:14.686+0900	INFO	local/main.go:55
-```
-
-run server and open swagger on the browser
+open swagger on the browser
 
 ```bash
-$ open http://localhost:8080/swagger/index.html
+$ open http://localhost:8090/swagger/index.html
 ```
 
 ## Create trip record
 
 ```bash
-$ http --json -v post localhost:8080/v1/trips/ userId:=1 carId:=1 hotelId:=1 flightId:=1
+$ http --json -v post localhost:8090/v1/trips/ userId:=1 carId:=1 hotelId:=1 flightId:=1
 
 POST /v1/trips/ HTTP/1.1
 Accept: application/json, */*;q=0.5
@@ -95,7 +79,7 @@ Accept-Encoding: gzip, deflate
 Connection: keep-alive
 Content-Length: 79
 Content-Type: application/json
-Host: localhost:8080
+Host: localhost:8090
 User-Agent: HTTPie/2.6.0
 
 {
@@ -130,7 +114,7 @@ Date: Sun, 28 Aug 2022 12:36:46 GMT
 ## Query created trips
 
 ```bash
-$ http get localhost:8080/v1/trips/                                                                                                                               dongkyl@DongGyunui-MacBookAir
+$ http get localhost:8090/v1/trips/                                                                                                                               dongkyl@DongGyunui-MacBookAir
 
 HTTP/1.1 200 OK
 Content-Length: 177

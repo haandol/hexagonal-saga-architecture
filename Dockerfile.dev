@@ -1,0 +1,37 @@
+FROM golang:1.19.2 AS dev
+
+WORKDIR /src
+
+# set environment path
+ENV PATH /go/bin:$PATH
+ENV GONOSUMDB github.com/haandol
+ENV GOPRIVATE github.com/haandol
+
+# manage dependencies
+COPY go.* ./
+RUN go env -w GOPROXY=direct  
+RUN go mod download
+
+RUN go install github.com/cosmtrek/air@latest
+
+CMD ["air"]
+
+FROM golang:1.19.2 AS migrate
+
+WORKDIR /src
+
+RUN go env -w GOPROXY=direct  
+
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+CMD ["./scripts/migrate.sh", "up"]
+
+FROM golang:1.19.2 AS swagger
+
+WORKDIR /src
+
+RUN go env -w GOPROXY=direct  
+
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+CMD ["./scripts/swagger.sh"]

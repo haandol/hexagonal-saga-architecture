@@ -43,7 +43,7 @@ services:
       - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://0.0.0.0:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://kafka:9093
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -59,6 +59,28 @@ services:
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+  saga:
+    depends_on:
+      - mysql
+      - redis
+      - kafka
+    build:
+      context: .
+      target: dev
+      dockerfile: ./Dockerfile.dev
+    profiles: [dev]
+    volumes:
+      - .:/src
+  migrate:
+    depends_on:
+      - mysql
+    build:
+      context: .
+      target: migrate
+      dockerfile: ./Dockerfile.dev
+    profiles: [migrate]
+    volumes:
+      - .:/src
 
 volumes:
   saga-app-mysql-data: {}

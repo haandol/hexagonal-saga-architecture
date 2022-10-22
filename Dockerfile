@@ -13,11 +13,11 @@ RUN touch ~/.ssh/known_hosts
 RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
 # manage dependencies
-COPY go.* .
+COPY go.* ./
 RUN go mod download
 
 # build
-COPY . .
+COPY . ./
 
 ARG BUILD_TAG
 ARG APP_NAME
