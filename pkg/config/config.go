@@ -88,5 +88,4 @@ func Load() Config {
 		log.Panicf("Error validating config: %s", err.Error())
 	}
 	return cfg
-
 }

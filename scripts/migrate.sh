@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 set -o allexport
 [ -f ./.env ] && . ./.env

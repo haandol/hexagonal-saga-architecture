@@ -6,7 +6,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     restart: always
     platform: linux/amd64
-    profiles: [backend]
+    profiles: ["backend"]
     ports:
       - '3306:3306'
     environment:
@@ -18,10 +18,16 @@ services:
       - saga-app-mysql-data:/var/lib/mysql
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+  redis:
+    image: redis:6
+    restart: always
+    profiles: ["backend"]
+    ports:
+      - '6379:6379'
   zookeeper:
     image: zookeeper
     restart: always
-    profiles: [backend]
+    profiles: ["backend"]
     ports:
       - '2181:2181'
   kafka:
@@ -29,8 +35,7 @@ services:
       - zookeeper
     image: bitnami/kafka:2.6.0
     restart: always
-    profiles:
-      - backend
+    profiles: ["backend"]
     ports:
       - '9093:9093'
     environment:
@@ -50,20 +55,20 @@ services:
       - kafka
     image: provectuslabs/kafka-ui
     restart: always
-    profiles: [backend]
+    profiles: ["ops"]
     ports:
       - '8080:8080'
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-  saga:
+  dev:
     depends_on:
       - mysql
       - kafka
     build:
       context: .
       dockerfile: ./Dockerfile.dev
-    profiles: [dev]
+    profiles: ["dev"]
     command: [air]
     volumes:
       - .:/src
@@ -71,7 +76,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.dev
-    profiles: [wire]
+    profiles: ["wire"]
     working_dir: /src/pkg/app
     command: [wire]
     volumes:
@@ -82,16 +87,16 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.dev
-    profiles: [migrate]
-    command: [./scripts/migrate.sh]
+    profiles: ["migrate"]
+    command: ["./scripts/migrate.sh", "up"]
     volumes:
       - .:/src
   swagger:
     build:
       context: .
       dockerfile: ./Dockerfile.dev
-    command: [./scripts/swagger.sh]
-    profiles: [swagger]
+    command: ["./scripts/swagger.sh"]
+    profiles: ["swagger"]
     volumes:
       - .:/src
 
