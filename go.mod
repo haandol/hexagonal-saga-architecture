@@ -18,6 +18,7 @@ require (
 	github.com/twmb/franz-go/plugin/kzap v1.1.1
 	go.uber.org/ratelimit v0.2.0
 	go.uber.org/zap v1.23.0
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	gorm.io/datatypes v1.0.7
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0

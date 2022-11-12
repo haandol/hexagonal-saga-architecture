@@ -6,10 +6,10 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/poller"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
-	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/pollerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"golang.org/x/sync/errgroup"
 )
 
 type MessageRelayApp struct {
@@ -33,18 +33,23 @@ func (app *MessageRelayApp) Init() {
 		"func", "Init",
 	)
 	logger.Info("Initializing...")
-
-	util.InitXray()
 }
 
-func (app *MessageRelayApp) Start() {
+func (app *MessageRelayApp) Start(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "MessageRelayApp",
 		"func", "Start",
 	)
 	logger.Info("Starting...")
 
-	go app.outboxPoller.Poll()
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		return app.outboxPoller.Poll(ctx)
+	})
+
+	logger.Info("App Started.")
+
+	return g.Wait()
 }
 
 func (app *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
@@ -60,18 +65,6 @@ func (app *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		logger.Error("Failed to close poller", "error", err)
 	}
 	logger.Info("Poller stopped.")
-
-	logger.Info("Closing database connection...")
-	if err := database.Close(ctx); err != nil {
-		logger.Error("Error on database close:", err)
-	}
-	logger.Info("Database connection closed.")
-
-	logger.Info("Closing producer...")
-	if err := app.producer.Close(ctx); err != nil {
-		logger.Error("Error on producer close:", err)
-	}
-	logger.Info("Producer connection closed.")
 
 	logger.Info("Cleanup done.")
 }

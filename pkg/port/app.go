@@ -7,6 +7,6 @@ import (
 
 type App interface {
 	Init()
-	Start()
+	Start(context.Context) error
 	Cleanup(context.Context, *sync.WaitGroup)
 }

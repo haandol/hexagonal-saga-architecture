@@ -62,9 +62,6 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
   dev:
-    depends_on:
-      - mysql
-      - kafka
     build:
       context: .
       dockerfile: ./Dockerfile.dev
@@ -82,8 +79,6 @@ services:
     volumes:
       - .:/src
   migrate:
-    depends_on:
-      - mysql
     build:
       context: .
       dockerfile: ./Dockerfile.dev

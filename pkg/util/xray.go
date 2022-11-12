@@ -21,7 +21,7 @@ func InitXray() {
 
 	ecs.Init()
 
-	s, _ := sampling.NewLocalizedStrategyFromFilePath("../../xray.json")
+	s, _ := sampling.NewLocalizedStrategyFromFilePath("./xray.json")
 	if err := xray.Configure(xray.Config{
 		ServiceVersion:   "1.2.3",
 		SamplingStrategy: s,

@@ -37,7 +37,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
 		logger.Errorw("failed to query unsent messages", "err", err.Error())
-		return []dto.Outbox{}, err
+		return nil, err
 	}
 
 	return messages, nil

@@ -9,17 +9,17 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
-	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"golang.org/x/sync/errgroup"
 )
 
 type TripApp struct {
 	server      *http.Server
 	routerGroup routerport.RouterGroup
 	routers     []routerport.Router
-	consumers   []consumerport.Consumer
+	consumer    consumerport.Consumer
 }
 
 func NewTripApp(
@@ -33,63 +33,65 @@ func NewTripApp(
 		tripRouter,
 		efsRouter,
 	}
-	consumers := []consumerport.Consumer{
-		tripConsumer,
-	}
 
 	return &TripApp{
 		server:      server,
 		routerGroup: ginRouter,
 		routers:     routers,
-		consumers:   consumers,
+		consumer:    tripConsumer,
 	}
 }
 
-func (app *TripApp) Init() {
+func (a *TripApp) Init() {
 	logger := util.GetLogger().With(
 		"module", "TripApp",
 		"func", "Init",
 	)
 	logger.Info("Initializing...")
 
-	v1 := app.routerGroup.Group("v1")
-	for _, router := range app.routers {
+	v1 := a.routerGroup.Group("v1")
+	for _, router := range a.routers {
 		router.Route(v1)
 	}
 	logger.Info("routers are initialized.")
 
-	for _, c := range app.consumers {
-		c.Init()
-	}
+	a.consumer.Init()
 	logger.Info("consumers are initialized.")
-
-	util.InitXray()
 }
 
-func (app *TripApp) Start() {
+func (a *TripApp) Start(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "TripApp",
 		"func", "Start",
 	)
 	logger.Info("Starting...")
 
-	go func() {
-		logger.Infow("Started and serving HTTP", "addr", app.server.Addr, "pid", os.Getpid())
-		if err := app.server.ListenAndServe(); err != nil {
-			if errors.Is(err, http.ErrServerClosed) {
-				logger.Info("server closed.")
-			} else {
-				logger.Panicw("ListenAndServe fail", "error", err)
+	g := new(errgroup.Group)
+	if a.server != nil {
+		g.Go(func() error {
+			logger.Infow("Started and serving HTTP", "addr", a.server.Addr, "pid", os.Getpid())
+			if err := a.server.ListenAndServe(); err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					logger.Info("server closed.")
+					return err
+				} else {
+					logger.Errorw("listenAndServe fail", "error", err)
+					return err
+				}
 			}
-		}
-	}()
-
-	for _, c := range app.consumers {
-		go c.Consume()
+			return nil
+		})
 	}
+	g.Go(func() error {
+		return a.consumer.Consume(ctx)
+	})
+
+	logger.Info("App Started.")
+
+	return g.Wait()
 }
 
-func (app *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
+func (a *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	logger := util.GetLogger().With(
 		"module", "TripApp",
@@ -98,20 +100,14 @@ func (app *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	logger.Info("Cleaning up...")
 
 	logger.Info("Shutting down server...")
-	if err := app.server.Shutdown(ctx); err != nil {
-		logger.Error("Error on server shutdown:", err)
+	if err := a.server.Shutdown(ctx); err != nil {
+		logger.Error("error on server shutdown:", err)
 	}
 	logger.Info("Server shutdown.")
 
-	logger.Info("Closing database connection...")
-	if err := database.Close(ctx); err != nil {
-		logger.Error("Error on database close:", err)
-	}
-	logger.Info("Database connection closed.")
-
 	logger.Info("Closing consumers...")
-	for _, c := range app.consumers {
-		c.Close(ctx)
+	if err := a.consumer.Close(ctx); err != nil {
+		logger.Error("error on consumer close:", err)
 	}
 	logger.Info("Consumer connection closed.")
 

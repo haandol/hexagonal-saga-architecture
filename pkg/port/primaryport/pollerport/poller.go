@@ -6,6 +6,6 @@ import (
 
 type Poller interface {
 	Init()
-	Poll()
+	Poll(context.Context) error
 	Close(context.Context) error
 }

@@ -9,36 +9,66 @@ import (
 
 	"github.com/haandol/hexagonal/pkg/app"
 	"github.com/haandol/hexagonal/pkg/config"
+	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
-var applications []port.App
+var (
+	applications []port.App
+)
 
 // bootstrap - register apps
 func bootstrap(cfg *config.Config) {
-	applications = append(applications, app.InitCarApp(cfg))
+	applications = append(applications,
+		app.InitCarApp(cfg),
+	)
 }
 
 func initialize() {
-	for _, app := range applications {
-		app.Init()
+	for _, a := range applications {
+		a.Init()
 	}
+
+	util.InitXray()
 }
 
-func start() {
-	for _, app := range applications {
-		app.Start()
+func start(ctx context.Context, ch chan error) {
+	logger := util.GetLogger().With(
+		"module", "start",
+	)
+	logger.Info("Starting apps...")
+
+	for _, a := range applications {
+		a := a
+		go func() {
+			if err := a.Start(ctx); err != nil {
+				ch <- err
+			}
+		}()
 	}
+
+	logger.Info("Apps started")
 }
 
 func cleanup(ctx context.Context) {
+	logger := util.GetLogger().With(
+		"module", "cleanup",
+	)
+
 	var wg sync.WaitGroup
-	for _, app := range applications {
+	for _, a := range applications {
 		wg.Add(1)
-		go app.Cleanup(ctx, &wg)
+		go a.Cleanup(ctx, &wg)
 	}
 	wg.Wait()
+
+	logger.Infow("Closing database connection...")
+	if err := database.Close(ctx); err != nil {
+		logger.Errorw("error on database close", "err", err.Error())
+	} else {
+		logger.Info("Database connection closed.")
+	}
 }
 
 func main() {
@@ -46,7 +76,6 @@ func main() {
 	logger := util.InitLogger(cfg.App.Stage).With(
 		"module", "main",
 	)
-
 	logger.Infow("\n==== Config ====\n\n", "config", cfg)
 
 	logger.Info("Bootstraping apps...")
@@ -56,13 +85,23 @@ func main() {
 	initialize()
 
 	logger.Info("Starting apps...")
-	start()
+	appErr := make(chan error)
+	ctx, cancel := context.WithCancel(context.Background())
+	start(ctx, appErr)
 
 	sigs := make(chan os.Signal, 2)
 	signal.Notify(sigs, os.Interrupt)
-	<-sigs
 
-	ctx, cancel := context.WithTimeout(
+	select {
+	case err := <-appErr:
+		cancel()
+		logger.Errorw("error on job", "err", err.Error())
+	case <-sigs:
+		cancel()
+		logger.Info("User interrupt for quitting...")
+	}
+
+	ctx, cancel = context.WithTimeout(
 		context.Background(),
 		time.Second*time.Duration(cfg.App.GracefulShutdownTimeout),
 	)

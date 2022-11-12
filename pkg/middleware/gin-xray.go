@@ -9,14 +9,11 @@ import (
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/pkg/constant"
-	"github.com/haandol/hexagonal/pkg/util"
 )
 
 const headerTraceID = "X-Amzn-Trace-Id"
 
 func XrayTracing(skipPaths []string) gin.HandlerFunc {
-	util.InitXray()
-
 	return func(c *gin.Context) {
 		for _, skipPath := range skipPaths {
 			if strings.HasPrefix(c.Request.URL.Path, skipPath) {

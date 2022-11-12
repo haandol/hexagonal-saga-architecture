@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -33,7 +34,7 @@ func NewKafkaConsumer(cfg *config.Kafka, groupID, topic string) *KafkaConsumer {
 
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
-		log.Panic(err.Error())
+		log.Panic(err)
 	}
 
 	return &KafkaConsumer{
@@ -51,10 +52,12 @@ func buildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
 		kgo.DisableAutoCommit(),
-		kgo.AllowAutoTopicCreation(), // TODO: only for the dev
+		kgo.FetchMaxWait(1 * time.Second),
+		kgo.FetchMaxBytes(70 * 1024 * 1024), // 70MB
+		kgo.AllowAutoTopicCreation(),        // TODO: only for the dev
 		kgo.WithLogger(kzap.New(
 			util.GetLogger().With("package", "consumer").Desugar(),
-			kzap.Level(kgo.LogLevelInfo),
+			kzap.Level(kgo.LogLevelWarn),
 		)),
 	}
 }
@@ -78,63 +81,88 @@ func (c *KafkaConsumer) RegisterHandler(h consumerport.HandlerFunc) error {
 }
 
 // Consume - consume messages from Kafka and dispatch to handlers
-func (c *KafkaConsumer) Consume() {
+func (c *KafkaConsumer) Consume(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "KafkaConsumer",
 		"func", "Consume",
+		"topic", c.topic,
 	)
 	logger.Infow("Consuming Topic", "topic", c.topic)
 
 	// check initialized
 	if c.handler == nil {
-		logger.Panic("handler not registered")
+		return errors.New("handler not registered")
 	}
 
 	for {
-		logger.Infow("Polling...", "topic", c.topic)
+		logger.Info("Polling...")
 		ctx := context.Background()
 
 		fetches := c.client.PollRecords(ctx, c.batchSize)
 		if fetches.IsClientClosed() {
-			logger.Infow("Client closed", "topic", c.topic)
-			return
+			return errors.New("kafka client closed")
 		}
 		if errs := fetches.Errors(); len(errs) > 0 {
-			logger.Panicw("failed to fetch records", "topic", c.topic, "err", errs[0].Err.Error())
+			return errs[0].Err
 		}
 
-		fetches.EachRecord(func(record *kgo.Record) {
-			key := string(record.Key)
-			logger.Infow("Message received", "key", key)
-
-			message := &consumerport.Message{
-				Topic:     record.Topic,
-				Key:       key,
-				Value:     record.Value,
-				Timestamp: record.Timestamp,
-			}
-			if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
-				logger.Warnw("message expired", "expirySec", c.messageExpiry, "key", key)
-				return
-			}
-
-			if err := c.handler(ctx, message); err != nil {
-				logger.Panicw("error handling message", "err", err.Error())
-			}
-		})
+		if err := c.handleFetchesInOrder(ctx, &fetches); err != nil {
+			return err
+		}
 
 		if err := c.client.CommitUncommittedOffsets(ctx); err != nil {
-			logger.Panicw("failed to commit offsets", "topic", c.topic, "err", err.Error())
+			return err
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 	}
+}
+
+func (c *KafkaConsumer) handleFetchesInOrder(ctx context.Context, fetches *kgo.Fetches) error {
+	logger := util.GetLogger().With(
+		"module", "KafkaConsumer",
+		"func", "handleFetchesInOrder",
+		"topic", c.topic,
+	)
+
+	var errs []error
+	fetches.EachRecord(func(record *kgo.Record) {
+		key := string(record.Key)
+		logger.Infow("Message received", "key", key)
+
+		message := &consumerport.Message{
+			Topic:     record.Topic,
+			Key:       key,
+			Value:     record.Value,
+			Timestamp: record.Timestamp,
+		}
+		if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
+			logger.Warnw("message expired", "expirySec", c.messageExpiry, "key", key)
+			return
+		}
+
+		if err := c.handler(ctx, message); err != nil {
+			errs = append(errs, err)
+		}
+	})
+	if len(errs) > 0 {
+		return fmt.Errorf("%v", errs)
+	}
+
+	return nil
 }
 
 func (c *KafkaConsumer) Close(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "KafkaConsumer",
 		"func", "Close",
+		"topic", c.topic,
 	)
-	logger.Infow("Closing...", "topic", c.topic)
+	logger.Info("Closing...")
 
 	c.client.Close()
 	return nil

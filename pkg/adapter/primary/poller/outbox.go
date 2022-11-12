@@ -10,8 +10,6 @@ import (
 )
 
 type OutboxPoller struct {
-	closing       chan bool
-	closed        chan error
 	batchSize     int
 	batchInterval time.Duration
 	relayService  *service.MessageRelayService
@@ -22,50 +20,67 @@ func NewOutboxPoller(
 	relayService *service.MessageRelayService,
 ) *OutboxPoller {
 	return &OutboxPoller{
-		closing:       make(chan bool),
-		closed:        make(chan error),
 		batchSize:     cfg.Relay.FetchSize,
 		batchInterval: time.Duration(cfg.Relay.FetchIntervalMil) * time.Millisecond,
 		relayService:  relayService,
 	}
 }
 
-func (c *OutboxPoller) Init() {
-}
+func (c *OutboxPoller) Init() {}
 
-func (c *OutboxPoller) Poll() {
+func (c *OutboxPoller) Poll(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "OutboxPoller",
 		"func", "Poll",
 	)
 
 	logger.Infow("Polling outbox...", "time", time.Now().Format(time.RFC3339))
+	jobDone := make(chan error)
 	for {
 		select {
-		case <-c.closing:
-			c.closed <- nil
-			return
+		case <-ctx.Done():
+			return ctx.Err()
 		default:
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			defer cancel()
+			ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+			go func() {
+				defer cancel()
+				messages, err := c.relayService.Fetch(ctx, c.batchSize)
+				if err != nil {
+					logger.Errorw("Failed to fetch messages", "err", err)
+					jobDone <- err
+				}
+				logger.Debugw("Fetched messages", "messages", messages)
 
-			messages, err := c.relayService.Fetch(ctx, c.batchSize)
-			if err != nil {
-				logger.Errorw("Failed to fetch messages", "err", err)
-				return
+				if len(messages) > 0 {
+					if err := c.relayService.Relay(ctx, messages); err != nil {
+						logger.Errorw("Failed to relay messages", "err", err)
+						jobDone <- err
+					}
+				}
+
+				jobDone <- nil
+			}()
+			select {
+			case err := <-jobDone:
+				logger.Infow("jobDone", "err", err)
+				if err != nil {
+					return err
+				}
+			case <-ctx.Done():
+				logger.Infow("ctx.Done", "err", ctx.Err())
 			}
 
-			if err := c.relayService.Relay(ctx, messages); err != nil {
-				logger.Errorw("Failed to relay messages", "err", err)
-				return
-			}
-
+			logger.Debugw("Sleep...", "interval", c.batchInterval)
 			time.Sleep(c.batchInterval)
 		}
 	}
 }
 
 func (c *OutboxPoller) Close(ctx context.Context) error {
-	c.closing <- true
-	return <-c.closed
+	logger := util.GetLogger().With(
+		"module", "OutboxPoller",
+		"func", "Close",
+	)
+	logger.Info("Closing poller...")
+	return nil
 }
