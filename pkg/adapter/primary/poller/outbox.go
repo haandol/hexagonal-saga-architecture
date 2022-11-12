@@ -41,7 +41,7 @@ func (c *OutboxPoller) Poll(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			go func() {
 				defer cancel()
 				messages, err := c.relayService.Fetch(ctx, c.batchSize)
