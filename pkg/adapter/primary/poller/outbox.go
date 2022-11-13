@@ -49,9 +49,8 @@ func (c *OutboxPoller) Poll(ctx context.Context) error {
 					logger.Errorw("Failed to fetch messages", "err", err)
 					jobDone <- err
 				}
-				logger.Debugw("Fetched messages", "messages", messages)
-
 				if len(messages) > 0 {
+					logger.Infow("Fetched messages", "messages", messages)
 					if err := c.relayService.Relay(ctx, messages); err != nil {
 						logger.Errorw("Failed to relay messages", "err", err)
 						jobDone <- err
@@ -62,15 +61,14 @@ func (c *OutboxPoller) Poll(ctx context.Context) error {
 			}()
 			select {
 			case err := <-jobDone:
-				logger.Infow("jobDone", "err", err)
 				if err != nil {
+					logger.Errorw("error on jobDone", "err", err)
 					return err
 				}
 			case <-ctx.Done():
 				logger.Infow("ctx.Done", "err", ctx.Err())
 			}
 
-			logger.Debugw("Sleep...", "interval", c.batchInterval)
 			time.Sleep(c.batchInterval)
 		}
 	}
