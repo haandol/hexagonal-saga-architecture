@@ -62,13 +62,17 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
   dev:
-    build:
-      context: .
-      dockerfile: ./Dockerfile.dev
-    profiles: ["dev"]
-    command: [air]
+    image: cosmtrek/air
+    working_dir: /src
     volumes:
       - .:/src
+      - ~/.aws:/root/.aws
+  migrate:
+    image: haandol/goose:3.7.0
+    working_dir: /migrations
+    volumes:
+      - .:/migrations
+    entrypoint: ["./scripts/migrate.sh", "up"]
   wire:
     build:
       context: .
@@ -76,14 +80,6 @@ services:
     profiles: ["wire"]
     working_dir: /src/pkg/app
     command: [wire]
-    volumes:
-      - .:/src
-  migrate:
-    build:
-      context: .
-      dockerfile: ./Dockerfile.dev
-    profiles: ["migrate"]
-    command: ["./scripts/migrate.sh", "up"]
     volumes:
       - .:/src
   swagger:
