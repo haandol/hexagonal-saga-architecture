@@ -13,7 +13,7 @@ RUN touch ~/.ssh/known_hosts
 RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
 # manage dependencies
-COPY go.* ./
+COPY go.mod go.sum ./
 # disable proxy for VPN
 RUN go env -w GOPROXY=direct
 RUN go mod download

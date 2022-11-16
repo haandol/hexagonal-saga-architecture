@@ -8,7 +8,7 @@ ENV GONOSUMDB github.com/haandol
 ENV GOPRIVATE github.com/haandol
 
 # manage dependencies
-COPY go.* ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # build
