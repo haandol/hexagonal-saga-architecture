@@ -5,6 +5,5 @@ import (
 )
 
 type Producer interface {
-	Produce(ctx context.Context, topic string, key string, val []byte) error
-	Close(context.Context) error
+	Produce(ctx context.Context, topic, key string, val []byte) error
 }

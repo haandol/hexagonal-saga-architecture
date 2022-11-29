@@ -10,6 +10,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/service"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type FlightConsumer struct {
@@ -50,7 +51,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	}
 
 	logger.Infow("Received command", "command", msg)
-	ctx, seg := util.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## FlightConsumer")
+	ctx, seg := o11y.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## FlightConsumer")
 	seg.AddMetadata("msg", msg)
 	defer seg.Close(nil)
 

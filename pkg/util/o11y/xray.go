@@ -1,4 +1,4 @@
-package util
+package o11y
 
 import (
 	"context"

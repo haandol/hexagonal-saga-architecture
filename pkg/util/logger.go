@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -42,7 +43,7 @@ func GetLogger() *Logger {
 }
 
 func (l *Logger) WithContext(ctx context.Context) *zap.SugaredLogger {
-	segID := GetSegmentID(ctx)
+	segID := o11y.GetSegmentID(ctx)
 	return logger.With(
 		"TraceId", segID,
 	)

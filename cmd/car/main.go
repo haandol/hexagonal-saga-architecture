@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -12,9 +13,11 @@ import (
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 var (
+	BuildTag     string
 	applications []port.App
 )
 
@@ -30,7 +33,7 @@ func initialize() {
 		a.Init()
 	}
 
-	util.InitXray()
+	o11y.InitXray()
 }
 
 func start(ctx context.Context, ch chan error) {
@@ -75,8 +78,9 @@ func main() {
 	cfg := config.Load()
 	logger := util.InitLogger(cfg.App.Stage).With(
 		"module", "main",
+		"build_tag", BuildTag,
 	)
-	logger.Infow("\n==== Config ====\n\n", "config", cfg)
+	logger.Infow("\n==== Config ====\n\n", "config", fmt.Sprintf("%v", cfg))
 
 	logger.Info("Bootstraping apps...")
 	bootstrap(&cfg)

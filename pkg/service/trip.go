@@ -11,6 +11,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type TripService struct {
@@ -33,7 +34,7 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 	)
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := util.GetSegmentID(ctx)
+	parentID := o11y.GetSegmentID(ctx)
 	trip, err := s.tripRepository.Create(ctx, corrID, parentID, d)
 	if err != nil {
 		logger.Errorw("failed to create trip", "trip", d, "err", err.Error())
@@ -50,7 +51,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 	)
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := util.GetSegmentID(ctx)
+	parentID := o11y.GetSegmentID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
@@ -76,7 +77,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 	)
 
 	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := util.GetSegmentID(ctx)
+	parentID := o11y.GetSegmentID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {

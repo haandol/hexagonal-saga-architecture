@@ -2,12 +2,14 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/haandol/hexagonal/pkg/config"
+	"github.com/haandol/hexagonal/pkg/connector/cloud"
+	"github.com/haandol/hexagonal/pkg/connector/database/internal"
 	"github.com/haandol/hexagonal/pkg/util"
 	"moul.io/zapgorm2"
 
@@ -23,7 +25,30 @@ const (
 
 func getSQLDsn(cfg *config.Database) string {
 	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FSeoul"
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name, postfix)
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
+		cfg.Username, cfg.Password,
+		cfg.Host, cfg.Port,
+		cfg.Name, postfix,
+	)
+}
+
+func getSQLDsnFromSecretsManager(cfg *config.Database) string {
+	awsCfg, err := cloud.GetAWSConfigWithProfile("skt")
+	if err != nil {
+		log.Fatalf("unable to get AWS Config %s", err.Error())
+	}
+
+	secrets, err := internal.GetSecretsWithID(&awsCfg.Cfg, cfg.SecretID)
+	if err != nil {
+		log.Fatalf("unable to get secrets %s", err.Error())
+	}
+
+	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FSeoul"
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
+		secrets.Username, secrets.Password,
+		secrets.Host, secrets.Port,
+		cfg.Name, postfix,
+	)
 }
 
 func initDB(cfg *config.Database) {
@@ -33,16 +58,32 @@ func initDB(cfg *config.Database) {
 
 	logger := zapgorm2.New(util.GetLogger().With("package", "mysql").Desugar())
 	logger.SetAsDefault()
+
+	var dsn string
+	if cfg.SecretID == "" {
+		log.Println("dsn from config")
+		dsn = getSQLDsn(cfg)
+	} else {
+		log.Println("dsn from secrets")
+		dsn = getSQLDsnFromSecretsManager(cfg)
+	}
+
 	db, err := gorm.Open(
-		mysql.Open(getSQLDsn(cfg)),
+		mysql.Open(dsn),
 		&gorm.Config{
 			Logger:      logger,
 			PrepareStmt: false,
 		},
 	)
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to open gorm %s", err.Error())
 	}
+
+	/* TODO: remove this if you want to trace db query
+	if err := db.Use(internal.NewPlugin()); err != nil {
+		log.Fatalf("failed to use otel plugin for gorm: %s", err.Error())
+	}
+	*/
 
 	gormDBs[cfg.Name] = db
 }
@@ -52,6 +93,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 		"pkg", "database",
 		"func", "Connect",
 	)
+	logger.Infow("Connecting to database...")
 
 	initDB(cfg)
 
@@ -59,7 +101,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 
 	sqlDB, err := gormDB.DB()
 	if err != nil {
-		logger.Error("failed to get DB instance", err)
+		logger.Error("failed to get DB instance", err.Error())
 		return nil, err
 	}
 
@@ -67,7 +109,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConnections)
 	sqlDB.SetConnMaxLifetime(DBConnMaxLifeTime)
 
-	logger.Infow("Connected to database", "host", cfg.Host, "port", cfg.Port, "name", cfg.Name)
+	logger.Infow("Connected to database")
 
 	return gormDB, nil
 }
@@ -79,23 +121,17 @@ func Close(ctx context.Context) error {
 	)
 	logger.Info("Closing database connection...")
 
-	var sqlDB *sql.DB
-	var err error
-
 	done := make(chan error)
-	ctx, cancel := context.WithCancel(ctx)
 	go func() {
-		defer cancel()
-
 		for name, db := range gormDBs {
-			sqlDB, err = db.DB()
+			sqlDB, err := db.DB()
 			if err != nil {
-				logger.Errorw("failed to get DB instance", "name", name, "error", err)
+				logger.Errorw("failed to get DB instance", "name", name, "error", err.Error())
 				continue
 			}
 
 			if err = sqlDB.Close(); err != nil {
-				logger.Errorw("failed to close sqlDB", "name", name, "error", err)
+				logger.Errorw("failed to close sqlDB", "name", name, "error", err.Error())
 			}
 
 			logger.Infow("Closed database", "name", name)
@@ -104,7 +140,7 @@ func Close(ctx context.Context) error {
 	}()
 
 	select {
-	case <-done:
+	case err := <-done:
 		return err
 	case <-ctx.Done():
 		return errors.New("timeout closing redis connection")

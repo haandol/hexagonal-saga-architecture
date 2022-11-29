@@ -12,19 +12,39 @@ import (
 	"github.com/twmb/franz-go/plugin/kzap"
 )
 
+var (
+	kafkaProducer *KafkaProducer
+)
+
 type KafkaProducer struct {
 	client *kgo.Client
 	pool   *sync.Pool
 }
 
-func NewKafkaProducer(cfg *config.Config) *KafkaProducer {
-	opts := BuildProducerOpts(cfg.Kafka.Seeds)
-	if strings.Contains(cfg.Kafka.Seeds[0], "9094") {
+func Connect(cfg *config.Kafka) (*KafkaProducer, error) {
+	if kafkaProducer == nil {
+		kafkaProducer = newKafkaProducer(cfg)
+	}
+
+	if err := kafkaProducer.client.Ping(context.Background()); err != nil {
+		return nil, err
+	}
+
+	return kafkaProducer, nil
+}
+
+func newKafkaProducer(cfg *config.Kafka) *KafkaProducer {
+	opts := buildProducerOpts(cfg.Seeds)
+	if strings.Contains(cfg.Seeds[0], "9094") {
 		opts = append(opts, kgo.DialTLSConfig(new(tls.Config)))
 	}
 
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
+		panic(err)
+	}
+
+	if err := client.Ping(context.Background()); err != nil {
 		panic(err)
 	}
 
@@ -39,11 +59,11 @@ func NewKafkaProducer(cfg *config.Config) *KafkaProducer {
 	}
 }
 
-func BuildProducerOpts(seeds []string) []kgo.Opt {
+func buildProducerOpts(seeds []string) []kgo.Opt {
 	return []kgo.Opt{
 		kgo.SeedBrokers(seeds...),
-		kgo.ProducerLinger(0),
 		kgo.AllowAutoTopicCreation(), // for dev only
+		kgo.RecordPartitioner(kgo.StickyKeyPartitioner(nil)),
 		kgo.ProducerBatchCompression(kgo.GzipCompression()),
 		kgo.WithLogger(kzap.New(
 			util.GetLogger().With("package", "producer").Desugar(),
@@ -52,7 +72,7 @@ func BuildProducerOpts(seeds []string) []kgo.Opt {
 	}
 }
 
-func (p KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
+func (p *KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
 	r := p.pool.Get().(*kgo.Record)
 	r.Topic = topic
 	r.Key = []byte(key)
@@ -61,7 +81,7 @@ func (p KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
 }
 
 func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []byte) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.GetLogger().With(
 		"module", "KafkaProducer",
 		"func", "Produce",
 	)
@@ -72,22 +92,29 @@ func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []by
 		logger.Errorw("produce failed", "err", err.Error())
 		return err
 	}
-	logger.Debugw("Message produced", "record", r)
+	logger.Debugw("Message produced", "sent bytes", len(r.Value))
 	p.pool.Put(r)
 	return nil
 }
 
-func (p *KafkaProducer) Close(ctx context.Context) error {
+func Close(ctx context.Context) error {
 	logger := util.GetLogger().With(
 		"module", "KafkaProducer",
 		"func", "Close",
 	)
-	logger.Info("Closing...")
+	logger.Info("Closing producer...")
 
-	if err := p.client.Flush(ctx); err != nil {
-		logger.Errorw("failed to flush", "err", err.Error())
+	if kafkaProducer == nil {
+		logger.Warn("Producer is not connected")
+		return nil
 	}
 
-	p.client.Close()
+	if err := kafkaProducer.client.Flush(ctx); err != nil {
+		logger.Errorw("failed to flush", "err", err.Error())
+		return err
+	}
+
+	kafkaProducer.client.Close()
+
 	return nil
 }

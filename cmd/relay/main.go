@@ -10,8 +10,10 @@ import (
 	"github.com/haandol/hexagonal/pkg/app"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
+	"github.com/haandol/hexagonal/pkg/connector/producer"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 var (
@@ -30,7 +32,7 @@ func initialize() {
 		a.Init()
 	}
 
-	util.InitXray()
+	o11y.InitXray()
 }
 
 func start(ctx context.Context, ch chan error) {
@@ -68,6 +70,13 @@ func cleanup(ctx context.Context) {
 		logger.Errorw("error on database close", "err", err.Error())
 	} else {
 		logger.Info("Database connection closed.")
+	}
+
+	logger.Infow("Closing producer connection...")
+	if err := producer.Close(ctx); err != nil {
+		logger.Error("error on producer close:", err.Error())
+	} else {
+		logger.Info("Producer connection closed.")
 	}
 }
 

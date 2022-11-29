@@ -34,10 +34,11 @@ func (a *HotelApp) Init() {
 		"module", "HotelApp",
 		"func", "Init",
 	)
-	logger.Info("Initializing...")
+	logger.Info("Initializing App...")
 
 	a.consumer.Init()
-	logger.Info("consumers are initialized.")
+
+	logger.Info("App Initialized")
 }
 
 func (a *HotelApp) Start(ctx context.Context) error {
@@ -45,7 +46,7 @@ func (a *HotelApp) Start(ctx context.Context) error {
 		"module", "HotelApp",
 		"func", "Start",
 	)
-	logger.Info("Starting...")
+	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
 	if a.server != nil {
@@ -67,7 +68,7 @@ func (a *HotelApp) Start(ctx context.Context) error {
 		return a.consumer.Consume(ctx)
 	})
 
-	logger.Info("App Started.")
+	logger.Info("App Started")
 
 	return g.Wait()
 }
@@ -75,10 +76,10 @@ func (a *HotelApp) Start(ctx context.Context) error {
 func (a *HotelApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	logger := util.GetLogger().With(
-		"module", "HotelApp",
+		"module", "SagaApp",
 		"func", "Cleanup",
 	)
-	logger.Info("Cleaning up...")
+	logger.Info("Cleaning App...")
 
 	if a.server != nil {
 		logger.Info("Shutting down server...")
@@ -88,12 +89,11 @@ func (a *HotelApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		logger.Info("Server shutdown.")
 	}
 
-	logger.Info("Closing consumers...")
 	if err := a.consumer.Close(ctx); err != nil {
 		logger.Errorw("failed to close consumer", "err", err.Error())
 	} else {
 		logger.Info("Consumer closed.")
 	}
 
-	logger.Info("Cleanup done.")
+	logger.Info("App Cleaned Up")
 }

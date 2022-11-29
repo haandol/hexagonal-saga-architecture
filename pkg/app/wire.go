@@ -13,6 +13,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
+	kafkaconnector "github.com/haandol/hexagonal/pkg/connector/producer"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/service"
@@ -20,10 +21,6 @@ import (
 )
 
 // Common
-var (
-	kafkaProducer *producer.KafkaProducer
-)
-
 func provideDB(cfg *config.Config) *gorm.DB {
 	db, err := database.Connect(&cfg.TripDB)
 	if err != nil {
@@ -32,12 +29,11 @@ func provideDB(cfg *config.Config) *gorm.DB {
 	return db
 }
 
-func provideProducer(cfg *config.Config) *producer.KafkaProducer {
-	if kafkaProducer != nil {
-		return kafkaProducer
+func provideProducer(cfg *config.Config) *kafkaconnector.KafkaProducer {
+	kafkaProducer, err := kafkaconnector.Connect(&cfg.Kafka)
+	if err != nil {
+		panic(err)
 	}
-
-	kafkaProducer = producer.NewKafkaProducer(cfg)
 	return kafkaProducer
 }
 

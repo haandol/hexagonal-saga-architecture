@@ -11,10 +11,11 @@ import (
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/poller"
 	"github.com/haandol/hexagonal/pkg/adapter/primary/router"
-	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
+	producer2 "github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
+	"github.com/haandol/hexagonal/pkg/connector/producer"
 	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/service"
@@ -46,7 +47,7 @@ func InitSagaApp(cfg *config.Config) port.App {
 	sagaRepository := repository.NewSagaRepository(db)
 	sagaService := service.NewSagaService(sagaProducer, sagaRepository)
 	sagaConsumer := provideSagaConsumer(cfg, sagaService)
-	sagaApp := NewSagaApp(server, sagaConsumer, sagaProducer)
+	sagaApp := NewSagaApp(server, sagaConsumer)
 	return sagaApp
 }
 
@@ -62,12 +63,12 @@ func InitCarApp(cfg *config.Config) port.App {
 }
 
 func InitMessageRelayApp(cfg *config.Config) port.App {
-	producerKafkaProducer := provideProducer(cfg)
+	kafkaProducer := provideProducer(cfg)
 	db := provideDB(cfg)
 	outboxRepository := repository.NewOutboxRepository(db)
-	messageRelayService := service.NewMessageRelayService(producerKafkaProducer, outboxRepository)
+	messageRelayService := service.NewMessageRelayService(kafkaProducer, outboxRepository)
 	outboxPoller := poller.NewOutboxPoller(cfg, messageRelayService)
-	messageRelayApp := NewMessageRelayApp(outboxPoller, producerKafkaProducer)
+	messageRelayApp := NewMessageRelayApp(outboxPoller)
 	return messageRelayApp
 }
 
@@ -96,10 +97,6 @@ func InitFlightApp(cfg *config.Config) port.App {
 // wire.go:
 
 // Common
-var (
-	kafkaProducer *producer.KafkaProducer
-)
-
 func provideDB(cfg *config.Config) *gorm.DB {
 	db, err := database.Connect(&cfg.TripDB)
 	if err != nil {
@@ -109,11 +106,10 @@ func provideDB(cfg *config.Config) *gorm.DB {
 }
 
 func provideProducer(cfg *config.Config) *producer.KafkaProducer {
-	if kafkaProducer != nil {
-		return kafkaProducer
+	kafkaProducer, err := producer.Connect(&cfg.Kafka)
+	if err != nil {
+		panic(err)
 	}
-
-	kafkaProducer = producer.NewKafkaProducer(cfg)
 	return kafkaProducer
 }
 
@@ -139,9 +135,9 @@ func provideSagaConsumer(
 	return consumer.NewSagaConsumer(kafkaConsumer, sagaService)
 }
 
-func provideSagaProducer(cfg *config.Config) *producer.SagaProducer {
-	kafkaProducer2 := provideProducer(cfg)
-	return producer.NewSagaProducer(kafkaProducer2)
+func provideSagaProducer(cfg *config.Config) *producer2.SagaProducer {
+	kafkaProducer := provideProducer(cfg)
+	return producer2.NewSagaProducer(kafkaProducer)
 }
 
 // CarApp

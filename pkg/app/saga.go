@@ -10,27 +10,22 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/haandol/hexagonal/pkg/adapter/primary/consumer"
-	"github.com/haandol/hexagonal/pkg/adapter/secondary/producer"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
-	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/util"
 )
 
 type SagaApp struct {
 	server   *http.Server
 	consumer consumerport.Consumer
-	producer producerport.Producer
 }
 
 func NewSagaApp(
 	server *http.Server,
 	sagaConsumer *consumer.SagaConsumer,
-	sagaProducer *producer.SagaProducer,
 ) *SagaApp {
 	return &SagaApp{
 		server:   server,
 		consumer: sagaConsumer,
-		producer: sagaProducer,
 	}
 }
 
@@ -39,10 +34,11 @@ func (a *SagaApp) Init() {
 		"module", "SagaApp",
 		"func", "Init",
 	)
-	logger.Info("Initializing...")
+	logger.Info("Initializing App...")
 
 	a.consumer.Init()
-	logger.Info("consumers are initialized.")
+
+	logger.Info("App Initialized")
 }
 
 func (a *SagaApp) Start(ctx context.Context) error {
@@ -50,7 +46,7 @@ func (a *SagaApp) Start(ctx context.Context) error {
 		"module", "SagaApp",
 		"func", "Start",
 	)
-	logger.Info("Starting...")
+	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
 	if a.server != nil {
@@ -72,7 +68,7 @@ func (a *SagaApp) Start(ctx context.Context) error {
 		return a.consumer.Consume(ctx)
 	})
 
-	logger.Info("App Started.")
+	logger.Info("App Started")
 
 	return g.Wait()
 }
@@ -83,7 +79,7 @@ func (a *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		"module", "SagaApp",
 		"func", "Cleanup",
 	)
-	logger.Info("Cleaning up...")
+	logger.Info("Cleaning App...")
 
 	if a.server != nil {
 		logger.Info("Shutting down server...")
@@ -93,18 +89,11 @@ func (a *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		logger.Info("Server shutdown.")
 	}
 
-	logger.Info("Closing producer...")
-	if err := a.producer.Close(ctx); err != nil {
-		logger.Error("Error on producer close:", err)
-	}
-	logger.Info("Producer connection closed.")
-
-	logger.Info("Closing consumers...")
 	if err := a.consumer.Close(ctx); err != nil {
 		logger.Errorw("failed to close consumer", "err", err.Error())
 	} else {
 		logger.Info("Consumer closed.")
 	}
 
-	logger.Info("Cleanup done.")
+	logger.Info("App Cleaned Up")
 }

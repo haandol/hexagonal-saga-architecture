@@ -52,6 +52,7 @@ func buildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.ConsumerGroup(group),
 		kgo.ConsumeTopics(topic),
 		kgo.DisableAutoCommit(),
+		kgo.Balancers(kgo.CooperativeStickyBalancer()), // explicit default rebalancer
 		kgo.FetchMaxWait(1 * time.Second),
 		kgo.FetchMaxBytes(70 * 1024 * 1024), // 70MB
 		kgo.AllowAutoTopicCreation(),        // TODO: only for the dev

@@ -7,18 +7,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/haandol/hexagonal/pkg/connector/producer"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type SagaProducer struct {
-	*KafkaProducer
+	*producer.KafkaProducer
 }
 
-func NewSagaProducer(kafkaProducer *KafkaProducer) *SagaProducer {
+func NewSagaProducer(kafkaProducer *producer.KafkaProducer) *SagaProducer {
 	return &SagaProducer{
 		KafkaProducer: kafkaProducer,
 	}
@@ -31,7 +33,7 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d *dto.Saga) error {
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookCarBody{
@@ -61,7 +63,7 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d *dto.Saga)
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelCarBookingBody{
@@ -91,7 +93,7 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d *dto.Saga) error 
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookHotelBody{
@@ -121,7 +123,7 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d *dto.Sag
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelHotelBookingBody{
@@ -151,7 +153,7 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d *dto.Saga) error
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookFlightBody{
@@ -181,7 +183,7 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d *dto.Sa
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelFlightBookingBody{
@@ -211,7 +213,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d *dto.Saga) error {
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: d.CorrelationID,
-			ParentID:      util.GetSegmentID(ctx),
+			ParentID:      o11y.GetSegmentID(ctx),
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.EndSagaBody{

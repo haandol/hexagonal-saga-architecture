@@ -47,7 +47,7 @@ func (a *TripApp) Init() {
 		"module", "TripApp",
 		"func", "Init",
 	)
-	logger.Info("Initializing...")
+	logger.Info("Initializing App...")
 
 	v1 := a.routerGroup.Group("v1")
 	for _, router := range a.routers {
@@ -56,7 +56,8 @@ func (a *TripApp) Init() {
 	logger.Info("routers are initialized.")
 
 	a.consumer.Init()
-	logger.Info("consumers are initialized.")
+
+	logger.Info("App Initialized")
 }
 
 func (a *TripApp) Start(ctx context.Context) error {
@@ -97,19 +98,21 @@ func (a *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 		"module", "TripApp",
 		"func", "Cleanup",
 	)
-	logger.Info("Cleaning up...")
+	logger.Info("Cleaning App...")
 
-	logger.Info("Shutting down server...")
-	if err := a.server.Shutdown(ctx); err != nil {
-		logger.Error("error on server shutdown:", err)
+	if a.server != nil {
+		logger.Info("Shutting down server...")
+		if err := a.server.Shutdown(ctx); err != nil {
+			logger.Error("Error on server shutdown:", err)
+		}
+		logger.Info("Server shutdown.")
 	}
-	logger.Info("Server shutdown.")
 
-	logger.Info("Closing consumers...")
 	if err := a.consumer.Close(ctx); err != nil {
-		logger.Error("error on consumer close:", err)
+		logger.Errorw("failed to close consumer", "err", err.Error())
+	} else {
+		logger.Info("Consumer closed.")
 	}
-	logger.Info("Consumer connection closed.")
 
-	logger.Info("Cleanup done.")
+	logger.Info("App Cleaned Up")
 }

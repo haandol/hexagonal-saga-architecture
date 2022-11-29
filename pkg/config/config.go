@@ -24,13 +24,14 @@ type Kafka struct {
 }
 
 type Database struct {
-	Host               string `validate:"required"`
-	Port               int    `validate:"required,number"`
-	Name               string `validate:"required"`
-	Username           string `validate:"required"`
-	Password           string `validate:"required"`
-	MaxOpenConnections int    `validate:"required,number"`
-	MaxIdleConnections int    `validate:"required,number"`
+	Host               string
+	Port               int
+	Name               string
+	Username           string
+	Password           string
+	SecretID           string
+	MaxOpenConnections int `validate:"required,number"`
+	MaxIdleConnections int `validate:"required,number"`
 }
 
 type Relay struct {
@@ -75,6 +76,7 @@ func Load() Config {
 			Name:               getEnv("DB_NAME").String(),
 			Username:           getEnv("DB_USERNAME").String(),
 			Password:           getEnv("DB_PASSWORD").String(),
+			SecretID:           getEnv("DB_SECRET_ID").String(),
 			MaxOpenConnections: getEnv("DB_MAX_OPEN_CONNECTIONS").Int(),
 			MaxIdleConnections: getEnv("DB_MAX_IDLE_CONNECTIONS").Int(),
 		},
@@ -87,5 +89,21 @@ func Load() Config {
 	if err := util.ValidateStruct(cfg); err != nil {
 		log.Panicf("Error validating config: %s", err.Error())
 	}
+
+	if cfg.TripDB.SecretID == "" {
+		if err := util.ValidateVar(cfg.TripDB.Host, "required"); err != nil {
+			log.Panicf("Error validating config: %s", err.Error())
+		}
+		if err := util.ValidateVar(cfg.TripDB.Port, "required"); err != nil {
+			log.Panicf("Error validating config: %s", err.Error())
+		}
+		if err := util.ValidateVar(cfg.TripDB.Username, "required"); err != nil {
+			log.Panicf("Error validating config: %s", err.Error())
+		}
+		if err := util.ValidateVar(cfg.TripDB.Password, "required"); err != nil {
+			log.Panicf("Error validating config: %s", err.Error())
+		}
+	}
+
 	return cfg
 }
