@@ -76,7 +76,7 @@ services:
   wire:
     build:
       context: .
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./Dockerfile.local
     profiles: ["wire"]
     working_dir: /src/pkg/app
     command: [wire]
@@ -85,7 +85,7 @@ services:
   swagger:
     build:
       context: .
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./Dockerfile.local
     command: ["./scripts/swagger.sh"]
     profiles: ["swagger"]
     volumes:

@@ -1,0 +1,45 @@
+version: '3'
+
+dotenv: [.env]
+
+
+tasks:
+  migrate-up:
+    cmds:
+      - |
+        echo $DB_USERNAME
+        echo $DB_HOST:$DB_PORT
+        export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME?parseTime=true"
+        goose -dir init mysql up
+        echo $(goose -dir init mysql status)
+
+  migrate-reset:
+    cmds:
+      - |
+        echo $DB_USERNAME
+        echo $DB_HOST:$DB_PORT
+        export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME?parseTime=true"
+        goose -dir init mysql reset
+        echo $(goose -dir init mysql status)
+
+  build-image:
+    vars:
+      BUILD_TAG:
+        sh: git rev-parse --short=10 HEAD
+    cmds:
+      - docker build -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
+
+  build-all:
+    cmds:
+      - task: build-image
+        vars: {APP_NAME: "car"}
+      - task: build-image
+        vars: {APP_NAME: "hotel"}
+      - task: build-image
+        vars: {APP_NAME: "flight"}
+      - task: build-image
+        vars: {APP_NAME: "saga"}
+      - task: build-image
+        vars: {APP_NAME: "trip"}
+      - task: build-image
+        vars: {APP_NAME: "relay"}

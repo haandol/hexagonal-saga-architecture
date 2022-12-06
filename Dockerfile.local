@@ -1,0 +1,27 @@
+FROM golang:1.19.2
+
+WORKDIR /src
+
+# set environment path
+ENV PATH /go/bin:$PATH
+ENV GONOSUMDB github.com/haandol
+ENV GOPRIVATE github.com/haandol
+
+# create ssh directory
+RUN mkdir ~/.ssh
+RUN touch ~/.ssh/known_hosts
+RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+# manage dependencies
+COPY go.mod go.sum ./
+# disable proxy for VPN
+RUN go env -w GOPROXY=direct
+RUN go mod download
+
+RUN go install github.com/google/wire/cmd/wire@latest
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
+RUN chmod +x /usr/local/bin/dumb-init
+
+ENTRYPOINT ["/usr/local/bin/dumb-init","--"]

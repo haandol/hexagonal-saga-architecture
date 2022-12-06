@@ -1,4 +1,4 @@
-FROM golang:1.19.2
+FROM golang:1.19.2 AS builder
 
 WORKDIR /src
 
@@ -7,21 +7,33 @@ ENV PATH /go/bin:$PATH
 ENV GONOSUMDB github.com/haandol
 ENV GOPRIVATE github.com/haandol
 
-# create ssh directory
-RUN mkdir ~/.ssh
-RUN touch ~/.ssh/known_hosts
-RUN ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-
 # manage dependencies
 COPY go.mod go.sum ./
-# disable proxy for VPN
 RUN go env -w GOPROXY=direct
 RUN go mod download
 
-RUN go install github.com/google/wire/cmd/wire@latest
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+# build
+COPY . ./
 
-RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
-RUN chmod +x /usr/local/bin/dumb-init
+ARG BUILD_TAG
+ARG APP_NAME
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.BuildTag=$BUILD_TAG -s" -o /go/bin/app ./cmd/${APP_NAME}
 
-ENTRYPOINT ["/usr/local/bin/dumb-init","--"]
+FROM alpine:3.16 AS server
+ARG GIT_COMMIT=undefined
+LABEL git_commit=$GIT_COMMIT
+
+RUN apk --no-cache add curl
+RUN apk --no-cache add tzdata
+RUN echo "Asia/Seoul" >  /etc/timezone
+
+WORKDIR /
+COPY --chown=0:0 --from=builder /go/bin/app /
+COPY --chown=0:0 --from=builder /src/xray.json /
+COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /
+COPY --chown=0:0 --from=builder /src/env/dev.env /.env
+
+ARG APP_PORT
+EXPOSE ${APP_PORT}
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
