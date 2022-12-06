@@ -22,12 +22,24 @@ tasks:
         goose -dir init mysql reset
         echo $(goose -dir init mysql status)
 
+  ecr-login:
+    cmds:
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-northeast-2.amazonaws.com"
+
   build-image:
     vars:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
     cmds:
       - docker build -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
+
+  build-push:
+    vars:
+      BUILD_TAG:
+        sh: git rev-parse --short=10 HEAD
+    cmds:
+      - docker tag {{.APP_NAME}}:{{.BUILD_TAG}} $(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-northeast-2.amazonaws.com/{{.APP_NAME}}:{{.BUILD_TAG}}
+      - docker push $(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-northeast-2.amazonaws.com/{{.APP_NAME}}:{{.BUILD_TAG}}
 
   build-all:
     cmds:
@@ -42,4 +54,20 @@ tasks:
       - task: build-image
         vars: {APP_NAME: "trip"}
       - task: build-image
+        vars: {APP_NAME: "relay"}
+
+  build-push-all:
+    deps: [ecr-login]
+    cmds:
+      - task: build-push
+        vars: {APP_NAME: "car"}
+      - task: build-push
+        vars: {APP_NAME: "hotel"}
+      - task: build-push
+        vars: {APP_NAME: "flight"}
+      - task: build-push
+        vars: {APP_NAME: "saga"}
+      - task: build-push
+        vars: {APP_NAME: "trip"}
+      - task: build-push
         vars: {APP_NAME: "relay"}
