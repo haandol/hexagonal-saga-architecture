@@ -47,7 +47,7 @@ func getSQLDsnFromSecretsManager(cfg *config.Database) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
 		secrets.Username, secrets.Password,
 		secrets.Host, secrets.Port,
-		cfg.Name, postfix,
+		secrets.Name, postfix,
 	)
 }
 
