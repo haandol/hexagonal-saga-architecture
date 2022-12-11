@@ -46,20 +46,6 @@ $ docker compose --profile migrate up --build
 $ docker compose --profile swagger up --build
 ```
 
-# Run AWS Xray Daemon (Optional)
-
-```bash
-$ docker run \
-  --rm \
-  --env AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id) \
-  --env AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key) \
-  --env AWS_REGION=ap-northeast-2 \
-  --attach STDOUT \
-  --name xray-daemon \
-  -p 2000:2000/udp \
-  amazon/aws-xray-daemon -o -n ap-northeast-2
-```
-
 # Try it out
 
 open swagger on the browser

@@ -28,7 +28,6 @@ RUN echo "Asia/Seoul" >  /etc/timezone
 
 WORKDIR /
 COPY --chown=0:0 --from=builder /go/bin/app /
-COPY --chown=0:0 --from=builder /src/xray.json /
 COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /
 COPY --chown=0:0 --from=builder /src/env/dev.env /.env
 
