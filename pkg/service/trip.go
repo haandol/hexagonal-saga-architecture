@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
-	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/constant/status"
 	"github.com/haandol/hexagonal/pkg/dto"
 	"github.com/haandol/hexagonal/pkg/message/event"
@@ -33,9 +32,8 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 		"method", "Create",
 	)
 
-	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := o11y.GetSegmentID(ctx)
-	trip, err := s.tripRepository.Create(ctx, corrID, parentID, d)
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
+	trip, err := s.tripRepository.Create(ctx, traceID, spanID, d)
 	if err != nil {
 		logger.Errorw("failed to create trip", "trip", d, "err", err.Error())
 		return dto.Trip{}, err
@@ -50,12 +48,11 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		"method", "RecoverForward",
 	)
 
-	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := o11y.GetSegmentID(ctx)
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
-		logger.Errorw("failed to get a trip", "corrID", corrID, "id", tripID, "err", err.Error())
+		logger.Errorw("failed to get a trip", "traceID", traceID, "id", tripID, "err", err.Error())
 		return dto.Trip{}, err
 	}
 
@@ -63,7 +60,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
-	if err := s.tripRepository.PublishStartSaga(ctx, corrID, parentID, &trip); err != nil {
+	if err := s.tripRepository.PublishStartSaga(ctx, traceID, spanID, &trip); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}
 
@@ -75,13 +72,11 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 		"service", "TripService",
 		"method", "RecoverBackward",
 	)
-
-	corrID := ctx.Value(constant.CtxTraceKey).(string)
-	parentID := o11y.GetSegmentID(ctx)
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
-		logger.Errorw("failed to get a trip", "corrID", corrID, "id", tripID, "err", err.Error())
+		logger.Errorw("failed to get a trip", "traceID", traceID, "id", tripID, "err", err.Error())
 		return dto.Trip{}, err
 	}
 
@@ -90,7 +85,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 	}
 
 	if err := s.tripRepository.PublishAbortSaga(ctx,
-		corrID, parentID, tripID, "force revert",
+		traceID, spanID, tripID, "force revert",
 	); err != nil {
 		logger.Errorw("failed to produce start saga", "trip", trip, "err", err.Error())
 	}

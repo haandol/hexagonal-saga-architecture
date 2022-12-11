@@ -98,8 +98,8 @@ func NewGinRouter(cfg *config.Config) *GinRouter {
 	r.SetTrustedProxies(nil)
 	r.Use(middleware.LeakBucket(&cfg.App))
 	r.Use(middleware.Timeout(&cfg.App))
+	r.Use(middleware.OtelTracing("saga"))
 	r.Use(middleware.Cors())
-	r.Use(middleware.XrayTracing([]string{"/healthy", "/swagger"}))
 	r.Use(util.GinzapWithConfig(logger, &util.Config{
 		UTC:       false,
 		SkipPaths: []string{"/healthy"},

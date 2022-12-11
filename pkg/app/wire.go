@@ -52,7 +52,6 @@ var provideTripRouters = wire.NewSet(
 	router.NewServerForce,
 	wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)),
 	router.NewTripRouter,
-	router.NewEfsRouter,
 )
 
 var provideRouters = wire.NewSet(
@@ -68,7 +67,6 @@ func InitTripApp(cfg *config.Config) port.App {
 		provideTripRouters,
 		provideTripConsumer,
 		service.NewTripService,
-		service.NewEfsService,
 		repository.NewTripRepository,
 		NewTripApp,
 		wire.Bind(new(port.App), new(*TripApp)),

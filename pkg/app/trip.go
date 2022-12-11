@@ -26,12 +26,10 @@ func NewTripApp(
 	server *http.Server,
 	ginRouter *router.GinRouter,
 	tripRouter *router.TripRouter,
-	efsRouter *router.EfsRouter,
 	tripConsumer *consumer.TripConsumer,
 ) *TripApp {
 	routers := []routerport.Router{
 		tripRouter,
-		efsRouter,
 	}
 
 	return &TripApp{

@@ -43,8 +43,9 @@ func GetLogger() *Logger {
 }
 
 func (l *Logger) WithContext(ctx context.Context) *zap.SugaredLogger {
-	segID := o11y.GetSegmentID(ctx)
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	return logger.With(
-		"TraceId", segID,
+		"TraceId", o11y.GetXrayTraceID(traceID),
+		"SpanId", spanID,
 	)
 }

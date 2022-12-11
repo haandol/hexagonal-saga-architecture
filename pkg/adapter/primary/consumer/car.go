@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
@@ -51,16 +52,19 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	}
 
 	logger.Infow("Received command", "command", msg)
-	ctx, seg := o11y.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## CarConsumer")
-	defer seg.Close(nil)
-	seg.AddMetadata("msg", msg)
+	ctx, span := o11y.BeginSpanWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "CarConsumer")
+	defer span.End()
+	span.SetAttributes(
+		o11y.AttrString("msg", fmt.Sprintf("%v", msg)),
+	)
 
 	switch msg.Name {
 	case "BookCar":
 		cmd := &command.BookCar{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.carService.Book(ctx, cmd)
@@ -68,14 +72,16 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 		cmd := &command.CancelCarBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.carService.CancelBooking(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")
-		seg.AddError(err)
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return err
 	}
 }

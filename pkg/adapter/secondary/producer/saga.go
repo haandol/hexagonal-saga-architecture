@@ -27,13 +27,14 @@ func NewSagaProducer(kafkaProducer *producer.KafkaProducer) *SagaProducer {
 }
 
 func (p *SagaProducer) PublishBookCar(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.BookCar{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookCar{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookCarBody{
@@ -57,13 +58,14 @@ func (p *SagaProducer) PublishBookCar(ctx context.Context, d *dto.Saga) error {
 }
 
 func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.CancelCarBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelCarBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelCarBookingBody{
@@ -87,13 +89,14 @@ func (p *SagaProducer) PublishCancelCarBooking(ctx context.Context, d *dto.Saga)
 }
 
 func (p *SagaProducer) PublishBookHotel(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.BookHotel{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookHotel{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookHotelBody{
@@ -117,13 +120,14 @@ func (p *SagaProducer) PublishBookHotel(ctx context.Context, d *dto.Saga) error 
 }
 
 func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.CancelHotelBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelHotelBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelHotelBookingBody{
@@ -147,13 +151,14 @@ func (p *SagaProducer) PublishCancelHotelBooking(ctx context.Context, d *dto.Sag
 }
 
 func (p *SagaProducer) PublishBookFlight(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.BookFlight{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.BookFlight{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.BookFlightBody{
@@ -177,13 +182,14 @@ func (p *SagaProducer) PublishBookFlight(ctx context.Context, d *dto.Saga) error
 }
 
 func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.CancelFlightBooking{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.CancelFlightBooking{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.CancelFlightBookingBody{
@@ -207,13 +213,14 @@ func (p *SagaProducer) PublishCancelFlightBooking(ctx context.Context, d *dto.Sa
 }
 
 func (p *SagaProducer) PublishEndSaga(ctx context.Context, d *dto.Saga) error {
+	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	cmd := &command.EndSaga{
 		Message: message.Message{
 			Name:          reflect.ValueOf(command.EndSaga{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
-			CorrelationID: d.CorrelationID,
-			ParentID:      o11y.GetSegmentID(ctx),
+			CorrelationID: traceID,
+			ParentID:      spanID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
 		Body: command.EndSagaBody{

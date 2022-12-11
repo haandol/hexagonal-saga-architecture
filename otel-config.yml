@@ -1,0 +1,35 @@
+extensions:
+  health_check:
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch/traces:
+    timeout: 1s
+    send_batch_size: 50
+  batch/metrics:
+    timeout: 1s
+
+exporters:
+  awsxray:
+  awsemf:
+    namespace: EKS/AWSOTel/Application
+    log_group_name: "/aws/eks/application/metrics"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch/traces]
+      exporters: [awsxray]
+    metrics:
+      receivers: [otlp]
+      processors: [batch/metrics]
+      exporters: [awsemf]
+
+  extensions: [health_check]

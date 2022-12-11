@@ -44,6 +44,7 @@ func (c *OutboxPoller) Poll(ctx context.Context) error {
 			ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			go func() {
 				defer cancel()
+
 				messages, err := c.relayService.Fetch(ctx, c.batchSize)
 				if err != nil {
 					logger.Errorw("Failed to fetch messages", "err", err)

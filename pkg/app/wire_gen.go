@@ -32,10 +32,8 @@ func InitTripApp(cfg *config.Config) port.App {
 	tripRepository := repository.NewTripRepository(db)
 	tripService := service.NewTripService(tripRepository)
 	tripRouter := router.NewTripRouter(tripService)
-	efsService := service.NewEfsService()
-	efsRouter := router.NewEfsRouter(efsService)
 	tripConsumer := provideTripConsumer(cfg, tripService)
-	tripApp := NewTripApp(server, ginRouter, tripRouter, efsRouter, tripConsumer)
+	tripApp := NewTripApp(server, ginRouter, tripRouter, tripConsumer)
 	return tripApp
 }
 
@@ -122,7 +120,7 @@ func provideTripConsumer(
 	return consumer.NewTripConsumer(kafkaConsumer, tripService)
 }
 
-var provideTripRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), router.NewServerForce, wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter, router.NewEfsRouter)
+var provideTripRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), router.NewServerForce, wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)), router.NewTripRouter)
 
 var provideRouters = wire.NewSet(router.NewGinRouter, wire.Bind(new(http.Handler), new(*router.GinRouter)), router.NewServer, wire.Bind(new(routerport.RouterGroup), new(*router.GinRouter)))
 

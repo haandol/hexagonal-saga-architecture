@@ -61,14 +61,29 @@ services:
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+  aws-otel-collector:
+    image: amazon/aws-otel-collector:latest
+    volumes:
+      - ./otel-config.yml:/etc/otel-agent-config.yml
+      - ~/.aws:/root/.aws
+    profiles: ["ops"]
+    ports:
+      - '4317:4317'   # OTLP receiver
+    environment:
+      - AWS_REGION=ap-northeast-2
+    command: ["--config=/etc/otel-agent-config.yml"]
   dev:
     image: cosmtrek/air
+    profiles: ["dev"]
     working_dir: /src
     volumes:
       - .:/src
       - ~/.aws:/root/.aws
+    ports:
+      - '8090:8090'
   migrate:
     image: haandol/goose:3.7.0
+    profiles: ["dev"]
     working_dir: /migrations
     volumes:
       - .:/migrations

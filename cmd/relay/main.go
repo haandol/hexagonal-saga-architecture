@@ -32,7 +32,7 @@ func initialize() {
 		a.Init()
 	}
 
-	o11y.InitXray()
+	o11y.InitOtel()
 }
 
 func start(ctx context.Context, ch chan error) {

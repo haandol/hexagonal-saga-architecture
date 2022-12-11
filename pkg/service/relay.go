@@ -2,14 +2,18 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/pkg/connector/producer"
 	"github.com/haandol/hexagonal/pkg/dto"
+	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type MessageRelayService struct {
@@ -44,7 +48,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 }
 
 func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.GetLogger().With(
 		"module", "MessageRelayService",
 		"func", "Relay",
 	)
@@ -56,8 +60,26 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 		wg.Add(1)
 		go func(m dto.Outbox) {
 			defer wg.Done()
+
+			var msg message.Message
+			data := []byte(m.KafkaValue)
+			if err := json.Unmarshal(data, &msg); err != nil {
+				logger.Errorw("failed to unmarshal message", "err", err)
+				return
+			}
+
+			ctx, span := o11y.BeginSpanWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "Relay")
+			defer span.End()
+
+			span.SetAttributes(
+				o11y.AttrInt("msgId", int(m.ID)),
+				o11y.AttrString("msg", fmt.Sprintf("%v", msg)),
+			)
+
 			if err := s.kafkaProducer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
 				logger.Errorw("failed to produce message", "err", err)
+				span.RecordError(err)
+				span.SetStatus(o11y.GetStatus(err))
 				return
 			}
 			sentIDs = append(sentIDs, m.ID)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/event"
@@ -51,16 +52,20 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
-	ctx, seg := o11y.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## TripConsumer")
-	seg.AddMetadata("msg", msg)
-	defer seg.Close(nil)
+	ctx, span := o11y.BeginSpanWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "TripConsumer")
+	defer span.End()
+	span.SetAttributes(
+		o11y.AttrString("msg", fmt.Sprintf("%v", msg)),
+	)
 
 	switch msg.Name {
 	case "SagaEnded":
 		evt := &event.SagaEnded{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.tripService.ProcessSagaEnded(ctx, evt)
@@ -68,14 +73,16 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.tripService.ProcessSagaAborted(ctx, evt)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")
-		seg.AddError(err)
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return err
 	}
 }

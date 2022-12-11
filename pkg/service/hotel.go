@@ -8,6 +8,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type HotelService struct {
@@ -26,9 +27,11 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "HotelService",
 		"method", "Book",
+		"command", cmd,
 	)
 
-	logger.Infow("book hotel", "command", cmd)
+	ctx, span := o11y.BeginSubSpan(ctx, "Book")
+	defer span.End()
 
 	req := &dto.HotelBooking{
 		TripID:  cmd.Body.TripID,
@@ -45,6 +48,8 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 			}
 		}(err.Error())
 
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return err
 	}
 
@@ -55,9 +60,11 @@ func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHot
 	logger := util.GetLogger().WithContext(ctx).With(
 		"service", "HotelService",
 		"method", "CancelBooking",
+		"command", cmd,
 	)
 
-	logger.Infow("cancel hotel booking", "command", cmd)
+	ctx, span := o11y.BeginSubSpan(ctx, "CancelBooking")
+	defer span.End()
 
 	if err := s.hotelRepository.CancelBooking(ctx, cmd); err != nil {
 		logger.Errorw("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err.Error())

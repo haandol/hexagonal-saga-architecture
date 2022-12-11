@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
@@ -52,16 +53,19 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	}
 
 	logger.Infow("Received command", "command", msg)
-	ctx, seg := o11y.BeginSegmentWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "## SagaConsumer")
-	seg.AddMetadata("msg", msg)
-	defer seg.Close(nil)
+	ctx, span := o11y.BeginSpanWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "SagaConsumer")
+	defer span.End()
+	span.SetAttributes(
+		o11y.AttrString("msg", fmt.Sprintf("%v", msg)),
+	)
 
 	switch msg.Name {
 	case "StartSaga":
 		cmd := &command.StartSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.Start(ctx, cmd)
@@ -69,7 +73,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.CarBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.ProcessCarBooking(ctx, evt)
@@ -77,12 +82,14 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.CarBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		if err := c.sagaService.CompensateCarBooking(ctx, evt); err != nil {
 			logger.Errorw("Failed to compensate car booking", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.MarkAbort(ctx, evt.Body.TripID)
@@ -90,7 +97,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.HotelBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.ProcessHotelBooking(ctx, evt)
@@ -98,7 +106,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.HotelBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.CompensateHotelBooking(ctx, evt)
@@ -106,7 +115,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.FlightBooked{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.ProcessFlightBooking(ctx, evt)
@@ -114,7 +124,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		evt := &event.FlightBookingCancelled{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
 			logger.Errorw("Failed to unmarshal event", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.CompensateFlightBooking(ctx, evt)
@@ -122,7 +133,8 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		cmd := &command.EndSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.End(ctx, cmd)
@@ -130,14 +142,16 @@ func (c *SagaConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 		cmd := &command.AbortSaga{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
 			logger.Errorw("Failed to unmarshal command", "err", err.Error())
-			seg.AddError(err)
+			span.RecordError(err)
+			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.sagaService.Abort(ctx, cmd)
 	default:
 		logger.Errorw("unknown command", "message", msg)
 		err := errors.New("unknown command")
-		seg.AddError(err)
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return err
 	}
 }
