@@ -1,0 +1,27 @@
+@startuml trip-service-container
+
+!include <c4/C4_Container.puml>  
+
+LAYOUT_WITH_LEGEND()
+
+title Trip Service Container Diagram
+
+Person(client, "User", "여행예약 시스템 이용자")
+
+Container_Boundary(b0, "Hexagonal transactional outbox demo") {
+  Container(trip, "Trip Service", "golang",  "여행정보를 입력받아 차량, 호텔, 비행기를 한번에 예약해주는 서비스")
+  Container(saga, "Saga Service", "golang",  "사가 오케스트레이터. 전체 트랜잭션을 관리해주는 서비스")
+  Container(relay, "Outbox Relay Service", "golang",  "메시지를 중계해주는 서비스")
+  ContainerDb(db, "RDBMS", "MySQL 8.0",  "메시지와 상태를 저장하는 데이터베이스")
+  ContainerQueue(q, "Queue", "Kafka 2.6.2",  "서비스간 통신을 위한 메시지 큐")
+}
+
+Rel(trip, db, "1. Create trip record and Publish command StartSaga", "Query")
+
+Rel(db, relay, "2. Poll unsent messages, StartSaga command", "Query")
+Rel(relay, q, "3. Publish command StartSaga", "Kafka")
+
+Rel(q, saga, "4. Consume command StartSaga", "Kafka")
+Rel(saga, db, "5. Create saga record and Publish command BookCar", "Query")
+
+@enduml

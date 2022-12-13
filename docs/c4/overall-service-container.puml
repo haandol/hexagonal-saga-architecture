@@ -1,0 +1,29 @@
+@startuml overall-service-container
+
+!include <c4/C4_Container.puml>  
+
+LAYOUT_WITH_LEGEND()
+
+title Overall Service Container Diagram
+
+Person(client, "User", "여행예약 시스템 이용자")
+
+Container_Boundary(b0, "Hexagonal transactional outbox demo") {
+  Container(trip, "Trip Service", "golang",  "여행정보를 입력받아 차량, 호텔, 비행기를 한번에 예약해주는 서비스")
+  Container(saga, "Saga Service", "golang",  "사가 오케스트레이터. 전체 트랜잭션을 관리해주는 서비스")
+  Container(car, "Car Service", "golang",  "지정된 여행에 대한 차량을 예약해주는 서비스")
+  Container(hotel, "Hotel Service", "golang",  "지정된 여행에 대한 호텔을 예약해주는 서비스")
+  Container(flight, "Flight Service", "golang",  "지정된 여행에 대한 비행기를 예약해주는 서비스")
+}
+
+Rel(client, trip, "1. Request for trip reservation", "HTTP")
+Rel(trip, saga, "2. Publish Command StartSaga", "Outbox")
+Rel(saga, car, "3. Publish Command BookCar", "Outbox")
+Rel_Back(saga, car, "4. Publish Event CarBooked", "Outbox")
+Rel(saga, hotel, "5. Publish Command BookHotel", "Outbox")
+Rel_Back(saga, hotel, "6. Publish Event HotelBooked", "Outbox")
+Rel(saga, flight, "7. Publish Command BookFlight", "Outbox")
+Rel_Back(saga, flight, "8. Publish Event FlightBooked", "Outbox")
+Rel_Back(trip, saga, "9. Publish Event SagaEnded", "Outbox")
+
+@enduml
