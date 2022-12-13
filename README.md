@@ -5,7 +5,7 @@ hexagonal saga demo app
 # Prerequisites
 
 - Docker
-- Go 1.18+
+- Go 1.19
 - MySQL 8.x
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
