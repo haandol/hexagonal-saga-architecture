@@ -17,7 +17,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: app-saga-conf
-          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
+          image: CAR_IMAGE
           resources:
             requests:
               cpu: 125m

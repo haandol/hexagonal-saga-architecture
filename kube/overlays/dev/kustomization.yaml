@@ -3,15 +3,21 @@ kind: Kustomization
 resources:
   - ../../base
 images:
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
+  - name: CAR_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
     newTag: 4dd4d4c338
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
+  - name: HOTEL_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
     newTag: 4dd4d4c338
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
+  - name: FLIGHT_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
     newTag: 4dd4d4c338
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/relay
+  - name: RELAY_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/relay
     newTag: 4dd4d4c338
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
+  - name: SAGA_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
     newTag: 4dd4d4c338
-  - name: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
+  - name: TRIP_IMAGE
+    newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
     newTag: 4dd4d4c338
