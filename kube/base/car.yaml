@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: car
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: car
+  template:
+    metadata:
+      labels:
+        app: car
+    spec:
+      containers:
+        - name: car
+          envFrom:
+            - configMapRef:
+                name: app-saga-conf
+          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
+          resources:
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          ports:
+            - containerPort: 8090

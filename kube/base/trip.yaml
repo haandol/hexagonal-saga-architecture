@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trip
+  template:
+    metadata:
+      labels:
+        app: trip
+    spec:
+      containers:
+        - name: trip
+          envFrom:
+            - configMapRef:
+                name: app-saga-conf
+          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
+          resources:
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          ports:
+            - containerPort: 8090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trip
+spec:
+  ports:
+    - port: 80
+      targetPort: 8090
+  selector:
+    app: trip

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel
+  template:
+    metadata:
+      labels:
+        app: hotel
+    spec:
+      containers:
+        - name: hotel
+          envFrom:
+            - configMapRef:
+                name: app-saga-conf
+          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
+          resources:
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          ports:
+            - containerPort: 8090

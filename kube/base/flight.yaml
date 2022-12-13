@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flight
+  template:
+    metadata:
+      labels:
+        app: flight
+    spec:
+      containers:
+        - name: flight
+          envFrom:
+            - configMapRef:
+                name: app-saga-conf
+          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
+          resources:
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          ports:
+            - containerPort: 8090

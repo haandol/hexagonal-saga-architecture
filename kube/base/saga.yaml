@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saga
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: saga
+  template:
+    metadata:
+      labels:
+        app: saga
+    spec:
+      containers:
+        - name: saga
+          envFrom:
+            - configMapRef:
+                name: app-saga-conf
+          image: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
+          resources:
+            requests:
+              cpu: 125m
+              memory: 128Mi
+          ports:
+            - containerPort: 8090
