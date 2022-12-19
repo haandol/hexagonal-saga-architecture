@@ -16,7 +16,7 @@ COPY . ./
 
 ARG BUILD_TAG
 ARG APP_NAME
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.BuildTag=$BUILD_TAG -s" -o /go/bin/app ./cmd/${APP_NAME}
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
 FROM alpine:3.17 AS server
 ARG GIT_COMMIT=undefined
