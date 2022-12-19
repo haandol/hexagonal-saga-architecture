@@ -2,10 +2,9 @@ version: '3.4'
 
 services:
   mysql:
-    image: mysql:8
+    image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     restart: always
-    platform: linux/amd64
     profiles: ["backend"]
     ports:
       - '3306:3306'
@@ -33,7 +32,7 @@ services:
   kafka:
     depends_on:
       - zookeeper
-    image: bitnami/kafka:2.6.0
+    image: bitnami/kafka:2.8.1
     restart: always
     profiles: ["backend"]
     ports:
