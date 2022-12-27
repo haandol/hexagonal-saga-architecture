@@ -14,6 +14,7 @@ hexagonal saga demo app
 - [Goose](https://github.com/pressly/goose) (for schema migration)
 - [Ginkgo](https://onsi.github.io/ginkgo/), Gomega and [GoMock](https://github.com/golang/mock) for testing
 - [swaggo/swag](https://github.com/swaggo/swag)
+- [Taskfile](https://taskfile.dev/#/installation)
 
 # Installation
 
