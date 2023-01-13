@@ -32,22 +32,22 @@ $ docker-compose --profile backend up -d
 $ cp env/local.env .env
 ```
 
-## Run service
-
-```bash
-$ docker compose --profile dev up --build
-```
-
 ## Schema migration
 
 ```bash
-$ docker compose --profile migrate up --build
+$ docker compose up migrate
+```
+
+## Run service
+
+```bash
+$ docker compose up dev up
 ```
 
 ## Build swagger docs (Optional)
 
 ```bash
-$ docker compose --profile swagger up --build
+$ docker compose up swagger
 ```
 
 # Try it out
