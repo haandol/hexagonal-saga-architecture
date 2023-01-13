@@ -35,19 +35,19 @@ $ cp env/local.env .env
 ## Schema migration
 
 ```bash
-$ docker compose up migrate
+$ docker-compose up migrate
 ```
 
 ## Run service
 
 ```bash
-$ docker compose up dev up
+$ docker-compose up dev
 ```
 
 ## Build swagger docs (Optional)
 
 ```bash
-$ docker compose up swagger
+$ docker-compose up swagger
 ```
 
 # Try it out
