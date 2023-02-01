@@ -81,7 +81,7 @@ services:
     ports:
       - '8090:8090'
   migrate:
-    image: haandol/goose:3.7.0
+    image: haandol/goose:3.9.0
     profiles: ["dev"]
     working_dir: /migrations
     volumes:

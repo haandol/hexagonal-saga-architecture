@@ -1,4 +1,4 @@
-FROM golang:1.19.4 AS builder
+FROM golang:1.19.5 AS builder
 
 WORKDIR /src
 
@@ -19,7 +19,7 @@ ARG BUILD_TAG
 ARG APP_NAME
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
-FROM alpine:3.17 AS server
+FROM alpine:3.17.1 AS server
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 
