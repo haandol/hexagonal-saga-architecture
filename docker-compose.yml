@@ -72,7 +72,7 @@ services:
       - AWS_REGION=ap-northeast-2
     command: ["--config=/etc/otel-agent-config.yml"]
   dev:
-    image: cosmtrek/air:1.41.0
+    image: cosmtrek/air:v1.41.0
     profiles: ["dev"]
     working_dir: /src
     volumes:
