@@ -106,7 +106,7 @@ func initTracer(endpoint string) ShutdownFunc {
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(xray.Propagator{})
 
-	tracer = otel.Tracer("tomars")
+	tracer = otel.Tracer("hexagonal")
 
 	return tp.Shutdown
 }

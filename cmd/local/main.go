@@ -85,6 +85,13 @@ func cleanup(ctx context.Context) {
 	} else {
 		logger.Info("Producer connection closed.")
 	}
+
+	logger.Infow("Closing o11y connection...")
+	if err := o11y.Close(ctx); err != nil {
+		logger.Error("error on o11y close:", err.Error())
+	} else {
+		logger.Info("o11y connection closed.")
+	}
 }
 
 func main() {
