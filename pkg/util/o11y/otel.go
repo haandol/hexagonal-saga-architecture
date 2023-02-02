@@ -92,7 +92,8 @@ func initTracer(endpoint string) ShutdownFunc {
 	resourceDetector := eks.NewResourceDetector()
 	resource, err := resourceDetector.Detect(context.Background())
 	if err != nil {
-		fmt.Errorf("Failed to create new resource: %v", err.Error())
+		// just use nil-resource if failed to detect resource
+		log.Printf("Failed to create new resource: %v", err.Error())
 	}
 
 	tp := sdktrace.NewTracerProvider(
