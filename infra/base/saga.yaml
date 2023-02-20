@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: saga
+      service: saga
   template:
     metadata:
       labels:
-        app: saga
+        service: saga
     spec:
       containers:
         - name: saga
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: SAGA_IMAGE
           resources:
             requests:

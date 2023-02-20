@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hotel
+      service: hotel
   template:
     metadata:
       labels:
-        app: hotel
+        service: hotel
     spec:
       containers:
         - name: hotel
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: HOTEL_IMAGE
           resources:
             requests:

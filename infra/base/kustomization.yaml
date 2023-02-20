@@ -7,4 +7,9 @@ resources:
   - relay.yaml
   - saga.yaml
   - trip.yaml
-  - configmap.yaml
+commonLabels:
+  app: saga-demo
+configMapGenerator:
+  - name: saga-demo-conf
+    files:
+      - application.properties

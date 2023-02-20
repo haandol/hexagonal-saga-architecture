@@ -5,19 +5,21 @@ resources:
 images:
   - name: CAR_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
   - name: HOTEL_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
   - name: FLIGHT_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
   - name: RELAY_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/relay
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
   - name: SAGA_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
   - name: TRIP_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
-    newTag: 4dd4d4c338
+    newTag: 15b40eb976
+commonLabels:
+  stage: dev

@@ -33,7 +33,7 @@ func getSQLDsn(cfg *config.Database) string {
 }
 
 func getSQLDsnFromSecretsManager(cfg *config.Database) string {
-	awsCfg, err := cloud.GetAWSConfigWithProfile("skt")
+	awsCfg, err := cloud.GetAWSConfig()
 	if err != nil {
 		log.Fatalf("unable to get AWS Config %s", err.Error())
 	}

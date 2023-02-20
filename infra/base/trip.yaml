@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: trip
+      service: trip
   template:
     metadata:
       labels:
-        app: trip
+        service: trip
     spec:
       containers:
         - name: trip
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: TRIP_IMAGE
           resources:
             requests:
@@ -34,4 +34,4 @@ spec:
     - port: 80
       targetPort: 8090
   selector:
-    app: trip
+    service: trip

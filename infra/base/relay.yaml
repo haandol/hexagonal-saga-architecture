@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: relay
+      service: relay
   template:
     metadata:
       labels:
-        app: relay
+        service: relay
     spec:
       containers:
         - name: relay
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: RELAY_IMAGE
           resources:
             requests:

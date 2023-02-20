@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: car
+      service: car
   template:
     metadata:
       labels:
-        app: car
+        service: car
     spec:
       containers:
         - name: car
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: CAR_IMAGE
           resources:
             requests:

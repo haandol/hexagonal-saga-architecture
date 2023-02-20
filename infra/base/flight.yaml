@@ -6,17 +6,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flight
+      service: flight
   template:
     metadata:
       labels:
-        app: flight
+        service: flight
     spec:
       containers:
         - name: flight
           envFrom:
             - configMapRef:
-                name: app-saga-conf
+                name: saga-demo-conf
           image: FLIGHT_IMAGE
           resources:
             requests:
