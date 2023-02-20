@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trip
+  name: hotel
 spec:
   template:
     spec:
       containers:
-        - name: trip
+        - name: hotel
           envFrom:
             - configMapRef:
                 name: app-conf

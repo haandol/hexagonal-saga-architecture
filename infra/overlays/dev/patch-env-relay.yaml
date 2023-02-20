@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trip
+  name: relay
 spec:
   template:
     spec:
       containers:
-        - name: trip
+        - name: relay
           envFrom:
             - configMapRef:
                 name: app-conf
