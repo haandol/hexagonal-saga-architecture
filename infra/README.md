@@ -3,6 +3,7 @@
 ## Build and push ECR image
 
 ```bash
+task build-all
 task build-push-all
 ```
 
