@@ -5,21 +5,27 @@ resources:
 images:
   - name: CAR_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
-    newTag: 15b40eb976
+    newTag: f1d781ff52
   - name: HOTEL_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
-    newTag: 15b40eb976
+    newTag: f1d781ff52
   - name: FLIGHT_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
-    newTag: 15b40eb976
+    newTag: f1d781ff52
   - name: RELAY_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/relay
-    newTag: 15b40eb976
+    newTag: f1d781ff52
   - name: SAGA_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
-    newTag: 15b40eb976
+    newTag: f1d781ff52
   - name: TRIP_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
-    newTag: 15b40eb976
+    newTag: f1d781ff52
+configMapGenerator:
+  - name: aws-conf
+    envs:
+      - .env
+patchesStrategicMerge:
+  - patch-env-trip.yaml
 commonLabels:
   stage: dev

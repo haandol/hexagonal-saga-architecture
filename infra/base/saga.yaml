@@ -16,7 +16,7 @@ spec:
         - name: saga
           envFrom:
             - configMapRef:
-                name: saga-demo-conf
+                name: app-conf
           image: SAGA_IMAGE
           resources:
             requests:

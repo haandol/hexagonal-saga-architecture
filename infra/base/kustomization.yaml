@@ -10,6 +10,6 @@ resources:
 commonLabels:
   app: saga-demo
 configMapGenerator:
-  - name: saga-demo-conf
-    files:
-      - application.properties
+  - name: app-conf
+    envs:
+      - app.env

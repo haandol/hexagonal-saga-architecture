@@ -16,7 +16,7 @@ spec:
         - name: hotel
           envFrom:
             - configMapRef:
-                name: saga-demo-conf
+                name: app-conf
           image: HOTEL_IMAGE
           resources:
             requests:

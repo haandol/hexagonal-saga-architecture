@@ -16,7 +16,7 @@ spec:
         - name: trip
           envFrom:
             - configMapRef:
-                name: saga-demo-conf
+                name: app-conf
           image: TRIP_IMAGE
           resources:
             requests:

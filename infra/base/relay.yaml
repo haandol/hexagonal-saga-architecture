@@ -16,7 +16,7 @@ spec:
         - name: relay
           envFrom:
             - configMapRef:
-                name: saga-demo-conf
+                name: app-conf
           image: RELAY_IMAGE
           resources:
             requests:
