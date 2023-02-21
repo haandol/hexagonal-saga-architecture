@@ -34,5 +34,5 @@ kubectl apply -k infra/overlays/dev
 ## Deploy Istio gateway / virtualservice
 
 ```bash
-kubectl apply -f istio/gateway.yaml
+kubectl apply -f infra/istio/gateway.yaml
 ```

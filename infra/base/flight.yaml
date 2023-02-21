@@ -12,6 +12,7 @@ spec:
       labels:
         service: flight
     spec:
+      serviceAccount: app-service-account
       containers:
         - name: flight
           envFrom:

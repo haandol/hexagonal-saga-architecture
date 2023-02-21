@@ -12,6 +12,7 @@ spec:
       labels:
         service: hotel
     spec:
+      serviceAccount: app-service-account
       containers:
         - name: hotel
           envFrom:

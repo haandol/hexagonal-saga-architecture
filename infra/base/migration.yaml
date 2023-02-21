@@ -3,10 +3,10 @@ kind: Job
 metadata:
   name: migration
 spec:
-  ttlSecondsAfterFinished: 100
+  ttlSecondsAfterFinished: 60
   template:
     spec:
-      serviceAccount: migration-service-account
+      serviceAccount: app-service-account
       containers:
       - name: migration
         image: MIGRATION_IMAGE

@@ -12,6 +12,7 @@ spec:
       labels:
         service: saga
     spec:
+      serviceAccount: app-service-account
       containers:
         - name: saga
           envFrom:

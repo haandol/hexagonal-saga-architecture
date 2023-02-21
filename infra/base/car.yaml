@@ -12,6 +12,7 @@ spec:
       labels:
         service: car
     spec:
+      serviceAccount: app-service-account
       containers:
         - name: car
           envFrom:

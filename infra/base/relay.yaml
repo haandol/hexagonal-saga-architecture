@@ -12,6 +12,7 @@ spec:
       labels:
         service: relay
     spec:
+      serviceAccount: app-service-account
       containers:
         - name: relay
           envFrom:

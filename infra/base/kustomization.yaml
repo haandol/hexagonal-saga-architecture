@@ -7,7 +7,7 @@ resources:
   - relay.yaml
   - saga.yaml
   - trip.yaml
-  - migration-sa.yaml
+  - service-account.yaml
   - migration.yaml
 commonLabels:
   app: saga-demo
