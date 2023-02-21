@@ -6,7 +6,9 @@ spec:
   ttlSecondsAfterFinished: 100
   template:
     spec:
+      serviceAccount: migration-service-account
       containers:
       - name: migration
         image: MIGRATION_IMAGE
+        imagePullPolicy: Always
       restartPolicy: Never

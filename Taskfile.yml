@@ -22,14 +22,14 @@ tasks:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
     cmds:
-      - docker build -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
+      - docker build --target server -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} .
 
   build-migration-image:
     vars:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
     cmds:
-      - docker build --target migration -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
+      - docker build --platform linux/arm64/v8 --target migration -t migration:{{.BUILD_TAG}} .
 
   push-image:
     vars:
@@ -54,7 +54,6 @@ tasks:
       - task: build-app-image
         vars: {APP_NAME: "relay"}
       - task: build-migration-image
-        vars: {APP_NAME: "migration"}
 
   push-all:
     deps: [ecr-login]

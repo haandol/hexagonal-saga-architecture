@@ -18,6 +18,7 @@ spec:
             - configMapRef:
                 name: app-conf
           image: HOTEL_IMAGE
+          imagePullPolicy: Always
           resources:
             requests:
               cpu: 125m

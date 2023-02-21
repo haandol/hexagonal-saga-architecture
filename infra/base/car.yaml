@@ -18,6 +18,7 @@ spec:
             - configMapRef:
                 name: app-conf
           image: CAR_IMAGE
+          imagePullPolicy: Always
           resources:
             requests:
               cpu: 125m
