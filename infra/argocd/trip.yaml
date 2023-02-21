@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: trip
+  name: saga
   namespace: argocd
 spec:
   destination:
@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     path: kube/overlays/dev
-    repoURL: https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/saga-demo-app
+    repoURL: https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/saga
     targetRevision: HEAD
   syncPolicy:
     automated:
