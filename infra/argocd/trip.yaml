@@ -9,7 +9,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: kube/overlays/dev
+    path: infra/overlays/dev
     repoURL: https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/saga
     targetRevision: HEAD
   syncPolicy:
