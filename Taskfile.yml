@@ -4,36 +4,34 @@ dotenv: [.env]
 
 
 tasks:
-  migrate-up:
+  migrate:
     cmds:
       - |
         echo $DB_USERNAME
         echo $DB_HOST:$DB_PORT
         export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME?parseTime=true"
-        goose -dir init mysql up
-        echo $(goose -dir init mysql status)
-
-  migrate-reset:
-    cmds:
-      - |
-        echo $DB_USERNAME
-        echo $DB_HOST:$DB_PORT
-        export GOOSE_DBSTRING="$DB_USERNAME:$DB_PASSWORD@tcp($DB_HOST:$DB_PORT)/$DB_NAME?parseTime=true"
-        goose -dir init mysql reset
+        goose -dir init mysql {{.CLI_ARGS}}
         echo $(goose -dir init mysql status)
 
   ecr-login:
     cmds:
       - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-northeast-2.amazonaws.com"
 
-  build-image:
+  build-app-image:
     vars:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
     cmds:
       - docker build -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
 
-  build-push:
+  build-migration-image:
+    vars:
+      BUILD_TAG:
+        sh: git rev-parse --short=10 HEAD
+    cmds:
+      - docker build --target migration -t {{.APP_NAME}}:{{.BUILD_TAG}} --build-arg APP_NAME={{.APP_NAME}} --build-arg BUILD_TAG={{.BUILD_TAG}} {{.CLI_ARGS}} .
+
+  push-image:
     vars:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
@@ -43,31 +41,35 @@ tasks:
 
   build-all:
     cmds:
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "car"}
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "hotel"}
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "flight"}
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "saga"}
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "trip"}
-      - task: build-image
+      - task: build-app-image
         vars: {APP_NAME: "relay"}
+      - task: build-migration-image
+        vars: {APP_NAME: "migration"}
 
-  build-push-all:
+  push-all:
     deps: [ecr-login]
     cmds:
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "car"}
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "hotel"}
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "flight"}
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "saga"}
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "trip"}
-      - task: build-push
+      - task: push-image
         vars: {APP_NAME: "relay"}
+      - task: push-image
+        vars: {APP_NAME: "migration"}

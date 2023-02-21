@@ -38,8 +38,16 @@ EXPOSE ${APP_PORT}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-FROM cosmtrek/air:v1.41.0
+# for schema migration
+FROM haandol/goose:3.9.0 as migration
+ARG GIT_COMMIT=undefined
+LABEL git_commit=$GIT_COMMIT
 
-WORKDIR /src
-COPY --chown=0:0 --from=builder /src/. /src
-COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /
+RUN apk add --no-cache aws-cli jq
+
+WORKDIR /
+COPY ./init /init
+COPY ./env/dev.env /.env
+COPY ./scripts/migrate.sh /migrate.sh
+
+CMD ["/migrate.sh", "up"]

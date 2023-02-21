@@ -22,6 +22,9 @@ spec:
             requests:
               cpu: 125m
               memory: 128Mi
+            limits:
+              cpu: 256m
+              memory: 512Mi
           ports:
             - containerPort: 8090
 ---

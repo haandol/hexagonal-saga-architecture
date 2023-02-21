@@ -4,7 +4,7 @@
 
 ```bash
 task build-all
-task build-push-all
+task push-all
 ```
 
 ## Deploy the application
