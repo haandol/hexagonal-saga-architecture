@@ -27,7 +27,7 @@ images:
 configMapGenerator:
   - name: aws-conf
     envs:
-      - .env
+      - aws.env
 patchesStrategicMerge:
   - patch-env-trip.yaml
   - patch-env-car.yaml
