@@ -16,9 +16,9 @@ COPY . ./
 
 ARG BUILD_TAG
 ARG APP_NAME
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app.amd64 ./cmd/${APP_NAME}
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app.arm64 ./cmd/${APP_NAME}
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
+ARG TARGETOS=linux
+ARG TARGETARCH=arm64
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
 FROM alpine:3.17.1 AS server
 ARG GIT_COMMIT=undefined
@@ -37,3 +37,9 @@ ARG APP_PORT
 EXPOSE ${APP_PORT}
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
+
+FROM cosmtrek/air:v1.41.0
+
+WORKDIR /src
+COPY --chown=0:0 --from=builder /src/. /src
+COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /
