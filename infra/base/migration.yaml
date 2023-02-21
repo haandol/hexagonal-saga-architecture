@@ -5,9 +5,10 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 60
   template:
-    spec:
+    metadata:
       annotations:
         sidecar.istio.io/inject: "false"
+    spec:
       serviceAccount: app-service-account
       containers:
       - name: migration
