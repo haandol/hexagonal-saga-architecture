@@ -6,6 +6,8 @@ spec:
   ttlSecondsAfterFinished: 60
   template:
     spec:
+      annotations:
+        sidecar.istio.io/inject: "false"
       serviceAccount: app-service-account
       containers:
       - name: migration
