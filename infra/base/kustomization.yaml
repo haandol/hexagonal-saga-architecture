@@ -9,9 +9,10 @@ resources:
   - trip.yaml
   - service-account.yaml
   - migration.yaml
-commonLabels:
-  app: saga-demo
 configMapGenerator:
   - name: app-conf
     envs:
       - app.env
+commonLabels:
+  app.kubernetes.io/type: app
+  app.kubernetes.io/app: saga

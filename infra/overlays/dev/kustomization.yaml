@@ -37,4 +37,4 @@ patchesStrategicMerge:
   - patch-env-relay.yaml
   - patch-env-migration.yaml
 commonLabels:
-  stage: dev
+  app.kubernetes.io/stage: dev
