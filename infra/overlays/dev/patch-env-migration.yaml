@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: migration
-  app.kubernetes.io/type: batch
 spec:
   template:
     spec:

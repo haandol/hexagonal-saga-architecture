@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flight
-  app.kubernetes.io/type: app
 spec:
   template:
     spec:
