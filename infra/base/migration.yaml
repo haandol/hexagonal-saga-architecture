@@ -11,6 +11,8 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
+      completions: 1
+      parallelism: 1
       serviceAccount: app-service-account
       containers:
       - name: migration
