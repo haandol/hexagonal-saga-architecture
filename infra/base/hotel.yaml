@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hotel
-  app.kubernetes.io/type: app
 spec:
   replicas: 1
   selector:
