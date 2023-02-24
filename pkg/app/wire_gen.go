@@ -61,12 +61,14 @@ func InitCarApp(cfg *config.Config) port.App {
 }
 
 func InitMessageRelayApp(cfg *config.Config) port.App {
+	ginRouter := router.NewGinRouter(cfg)
+	server := router.NewServer(cfg, ginRouter)
 	kafkaProducer := provideProducer(cfg)
 	db := provideDB(cfg)
 	outboxRepository := repository.NewOutboxRepository(db)
 	messageRelayService := service.NewMessageRelayService(kafkaProducer, outboxRepository)
 	outboxPoller := poller.NewOutboxPoller(cfg, messageRelayService)
-	messageRelayApp := NewMessageRelayApp(outboxPoller)
+	messageRelayApp := NewMessageRelayApp(server, outboxPoller)
 	return messageRelayApp
 }
 

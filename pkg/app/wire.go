@@ -127,6 +127,7 @@ func InitCarApp(cfg *config.Config) port.App {
 func InitMessageRelayApp(cfg *config.Config) port.App {
 	wire.Build(
 		provideDB,
+		provideRouters,
 		poller.NewOutboxPoller,
 		provideProducer,
 		repository.NewOutboxRepository,

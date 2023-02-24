@@ -86,6 +86,7 @@ services:
     working_dir: /migrations
     volumes:
       - .:/migrations
+      - ~/.aws:/root/.aws
     entrypoint: ["./scripts/migrate.sh", "up"]
   wire:
     build:

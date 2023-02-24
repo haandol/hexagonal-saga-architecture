@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,6 +18,7 @@ import (
 )
 
 var (
+	BuildTag     string
 	applications []port.App
 )
 
@@ -91,8 +93,9 @@ func main() {
 	cfg := config.Load()
 	logger := util.InitLogger(cfg.App.Stage).With(
 		"module", "main",
+		"build_tag", BuildTag,
 	)
-	logger.Infow("\n==== Config ====\n\n", "config", cfg)
+	logger.Infow("\n==== Config ====\n\n", "config", fmt.Sprintf("%v", cfg))
 
 	logger.Info("Bootstraping apps...")
 	bootstrap(&cfg)
