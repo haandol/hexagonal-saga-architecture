@@ -23,7 +23,7 @@ spec:
             - configMapRef:
                 name: app-conf
           image: SAGA_IMAGE
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: 125m
