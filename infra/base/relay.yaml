@@ -37,5 +37,5 @@ spec:
             httpGet:
               path: /healthy
               port: 8090
-            initialDelaySeconds: 30
-            periodSeconds: 5
+            initialDelaySeconds: 3
+            periodSeconds: 3
