@@ -5,25 +5,25 @@ resources:
 images:
   - name: CAR_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/car
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: HOTEL_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/hotel
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: FLIGHT_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/flight
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: RELAY_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/relay
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: SAGA_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/saga
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: TRIP_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/trip
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
   - name: MIGRATION_IMAGE
     newName: 395271362395.dkr.ecr.ap-northeast-2.amazonaws.com/migration
-    newTag: f401b3e1a4
+    newTag: 5b40a3a892
 configMapGenerator:
   - name: aws-conf
     envs:
