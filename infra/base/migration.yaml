@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: migration
 spec:
+  backoffLimit: 0
   ttlSecondsAfterFinished: 60
   template:
     metadata:
