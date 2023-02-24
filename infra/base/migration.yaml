@@ -2,10 +2,14 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: migration
+  app.kubernetes.io/type: batch
 spec:
   ttlSecondsAfterFinished: 60
   template:
     metadata:
+      labels:
+        app.kubernetes.io/instance: batch
+        app.kubernetes.io/name: migration
       annotations:
         sidecar.istio.io/inject: "false"
     spec:

@@ -2,15 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trip
+  app.kubernetes.io/type: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: trip
+      app.kubernetes.io/component: service
+      app.kubernetes.io/instance: app
+      app.kubernetes.io/name: trip
   template:
     metadata:
       labels:
-        service: trip
+        app.kubernetes.io/component: service
+        app.kubernetes.io/instance: app
+        app.kubernetes.io/name: trip
     spec:
       serviceAccount: app-service-account
       containers:
@@ -29,6 +34,12 @@ spec:
               memory: 512Mi
           ports:
             - containerPort: 8090
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 8090
+              initialDelaySeconds: 30
+              periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service

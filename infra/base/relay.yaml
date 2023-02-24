@@ -2,15 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: relay
+  app.kubernetes.io/type: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: relay
+      app.kubernetes.io/component: service
+      app.kubernetes.io/instance: app
+      app.kubernetes.io/name: relay
   template:
     metadata:
       labels:
-        service: relay
+        app.kubernetes.io/component: service
+        app.kubernetes.io/instance: app
+        app.kubernetes.io/name: relay
     spec:
       serviceAccount: app-service-account
       containers:
@@ -29,3 +34,9 @@ spec:
               memory: 512Mi
           ports:
             - containerPort: 8090
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 8090
+              initialDelaySeconds: 30
+              periodSeconds: 5
