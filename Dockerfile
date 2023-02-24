@@ -17,7 +17,7 @@ COPY . ./
 ARG BUILD_TAG
 ARG APP_NAME
 ARG TARGETOS=linux
-ARG TARGETARCH=arm64/v8
+ARG TARGETARCH=arm64
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
 FROM alpine:3.17 AS server
