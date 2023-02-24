@@ -29,7 +29,7 @@ tasks:
       BUILD_TAG:
         sh: git rev-parse --short=10 HEAD
     cmds:
-      - docker build --platform linux/arm64/v8 --target migration -t migration:{{.BUILD_TAG}} .
+      - docker build --platform linux/arm64 --target migration -t migration:{{.BUILD_TAG}} .
 
   push-image:
     vars:
