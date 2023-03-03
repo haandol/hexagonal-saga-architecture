@@ -36,7 +36,7 @@ func (c *CarConsumer) Init() {
 	)
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		logger.Panicw("Failed to register handler", "err", err.Error())
+		logger.Panicw("Failed to register handler", "err", err)
 	}
 }
 
@@ -48,7 +48,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Errorw("Failed to unmarshal command", "err", err.Error())
+		logger.Errorw("Failed to unmarshal command", "err", err)
 	}
 
 	logger.Infow("Received command", "command", msg)
@@ -62,7 +62,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	case "BookCar":
 		cmd := &command.BookCar{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -71,7 +71,7 @@ func (c *CarConsumer) Handle(ctx context.Context, r *consumerport.Message) error
 	case "CancelCarBooking":
 		cmd := &command.CancelCarBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err

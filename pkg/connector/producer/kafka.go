@@ -89,7 +89,7 @@ func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []by
 
 	r := p.newRecord(topic, key, val)
 	if err := p.client.ProduceSync(ctx, r).FirstErr(); err != nil {
-		logger.Errorw("produce failed", "err", err.Error())
+		logger.Errorw("produce failed", "err", err)
 		return err
 	}
 	logger.Debugw("Message produced", "sent bytes", len(r.Value))
@@ -110,7 +110,7 @@ func Close(ctx context.Context) error {
 	}
 
 	if err := kafkaProducer.client.Flush(ctx); err != nil {
-		logger.Errorw("failed to flush", "err", err.Error())
+		logger.Errorw("failed to flush", "err", err)
 		return err
 	}
 

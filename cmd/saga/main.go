@@ -69,21 +69,21 @@ func cleanup(ctx context.Context) {
 
 	logger.Infow("Closing database connection...")
 	if err := database.Close(ctx); err != nil {
-		logger.Errorw("error on database close", "err", err.Error())
+		logger.Errorw("error on database close", "err", err)
 	} else {
 		logger.Info("Database connection closed.")
 	}
 
 	logger.Infow("Closing producer connection...")
 	if err := producer.Close(ctx); err != nil {
-		logger.Error("error on producer close:", err.Error())
+		logger.Error("error on producer close:", err)
 	} else {
 		logger.Info("Producer connection closed.")
 	}
 
 	logger.Infow("Closing o11y connection...")
 	if err := o11y.Close(ctx); err != nil {
-		logger.Error("error on o11y close:", err.Error())
+		logger.Error("error on o11y close:", err)
 	} else {
 		logger.Info("o11y connection closed.")
 	}
@@ -114,7 +114,7 @@ func main() {
 	select {
 	case err := <-appErr:
 		cancel()
-		logger.Errorw("error on job", "err", err.Error())
+		logger.Errorw("error on job", "err", err)
 	case <-sigs:
 		cancel()
 		logger.Info("User interrupt for quitting...")

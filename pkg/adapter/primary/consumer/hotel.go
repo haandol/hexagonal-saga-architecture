@@ -36,7 +36,7 @@ func (c *HotelConsumer) Init() {
 	)
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		logger.Panicw("Failed to register handler", "err", err.Error())
+		logger.Panicw("Failed to register handler", "err", err)
 	}
 }
 
@@ -48,7 +48,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Errorw("Failed to unmarshal command", "err", err.Error())
+		logger.Errorw("Failed to unmarshal command", "err", err)
 	}
 
 	logger.Infow("Received command", "command", msg)
@@ -62,7 +62,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 	case "BookHotel":
 		cmd := &command.BookHotel{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -71,7 +71,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 	case "CancelHotelBooking":
 		cmd := &command.CancelHotelBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err

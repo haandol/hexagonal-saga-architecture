@@ -54,24 +54,20 @@ func InitOtel() {
 }
 
 func Close(ctx context.Context) error {
-	var errs []string
 	if tracerShutdown != nil {
 		if err := tracerShutdown(ctx); err != nil {
-			errs = append(errs, err.Error())
+			log.Printf("failed to shutdown tracer: %v", err)
+		} else {
+			log.Println("tracer shutdown")
 		}
 	}
-	log.Println("tracer shutdown")
 
 	if metricShutdown != nil {
 		if err := metricShutdown(ctx); err != nil {
-			log.Printf("failed to shutdown metric: %v", err.Error())
-			errs = append(errs, err.Error())
+			log.Printf("failed to shutdown metric: %v", err)
+		} else {
+			log.Println("metric shutdown")
 		}
-	}
-	log.Println("metric shutdown")
-
-	if len(errs) > 0 {
-		return fmt.Errorf("failed to shutdown: %v", errs)
 	}
 
 	return nil
@@ -85,7 +81,7 @@ func initTracer(endpoint string) ShutdownFunc {
 		otlptracegrpc.WithEndpoint(endpoint),
 	)
 	if err != nil {
-		log.Fatalf("failed to create new OTLP trace exporter: %v", err.Error())
+		log.Fatalf("failed to create new OTLP trace exporter: %v", err)
 	}
 
 	// AWS EKS resource
@@ -93,7 +89,7 @@ func initTracer(endpoint string) ShutdownFunc {
 	resource, err := resourceDetector.Detect(context.Background())
 	if err != nil {
 		// just use nil-resource if failed to detect resource
-		log.Printf("Failed to create new resource: %v", err.Error())
+		log.Printf("Failed to create new resource: %v", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
@@ -141,12 +137,12 @@ func BeginSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 func BeginSpanWithTraceID(ctx context.Context, corrID, parentID, name string) (context.Context, trace.Span) {
 	traceID, err := trace.TraceIDFromHex(corrID)
 	if err != nil {
-		log.Printf("Failed to parse traceID: %v", err.Error())
+		log.Printf("Failed to parse traceID: %v", err)
 	}
 
 	spanID, err := trace.SpanIDFromHex(parentID)
 	if err != nil {
-		log.Printf("Failed to parse spanID: %v", err.Error())
+		log.Printf("Failed to parse spanID: %v", err)
 	}
 
 	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
@@ -224,7 +220,7 @@ func GetStatus(err error) (code codes.Code, msg string) {
 
 	if err != nil {
 		code = codes.Error
-		msg = err.Error()
+		msg = fmt.Sprintf("%v", err)
 	}
 
 	return

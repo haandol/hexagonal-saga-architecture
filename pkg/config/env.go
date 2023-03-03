@@ -29,7 +29,7 @@ func (e Env) Int() int {
 
 	i, err := strconv.Atoi(string(e))
 	if err != nil {
-		panic(fmt.Sprintf("Error converting env %v to int: %s", string(e), err.Error()))
+		panic(fmt.Sprintf("Error converting env %v to int: %s", string(e), err))
 	}
 	return i
 }

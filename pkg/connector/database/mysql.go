@@ -35,12 +35,12 @@ func getSQLDsn(cfg *config.Database) string {
 func getSQLDsnFromSecretsManager(cfg *config.Database) string {
 	awsCfg, err := cloud.GetAWSConfig()
 	if err != nil {
-		log.Fatalf("unable to get AWS Config %s", err.Error())
+		log.Fatalf("unable to get AWS Config %s", err)
 	}
 
 	secrets, err := internal.GetSecretsWithID(&awsCfg.Cfg, cfg.SecretID)
 	if err != nil {
-		log.Fatalf("unable to get secrets %s", err.Error())
+		log.Fatalf("unable to get secrets %s", err)
 	}
 
 	const postfix = "charset=utf8mb4,utf8&sql_mode=TRADITIONAL&multiStatements=true&parseTime=true&loc=Asia%2FSeoul"
@@ -76,12 +76,12 @@ func initDB(cfg *config.Database) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("failed to open gorm %s", err.Error())
+		log.Fatalf("failed to open gorm %s", err)
 	}
 
 	/* TODO: remove this if you want to trace db query
 	if err := db.Use(internal.NewPlugin()); err != nil {
-		log.Fatalf("failed to use otel plugin for gorm: %s", err.Error())
+		log.Fatalf("failed to use otel plugin for gorm: %s", err)
 	}
 	*/
 
@@ -101,7 +101,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 
 	sqlDB, err := gormDB.DB()
 	if err != nil {
-		logger.Error("failed to get DB instance", err.Error())
+		logger.Error("failed to get DB instance", err)
 		return nil, err
 	}
 
@@ -126,12 +126,12 @@ func Close(ctx context.Context) error {
 		for name, db := range gormDBs {
 			sqlDB, err := db.DB()
 			if err != nil {
-				logger.Errorw("failed to get DB instance", "name", name, "error", err.Error())
+				logger.Errorw("failed to get DB instance", "name", name, "error", err)
 				continue
 			}
 
 			if err = sqlDB.Close(); err != nil {
-				logger.Errorw("failed to close sqlDB", "name", name, "error", err.Error())
+				logger.Errorw("failed to close sqlDB", "name", name, "error", err)
 			}
 
 			logger.Infow("Closed database", "name", name)

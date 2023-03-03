@@ -40,7 +40,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 	// TODO: group by kafkaKey and send them parallell
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
-		logger.Errorw("failed to query unsent messages", "err", err.Error())
+		logger.Errorw("failed to query unsent messages", "err", err)
 		return nil, err
 	}
 

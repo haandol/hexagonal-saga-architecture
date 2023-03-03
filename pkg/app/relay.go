@@ -90,7 +90,7 @@ func (a *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	if err := a.outboxPoller.Close(ctx); err != nil {
-		logger.Error("Failed to close poller", "error", err.Error())
+		logger.Error("Failed to close poller", "error", err)
 	} else {
 		logger.Info("Poller stopped.")
 	}

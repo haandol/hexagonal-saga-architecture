@@ -87,21 +87,21 @@ func Load() Config {
 	}
 
 	if err := util.ValidateStruct(cfg); err != nil {
-		log.Panicf("Error validating config: %s", err.Error())
+		log.Panicf("Error validating config: %s", err)
 	}
 
 	if cfg.TripDB.SecretID == "" {
 		if err := util.ValidateVar(cfg.TripDB.Host, "required"); err != nil {
-			log.Panicf("Error validating config: %s", err.Error())
+			log.Panicf("Error validating config: %s", err)
 		}
 		if err := util.ValidateVar(cfg.TripDB.Port, "required"); err != nil {
-			log.Panicf("Error validating config: %s", err.Error())
+			log.Panicf("Error validating config: %s", err)
 		}
 		if err := util.ValidateVar(cfg.TripDB.Username, "required"); err != nil {
-			log.Panicf("Error validating config: %s", err.Error())
+			log.Panicf("Error validating config: %s", err)
 		}
 		if err := util.ValidateVar(cfg.TripDB.Password, "required"); err != nil {
-			log.Panicf("Error validating config: %s", err.Error())
+			log.Panicf("Error validating config: %s", err)
 		}
 	}
 

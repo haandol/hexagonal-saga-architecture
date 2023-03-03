@@ -90,7 +90,7 @@ func (a *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	if err := a.consumer.Close(ctx); err != nil {
-		logger.Errorw("failed to close consumer", "err", err.Error())
+		logger.Errorw("failed to close consumer", "err", err)
 	} else {
 		logger.Info("Consumer closed.")
 	}

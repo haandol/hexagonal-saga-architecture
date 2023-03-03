@@ -273,11 +273,11 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err)
 	}
 
 	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
-		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err.Error())
+		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err)
 		return err
 	}
 
@@ -311,11 +311,11 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err.Error())
+		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err)
 	}
 
 	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
-		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err.Error())
+		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err)
 	}
 
 	return nil

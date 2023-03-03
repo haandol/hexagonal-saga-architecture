@@ -36,7 +36,7 @@ func (c *TripConsumer) Init() {
 	)
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		logger.Panicw("Failed to register handler", "err", err.Error())
+		logger.Panicw("Failed to register handler", "err", err)
 	}
 }
 
@@ -48,7 +48,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Errorw("Failed to unmarshal command", "err", err.Error())
+		logger.Errorw("Failed to unmarshal command", "err", err)
 	}
 
 	logger.Infow("Received command", "command", msg)
@@ -62,7 +62,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaEnded":
 		evt := &event.SagaEnded{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			span.SetStatus(o11y.GetStatus(err))
@@ -72,7 +72,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaAborted":
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err.Error())
+			logger.Errorw("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
