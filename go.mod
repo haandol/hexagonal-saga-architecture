@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.6
-	github.com/aws/aws-sdk-go-v2/config v1.18.16
+	github.com/aws/aws-sdk-go-v2/config v1.18.17
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/timeout v0.0.3
@@ -16,8 +16,8 @@ require (
 	github.com/swaggo/files v1.0.0
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.10
-	github.com/twmb/franz-go v1.12.1
-	github.com/twmb/franz-go/plugin/kzap v1.1.1
+	github.com/twmb/franz-go v1.13.0
+	github.com/twmb/franz-go/plugin/kzap v1.1.2
 	go.opentelemetry.io/contrib/detectors/aws/eks v1.15.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.40.0
 	go.opentelemetry.io/contrib/propagators/aws v1.15.0
@@ -40,8 +40,8 @@ require (
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.16 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.24 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.17 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.0 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.30 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.24 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.31 // indirect
@@ -50,7 +50,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.6 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
-	github.com/bytedance/sonic v1.8.3 // indirect
+	github.com/bytedance/sonic v1.8.5 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/goccy/go-json v0.10.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
@@ -76,7 +76,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.16.0 // indirect
+	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -116,7 +116,7 @@ require (
 	k8s.io/client-go v0.26.2 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
-	k8s.io/utils v0.0.0-20230308161112-d77c459e9343 // indirect
+	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
