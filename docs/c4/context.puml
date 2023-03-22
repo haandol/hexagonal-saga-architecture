@@ -14,8 +14,9 @@ System_Boundary(b0, "Hexagonal transactional outbox demo") {
   SystemDb(db, "Database", "여행예약 시스템의 데이터베이스")
 }
 
-Rel(client, saga, "1. Request for a trip reservation", "HTTP")
-Rel(saga, relay, "2. Make car, hotel and flight reservations for a trip", "Outbox Pattern")
-Rel(saga, db, "3. Save a trip reservation states")
+Rel(client, saga, "1. 여행정보 전달", "HTTP")
+Rel(saga, db, "2. 여행예약 생성")
+Rel(saga, relay, "3. 차량, 호텔, 비행편 예약", "Events")
+Rel(relay, db, "3. 각 예약정보에 대한 정보 저장")
 
 @enduml
