@@ -75,6 +75,8 @@ services:
     image: cosmtrek/air:v1.41.0
     profiles: ["dev"]
     working_dir: /src
+    stop_signal: SIGINT
+    stop_grace_period: 5s
     volumes:
       - .:/src
       - ~/.aws:/root/.aws

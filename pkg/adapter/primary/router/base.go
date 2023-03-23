@@ -19,7 +19,7 @@ func (r BaseRouter) WrappedHandler(f func(c *gin.Context) *cerrors.CodedError) g
 			}
 			c.AbortWithStatusJSON(
 				httpStatusCode,
-				gin.H{"status": false, "code": err.Code, "message": err},
+				gin.H{"status": false, "code": err.Code, "message": err.Error()},
 			)
 		}
 	}
