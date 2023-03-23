@@ -1,4 +1,5 @@
-FROM golang:1.20 AS builder
+FROM golang:1.20.2 AS builder
+LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
 
