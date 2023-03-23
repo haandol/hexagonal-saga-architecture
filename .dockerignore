@@ -1,0 +1,6 @@
+vendor/
+tmp/
+
+.dockerignore
+.gitignore
+.DS_Store
