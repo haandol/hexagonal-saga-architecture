@@ -1,16 +1,16 @@
-@startuml saga-context
+@startuml context
 
 !include <c4/C4_Context.puml>  
 
 LAYOUT_WITH_LEGEND()
 
-title Hexagonal Saga Context Diagram
+title Context Diagram
 
 Person(client, "User", "여행예약 시스템 이용자")
 
 System_Boundary(b0, "Hexagonal transactional outbox demo") {
-  System(saga, "여행예약 시스템", "여행정보를 입력받아 차량, 호텔, 비행기를 한번에 예약해주는 시스템")
-  System(relay, "메시지 시스템", "분산 큐를 이용하여 서비스간 메시지를 전달하는 시스템")
+  System(saga, "Trip Reservation System", "여행정보를 입력받아 차량, 호텔, 비행기를 한번에 예약해주는 시스템")
+  System(relay, "Message System", "분산 큐를 이용하여 서비스간 메시지를 전달하는 시스템")
   SystemDb(db, "Database", "여행예약 시스템의 데이터베이스")
 }
 
