@@ -126,6 +126,10 @@ func initMetricProvider(endpoint string) ShutdownFunc {
 	return exporter.Shutdown
 }
 
+func GetCurrentSpan(ctx context.Context) trace.Span {
+	return trace.SpanFromContext(ctx)
+}
+
 func BeginSpan(ctx context.Context, name string) (context.Context, trace.Span) {
 	ctx, span := tracer.Start(ctx, name, trace.WithSpanKind(trace.SpanKindServer))
 	span.SetAttributes(
