@@ -13,6 +13,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/service"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/haandol/hexagonal/pkg/util/cerrors"
+	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type TripRouter struct {
@@ -46,20 +47,28 @@ func (r *TripRouter) Route(rg routerport.RouterGroup) {
 // @Success 200 {object} dto.Trip
 // @Router /trips [post]
 func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
+	defer cancel()
+
+	span := o11y.SpanFromContext(ctx)
+
 	req := &dto.Trip{}
 	if err := c.ShouldBindJSON(req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return cerrors.New(constant.ErrBadRequest, err)
 	}
 
 	if err := util.ValidateStruct(req); err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return cerrors.New(constant.ErrInvalidRequest, err)
 	}
 
-	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
-	defer cancel()
-
 	trip, err := r.tripService.Create(ctx, req)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
 
@@ -76,16 +85,22 @@ func (r *TripRouter) CreateHandler(c *gin.Context) *cerrors.CodedError {
 // @Success 200 {object} dto.Trip
 // @Router /trips/{trip_id}/recover/forward [put]
 func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
-	tripID, err := strconv.Atoi(c.Param("tripId"))
-	if err != nil {
-		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
-	}
-
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
 	defer cancel()
 
+	span := o11y.SpanFromContext(ctx)
+
+	tripID, err := strconv.Atoi(c.Param("tripId"))
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
+		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
+	}
+
 	trip, err := r.tripService.RecoverForward(ctx, uint(tripID))
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
 
@@ -102,16 +117,22 @@ func (r *TripRouter) RecoverForwardHandler(c *gin.Context) *cerrors.CodedError {
 // @Success 200 {object} dto.Trip
 // @Router /trips/{trip_id}/recover/backward [put]
 func (r *TripRouter) RecoverBackwardHandler(c *gin.Context) *cerrors.CodedError {
-	tripID, err := strconv.Atoi(c.Param("tripId"))
-	if err != nil {
-		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
-	}
-
 	ctx, cancel := context.WithTimeout(c.Request.Context(), time.Second*10)
 	defer cancel()
 
+	span := o11y.SpanFromContext(ctx)
+
+	tripID, err := strconv.Atoi(c.Param("tripId"))
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
+		return cerrors.New(constant.ErrInvalidRequest, errors.New("tripID is invalid"))
+	}
+
 	trip, err := r.tripService.RecoverBackward(ctx, uint(tripID))
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(o11y.GetStatus(err))
 		return cerrors.New(constant.ErrFailToCreateTrip, err)
 	}
 

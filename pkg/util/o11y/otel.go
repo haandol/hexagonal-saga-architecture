@@ -126,7 +126,7 @@ func initMetricProvider(endpoint string) ShutdownFunc {
 	return exporter.Shutdown
 }
 
-func GetCurrentSpan(ctx context.Context) trace.Span {
+func SpanFromContext(ctx context.Context) trace.Span {
 	return trace.SpanFromContext(ctx)
 }
 
