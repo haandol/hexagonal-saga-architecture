@@ -15,7 +15,6 @@
 vendor
 
 .env
-.vscode/
 tmp/
 cover.profile
 .DS_Store

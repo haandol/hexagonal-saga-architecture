@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "infra"
+		}
+	],
+	"settings": {
+		"editor.defaultFormatter": "golang.go",
+		"editor.formatOnSave": true,
+		"aws.codeWhisperer.includeSuggestionsWithCodeReferences": false,
+		"aws.codeWhisperer.shareCodeWhispererContentWithAWS": false,
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"**/vendor": true,
+			"**/tmp": true
+		}
+	}
+}
