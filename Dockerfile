@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.3
+# syntax=docker/dockerfile:1
 FROM golang:1.20.3 AS builder
 LABEL maintainer="ldg55d@gmail.com"
 
