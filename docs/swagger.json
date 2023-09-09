@@ -7,40 +7,6 @@
         "version": "0.1"
     },
     "paths": {
-        "/efs": {
-            "get": {
-                "description": "list all files in the given path",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "efs"
-                ],
-                "summary": "list files",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "path",
-                        "name": "path",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/trips": {
             "get": {
                 "description": "list all trips",

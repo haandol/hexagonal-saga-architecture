@@ -8,7 +8,7 @@ hexagonal saga demo app
 # Prerequisites
 
 - Docker
-- Go 1.18+
+- Go 1.21.1
 - MySQL 8.x
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
@@ -61,39 +61,42 @@ $ open http://localhost:8090/swagger/index.html
 ## Create trip record
 
 ```bash
-$ http --json -v post localhost:8090/v1/trips/ userId:=1 carId:=1 hotelId:=1 flightId:=1
+$ http --json -v post localhost:8090/v1/trips/ < payload/create-trip.json
 
 POST /v1/trips/ HTTP/1.1
 Accept: application/json, */*;q=0.5
 Accept-Encoding: gzip, deflate
 Connection: keep-alive
-Content-Length: 79
+Content-Length: 76
 Content-Type: application/json
 Host: localhost:8090
-User-Agent: HTTPie/2.6.0
+User-Agent: HTTPie/3.2.2
 
 {
     "carId": 1,
     "flightId": 1,
     "hotelId": 1,
-    "status": "INITIALIZED",
+    "id": 1,
     "userId": 1
 }
 
 
 HTTP/1.1 200 OK
-Content-Length: 179
+Content-Length: 229
 Content-Type: application/json; charset=utf-8
-Date: Sun, 28 Aug 2022 12:36:46 GMT
+Date: Sat, 09 Sep 2023 09:17:13 GMT
 
 {
     "data": {
+        "carBookingId": 0,
         "carId": 1,
-        "createdAt": "2022-08-28T21:36:46.825+09:00",
+        "createdAt": "2023-09-09T09:17:13.87Z",
+        "flightBookingId": 0,
         "flightId": 1,
+        "hotelBookingId": 0,
         "hotelId": 1,
-        "id": 1,
-        "status": "INITIALIZED",
+        "id": 5,
+        "status": "Initialized",
         "updatedAt": "0001-01-01T00:00:00Z",
         "userId": 1
     },
@@ -104,42 +107,38 @@ Date: Sun, 28 Aug 2022 12:36:46 GMT
 ## Query created trips
 
 ```bash
-$ http get localhost:8090/v1/trips/                                                                                                                               dongkyl@DongGyunui-MacBookAir
+$ http get localhost:8090/v1/trips/
 
 HTTP/1.1 200 OK
-Content-Length: 177
+Content-Length: 1044
 Content-Type: application/json; charset=utf-8
-Date: Sun, 28 Aug 2022 12:38:01 GMT
+Date: Sat, 09 Sep 2023 09:18:01 GMT
 
 {
     "data": [
         {
+            "carBookingId": 2,
             "carId": 1,
-            "createdAt": "2022-08-28T19:36:47+07:00",
+            "createdAt": "2023-09-09T18:13:43+09:00",
+            "flightBookingId": 2,
             "flightId": 1,
-            "hotelId": 1,
-            "id": 1,
-            "status": "INITIALIZED",
-            "updatedAt": "0001-01-01T00:00:00Z",
-            "userId": 1
-        },
-        {
-            "carId": 1,
-            "createdAt": "2022-08-28T19:38:52+07:00",
-            "flightId": 1,
+            "hotelBookingId": 2,
             "hotelId": 1,
             "id": 2,
-            "status": "INITIALIZED",
+            "status": "Booked",
             "updatedAt": "0001-01-01T00:00:00Z",
             "userId": 1
         },
         {
+            "carBookingId": 1,
             "carId": 1,
-            "createdAt": "2022-08-28T19:38:53+07:00",
+            "createdAt": "2023-09-09T18:13:36+09:00",
+            "flightBookingId": 1,
             "flightId": 1,
+            "hotelBookingId": 1,
             "hotelId": 1,
-            "id": 3,
-            "status": "INITIALIZED",
+            "id": 1,
+            "status": "Booked",
             "updatedAt": "0001-01-01T00:00:00Z",
             "userId": 1
         }

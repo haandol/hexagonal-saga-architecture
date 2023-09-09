@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.20.3
+FROM golang:1.21.1
 LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
@@ -20,7 +20,7 @@ COPY go.mod go.sum ./
 RUN go env -w GOPROXY=direct
 RUN go mod download
 
-RUN apk add --no-cache aws-cli jq git
+RUN apt-get update && apt-get -y install --no-install-recommends jq git wget
 RUN go install github.com/google/wire/cmd/wire@latest
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 

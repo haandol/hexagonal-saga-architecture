@@ -36,28 +36,6 @@ info:
   title: Hexagonal Saga API
   version: "0.1"
 paths:
-  /efs:
-    get:
-      consumes:
-      - application/json
-      description: list all files in the given path
-      parameters:
-      - description: path
-        in: query
-        name: path
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: list files
-      tags:
-      - efs
   /trips:
     get:
       consumes:

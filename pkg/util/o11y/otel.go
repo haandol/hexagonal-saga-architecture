@@ -13,8 +13,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
@@ -114,14 +113,14 @@ func initMetricProvider(endpoint string) ShutdownFunc {
 		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
-		global.SetMeterProvider(metric.NewNoopMeterProvider())
+		otel.SetMeterProvider(noop.NewMeterProvider())
 		return func(ctx context.Context) error { return nil }
 	}
 
 	provider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter)),
 	)
-	global.SetMeterProvider(provider)
+	otel.SetMeterProvider(provider)
 
 	return exporter.Shutdown
 }

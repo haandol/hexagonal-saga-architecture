@@ -2,10 +2,10 @@ version: '3.4'
 
 services:
   mysql:
-    image: mysql:8.0
+    image: mysql:8.1
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     restart: always
-    profiles: ["backend"]
+    profiles: ['backend']
     ports:
       - '3306:3306'
     environment:
@@ -18,15 +18,15 @@ services:
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
   redis:
-    image: redis:6
+    image: redis:7.2
     restart: always
-    profiles: ["backend"]
+    profiles: ['backend']
     ports:
       - '6379:6379'
   zookeeper:
     image: zookeeper
     restart: always
-    profiles: ["backend"]
+    profiles: ['backend']
     ports:
       - '2181:2181'
   kafka:
@@ -34,7 +34,7 @@ services:
       - zookeeper
     image: bitnami/kafka:2.8.1
     restart: always
-    profiles: ["backend"]
+    profiles: ['backend']
     ports:
       - '9093:9093'
     environment:
@@ -54,26 +54,26 @@ services:
       - kafka
     image: provectuslabs/kafka-ui
     restart: always
-    profiles: ["ops"]
+    profiles: ['ops']
     ports:
       - '8080:8080'
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
   aws-otel-collector:
-    image: amazon/aws-otel-collector:latest
+    image: amazon/aws-otel-collector
     volumes:
       - ./otel-config.yml:/etc/otel-agent-config.yml
       - ~/.aws:/root/.aws
-    profiles: ["ops"]
+    profiles: ['ops']
     ports:
-      - '4317:4317'   # OTLP receiver
+      - '4317:4317' # OTLP receiver
     environment:
       - AWS_REGION=ap-northeast-2
-    command: ["--config=/etc/otel-agent-config.yml"]
+    command: ['--config=/etc/otel-agent-config.yml']
   dev:
-    image: cosmtrek/air:v1.41.0
-    profiles: ["dev"]
+    image: cosmtrek/air:v1.45.0
+    profiles: ['dev']
     working_dir: /src
     stop_signal: SIGINT
     stop_grace_period: 5s
@@ -84,17 +84,17 @@ services:
       - '8090:8090'
   migrate:
     image: haandol/goose:3.9.0
-    profiles: ["dev"]
+    profiles: ['dev']
     working_dir: /migrations
     volumes:
       - .:/migrations
       - ~/.aws:/root/.aws
-    entrypoint: ["./scripts/migrate.sh", "up"]
+    entrypoint: ['./scripts/migrate.sh', 'up']
   wire:
     build:
       context: .
       dockerfile: ./Dockerfile.local
-    profiles: ["wire"]
+    profiles: ['wire']
     working_dir: /src/pkg/app
     command: [wire]
     volumes:
@@ -103,8 +103,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.local
-    command: ["./scripts/swagger.sh"]
-    profiles: ["swagger"]
+    command: ['./scripts/swagger.sh']
+    profiles: ['swagger']
     volumes:
       - .:/src
 
