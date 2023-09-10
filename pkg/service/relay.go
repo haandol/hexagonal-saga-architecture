@@ -40,7 +40,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 	// TODO: group by kafkaKey and send them parallell
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
 	if err != nil {
-		logger.Errorw("failed to query unsent messages", "err", err)
+		logger.Error("failed to query unsent messages", "err", err)
 		return nil, err
 	}
 
@@ -64,7 +64,7 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 			var msg message.Message
 			data := []byte(m.KafkaValue)
 			if err := json.Unmarshal(data, &msg); err != nil {
-				logger.Errorw("failed to unmarshal message", "err", err)
+				logger.Error("failed to unmarshal message", "err", err)
 				return
 			}
 
@@ -77,7 +77,7 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 			)
 
 			if err := s.kafkaProducer.Produce(ctx, m.KafkaTopic, m.KafkaKey, []byte(m.KafkaValue)); err != nil {
-				logger.Errorw("failed to produce message", "err", err)
+				logger.Error("failed to produce message", "err", err)
 				span.RecordError(err)
 				span.SetStatus(o11y.GetStatus(err))
 				return
@@ -88,12 +88,12 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 	wg.Wait()
 
 	if len(messages) > 0 {
-		logger.Infow("sent messages", "total", len(messages), "sent", len(sentIDs))
+		logger.Info("sent messages", "total", len(messages), "sent", len(sentIDs))
 	}
 
 	if len(sentIDs) > 0 {
 		if err := s.outboxRepository.MarkSentInBatch(ctx, sentIDs); err != nil {
-			logger.Errorw("failed to mark message as sent", "err", err)
+			logger.Error("failed to mark message as sent", "err", err)
 			return err
 		}
 	}

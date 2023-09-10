@@ -51,13 +51,13 @@ func (a *MessageRelayApp) Start(ctx context.Context) error {
 	g := new(errgroup.Group)
 	if a.server != nil {
 		g.Go(func() error {
-			logger.Infow("Started and serving HTTP", "addr", a.server.Addr, "pid", os.Getpid())
+			logger.Info("Started and serving HTTP", "addr", a.server.Addr, "pid", os.Getpid())
 			if err := a.server.ListenAndServe(); err != nil {
 				if errors.Is(err, http.ErrServerClosed) {
 					logger.Info("server closed.")
 					return err
 				} else {
-					logger.Errorw("ListenAndServe fail", "error", err)
+					logger.Error("ListenAndServe fail", "error", err)
 					return err
 				}
 			}

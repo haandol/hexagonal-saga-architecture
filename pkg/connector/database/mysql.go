@@ -11,7 +11,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/connector/cloud"
 	"github.com/haandol/hexagonal/pkg/connector/database/internal"
 	"github.com/haandol/hexagonal/pkg/util"
-	"moul.io/zapgorm2"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -56,9 +55,6 @@ func initDB(cfg *config.Database) {
 		return
 	}
 
-	logger := zapgorm2.New(util.GetLogger().With("package", "mysql").Desugar())
-	logger.SetAsDefault()
-
 	var dsn string
 	if cfg.SecretID == "" {
 		log.Println("dsn from config")
@@ -71,7 +67,6 @@ func initDB(cfg *config.Database) {
 	db, err := gorm.Open(
 		mysql.Open(dsn),
 		&gorm.Config{
-			Logger:      logger,
 			PrepareStmt: false,
 		},
 	)
@@ -93,7 +88,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 		"pkg", "database",
 		"func", "Connect",
 	)
-	logger.Infow("Connecting to database...")
+	logger.Info("Connecting to database...")
 
 	initDB(cfg)
 
@@ -109,7 +104,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConnections)
 	sqlDB.SetConnMaxLifetime(DBConnMaxLifeTime)
 
-	logger.Infow("Connected to database")
+	logger.Info("Connected to database")
 
 	return gormDB, nil
 }
@@ -126,15 +121,15 @@ func Close(ctx context.Context) error {
 		for name, db := range gormDBs {
 			sqlDB, err := db.DB()
 			if err != nil {
-				logger.Errorw("failed to get DB instance", "name", name, "error", err)
+				logger.Error("failed to get DB instance", "name", name, "error", err)
 				continue
 			}
 
 			if err = sqlDB.Close(); err != nil {
-				logger.Errorw("failed to close sqlDB", "name", name, "error", err)
+				logger.Error("failed to close sqlDB", "name", name, "error", err)
 			}
 
-			logger.Infow("Closed database", "name", name)
+			logger.Info("Closed database", "name", name)
 		}
 		done <- nil
 	}()

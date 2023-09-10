@@ -68,13 +68,13 @@ func (a *TripApp) Start(ctx context.Context) error {
 	g := new(errgroup.Group)
 	if a.server != nil {
 		g.Go(func() error {
-			logger.Infow("Started and serving HTTP", "addr", a.server.Addr, "pid", os.Getpid())
+			logger.Info("Started and serving HTTP", "addr", a.server.Addr, "pid", os.Getpid())
 			if err := a.server.ListenAndServe(); err != nil {
 				if errors.Is(err, http.ErrServerClosed) {
 					logger.Info("server closed.")
 					return err
 				} else {
-					logger.Errorw("listenAndServe fail", "error", err)
+					logger.Error("listenAndServe fail", "error", err)
 					return err
 				}
 			}
@@ -107,7 +107,7 @@ func (a *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	if err := a.consumer.Close(ctx); err != nil {
-		logger.Errorw("failed to close consumer", "err", err)
+		logger.Error("failed to close consumer", "err", err)
 	} else {
 		logger.Info("Consumer closed.")
 	}

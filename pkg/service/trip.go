@@ -27,7 +27,7 @@ func NewTripService(
 
 // create trip for the given user
 func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "Create",
 	)
@@ -35,7 +35,7 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	trip, err := s.tripRepository.Create(ctx, traceID, spanID, d)
 	if err != nil {
-		logger.Errorw("failed to create trip", "trip", d, "err", err)
+		logger.Error("failed to create trip", "trip", d, "err", err)
 		return dto.Trip{}, err
 	}
 
@@ -43,7 +43,7 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 }
 
 func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "RecoverForward",
 	)
@@ -52,7 +52,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
-		logger.Errorw("failed to get a trip", "traceID", traceID, "id", tripID, "err", err)
+		logger.Error("failed to get a trip", "traceID", traceID, "id", tripID, "err", err)
 		return dto.Trip{}, err
 	}
 
@@ -61,14 +61,14 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 	}
 
 	if err := s.tripRepository.PublishStartSaga(ctx, traceID, spanID, &trip); err != nil {
-		logger.Errorw("failed to produce start saga", "trip", trip, "err", err)
+		logger.Error("failed to produce start saga", "trip", trip, "err", err)
 	}
 
 	return trip, nil
 }
 
 func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "RecoverBackward",
 	)
@@ -76,7 +76,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
 	if err != nil {
-		logger.Errorw("failed to get a trip", "traceID", traceID, "id", tripID, "err", err)
+		logger.Error("failed to get a trip", "traceID", traceID, "id", tripID, "err", err)
 		return dto.Trip{}, err
 	}
 
@@ -87,21 +87,21 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 	if err := s.tripRepository.PublishAbortSaga(ctx,
 		traceID, spanID, tripID, "force revert",
 	); err != nil {
-		logger.Errorw("failed to produce start saga", "trip", trip, "err", err)
+		logger.Error("failed to produce start saga", "trip", trip, "err", err)
 	}
 
 	return trip, nil
 }
 
 func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "List",
 	)
 
 	trips, err := s.tripRepository.List(ctx)
 	if err != nil {
-		logger.Errorw("failed to create trip", "err", err)
+		logger.Error("failed to create trip", "err", err)
 		return []dto.Trip{}, err
 	}
 
@@ -109,13 +109,13 @@ func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
 }
 
 func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "ProcessSagaEnded",
 	)
 
 	if err := s.tripRepository.Complete(ctx, evt); err != nil {
-		logger.Errorw("failed to update trip booking", "event", evt, "err", err)
+		logger.Error("failed to update trip booking", "event", evt, "err", err)
 		return err
 	}
 
@@ -123,13 +123,13 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 }
 
 func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAborted) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "TripService",
 		"method", "ProcessSagaAborted",
 	)
 
 	if err := s.tripRepository.Abort(ctx, evt); err != nil {
-		logger.Errorw("failed to abort trip booking", "event", evt, "err", err)
+		logger.Error("failed to abort trip booking", "event", evt, "err", err)
 		return err
 	}
 

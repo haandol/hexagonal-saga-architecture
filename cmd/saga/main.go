@@ -67,21 +67,21 @@ func cleanup(ctx context.Context) {
 	}
 	wg.Wait()
 
-	logger.Infow("Closing database connection...")
+	logger.Info("Closing database connection...")
 	if err := database.Close(ctx); err != nil {
-		logger.Errorw("error on database close", "err", err)
+		logger.Error("error on database close", "err", err)
 	} else {
 		logger.Info("Database connection closed.")
 	}
 
-	logger.Infow("Closing producer connection...")
+	logger.Info("Closing producer connection...")
 	if err := producer.Close(ctx); err != nil {
 		logger.Error("error on producer close:", err)
 	} else {
 		logger.Info("Producer connection closed.")
 	}
 
-	logger.Infow("Closing o11y connection...")
+	logger.Info("Closing o11y connection...")
 	if err := o11y.Close(ctx); err != nil {
 		logger.Error("error on o11y close:", err)
 	} else {
@@ -95,7 +95,7 @@ func main() {
 		"module", "main",
 		"build_tag", BuildTag,
 	)
-	logger.Infow("\n==== Config ====\n\n", "config", fmt.Sprintf("%v", cfg))
+	logger.Info("\n==== Config ====\n\n", "config", fmt.Sprintf("%v", cfg))
 
 	logger.Info("Bootstraping apps...")
 	bootstrap(&cfg)
@@ -114,7 +114,7 @@ func main() {
 	select {
 	case err := <-appErr:
 		cancel()
-		logger.Errorw("error on job", "err", err)
+		logger.Error("error on job", "err", err)
 	case <-sigs:
 		cancel()
 		logger.Info("User interrupt for quitting...")

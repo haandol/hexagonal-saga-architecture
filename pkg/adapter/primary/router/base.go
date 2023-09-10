@@ -1,10 +1,13 @@
 package router
 
 import (
+	"log/slog"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/pkg/constant"
+	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/haandol/hexagonal/pkg/util/cerrors"
 )
 
@@ -17,6 +20,15 @@ func (r BaseRouter) WrappedHandler(f func(c *gin.Context) *cerrors.CodedError) g
 			if err.Code == constant.ErrUnAuthorized {
 				httpStatusCode = http.StatusUnauthorized
 			}
+			logger := util.LoggerFromContext(c.Request.Context()).WithGroup("GinRouter")
+			logger.Error("HTTP Error",
+				slog.Any("error", err),
+				slog.String("method", c.Request.Method),
+				slog.String("path", c.Request.URL.RawPath),
+				slog.String("query", c.Request.URL.RawQuery),
+				slog.String("stack", string(debug.Stack())),
+			)
+
 			c.AbortWithStatusJSON(
 				httpStatusCode,
 				gin.H{"status": false, "code": err.Code, "message": err.Error()},

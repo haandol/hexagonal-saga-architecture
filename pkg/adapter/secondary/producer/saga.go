@@ -246,7 +246,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d *dto.Saga) error {
 func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 	corrID string, parentID string, d *dto.Saga,
 ) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "Publisher",
 		"func", "PublishSagaEnded",
 	)
@@ -273,11 +273,11 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err)
+		logger.Error("failed to marshal saga aborted event", "event", evt, "err", err)
 	}
 
 	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
-		logger.Errorw("failed to produce saga ended event", "event", evt, "err", err)
+		logger.Error("failed to produce saga ended event", "event", evt, "err", err)
 		return err
 	}
 
@@ -287,7 +287,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
 	corrID string, parentID string, d *dto.Saga,
 ) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "Publisher",
 		"func", "PublishSagaAborted",
 	)
@@ -311,11 +311,11 @@ func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
 	}
 	v, err := json.Marshal(evt)
 	if err != nil {
-		logger.Errorw("failed to marshal saga aborted event", "event", evt, "err", err)
+		logger.Error("failed to marshal saga aborted event", "event", evt, "err", err)
 	}
 
 	if err := p.Produce(ctx, "trip-service", corrID, v); err != nil {
-		logger.Errorw("failed to produce saga aborted event", "event", evt, "err", err)
+		logger.Error("failed to produce saga aborted event", "event", evt, "err", err)
 	}
 
 	return nil

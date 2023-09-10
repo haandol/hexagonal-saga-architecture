@@ -30,7 +30,7 @@ func NewSagaService(
 }
 
 func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "Start",
 		"command", cmd,
@@ -40,7 +40,7 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 	defer span.End()
 
 	if err := s.sagaRepository.Start(ctx, cmd); err != nil {
-		logger.Errorw("failed to create saga", "command", cmd, "err", err)
+		logger.Error("failed to create saga", "command", cmd, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -50,7 +50,7 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 }
 
 func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "ProcessCarBooking",
 		"event", evt,
@@ -60,7 +60,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 	defer span.End()
 
 	if err := s.sagaRepository.ProcessCarBooking(ctx, evt); err != nil {
-		logger.Errorw("failed to process car booked", "event", evt, "err", err)
+		logger.Error("failed to process car booked", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -70,7 +70,7 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 }
 
 func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "CompensateCarBooking",
 		"event", evt,
@@ -80,7 +80,7 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 	defer span.End()
 
 	if err := s.sagaRepository.CompensateCarBooking(ctx, evt); err != nil {
-		logger.Errorw("failed to process cancel car booking", "event", evt, "err", err)
+		logger.Error("failed to process cancel car booking", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -90,7 +90,7 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 }
 
 func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "ProcessHotelBooking",
 		"event", evt,
@@ -100,7 +100,7 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 	defer span.End()
 
 	if err := s.sagaRepository.ProcessHotelBooking(ctx, evt); err != nil {
-		logger.Errorw("failed to process Hotel booked", "event", evt, "err", err)
+		logger.Error("failed to process Hotel booked", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -110,7 +110,7 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 }
 
 func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "CompensateHotelBooking",
 		"event", evt,
@@ -121,7 +121,7 @@ func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.Hot
 
 	_, err := s.sagaRepository.CompensateHotelBooking(ctx, evt)
 	if err != nil {
-		logger.Errorw("failed to process cancel Hotel booking", "event", evt, "err", err)
+		logger.Error("failed to process cancel Hotel booking", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -131,7 +131,7 @@ func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.Hot
 }
 
 func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "ProcessFlightBooking",
 		"event", evt,
@@ -141,7 +141,7 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 	defer span.End()
 
 	if err := s.sagaRepository.ProcessFlightBooking(ctx, evt); err != nil {
-		logger.Errorw("failed to process flight booked", "event", evt, "err", err)
+		logger.Error("failed to process flight booked", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -151,7 +151,7 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 }
 
 func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "CompensateFlightBooking",
 		"event", evt,
@@ -162,7 +162,7 @@ func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.Fl
 
 	_, err := s.sagaRepository.CompensateFlightBooking(ctx, evt)
 	if err != nil {
-		logger.Errorw("failed to process cancel flight booking", "event", evt, "err", err)
+		logger.Error("failed to process cancel flight booking", "event", evt, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -172,7 +172,7 @@ func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.Fl
 }
 
 func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "End",
 		"command", cmd,
@@ -182,7 +182,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 	defer span.End()
 
 	if err := s.sagaRepository.End(ctx, cmd); err != nil {
-		logger.Errorw("failed to end saga", "command", cmd, "err", err)
+		logger.Error("failed to end saga", "command", cmd, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -192,7 +192,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 }
 
 func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "Abort",
 		"command", cmd,
@@ -203,7 +203,7 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 
 	saga, err := s.sagaRepository.Abort(ctx, cmd)
 	if err != nil {
-		logger.Errorw("failed to abort saga", "command", cmd, "err", err)
+		logger.Error("failed to abort saga", "command", cmd, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -212,39 +212,39 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 	switch cmd.Body.Source {
 	case "saga", "trip":
 		if err := s.publisher.PublishCancelFlightBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelFlightBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelFlightBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		if err := s.publisher.PublishCancelHotelBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelHotelBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		if err := s.publisher.PublishCancelCarBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelHotelBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 	case "flight":
 		if err := s.publisher.PublishCancelHotelBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelHotelBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		if err := s.publisher.PublishCancelCarBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelHotelBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 	case "hotel":
 		if err := s.publisher.PublishCancelCarBooking(ctx, &saga); err != nil {
-			logger.Errorw("failed to publish CancelHotelBooking", "command", cmd, "err", err)
+			logger.Error("failed to publish CancelHotelBooking", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -255,7 +255,7 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 }
 
 func (s *SagaService) MarkAbort(ctx context.Context, tripID uint) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"module", "SagaService",
 		"method", "MarkAbort",
 		"tripID", tripID,
@@ -265,7 +265,7 @@ func (s *SagaService) MarkAbort(ctx context.Context, tripID uint) error {
 	defer span.End()
 
 	if err := s.sagaRepository.UpdateStatusByTripID(ctx, tripID, status.SagaAborted); err != nil {
-		logger.Errorw("failed to update saga status", "tripID", tripID, "err", err)
+		logger.Error("failed to update saga status", "tripID", tripID, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err

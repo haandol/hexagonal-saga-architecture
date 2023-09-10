@@ -1,8 +1,7 @@
-// Package ginzap provides log handling using zap package.
-// Code structure based on ginrus package.
 package util
 
 import (
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -12,30 +11,18 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-// Config is config setting for Ginzap
 type Config struct {
 	UTC       bool
 	SkipPaths []string
 }
 
-// Ginzap returns a gin.HandlerFunc (middleware) that logs requests using uber-go/zap.
-//
-// Requests with errors are logged using zap.Error().
-// Requests without errors are logged using zap.Info().
-//
-// It receives:
-//   1. A time package format string (e.g. time.RFC3339).
-//   2. A boolean stating whether to use UTC time zone or local.
-func Ginzap(logger *zap.SugaredLogger, timeFormat string, utc bool) gin.HandlerFunc {
-	return GinzapWithConfig(logger, &Config{UTC: utc})
+func GinSlog(logger *slog.Logger, timeFormat string, utc bool) gin.HandlerFunc {
+	return GinSlogWithConfig(logger, &Config{UTC: utc})
 }
 
-// GinzapWithConfig returns a gin.HandlerFunc using config
-func GinzapWithConfig(logger *zap.SugaredLogger, conf *Config) gin.HandlerFunc {
+func GinSlogWithConfig(logger *slog.Logger, conf *Config) gin.HandlerFunc {
 	skipPaths := make(map[string]bool, len(conf.SkipPaths))
 	for _, path := range conf.SkipPaths {
 		skipPaths[path] = true
@@ -61,29 +48,24 @@ func GinzapWithConfig(logger *zap.SugaredLogger, conf *Config) gin.HandlerFunc {
 					logger.Error(e)
 				}
 			} else {
-				fields := []zapcore.Field{
-					zap.Int("status", c.Writer.Status()),
-					zap.String("request-id", c.Request.Header.Get("X-Request-ID")),
-					zap.String("method", c.Request.Method),
-					zap.String("path", path),
-					zap.String("query", query),
-					zap.String("ip", c.ClientIP()),
-					zap.String("user-agent", c.Request.UserAgent()),
-					zap.Duration("latency", latency),
-					zap.String("time", end.Format(time.RFC3339)),
+				fields := []any{
+					slog.Int("status", c.Writer.Status()),
+					slog.String("request-id", c.Request.Header.Get("X-Request-ID")),
+					slog.String("method", c.Request.Method),
+					slog.String("path", path),
+					slog.String("query", query),
+					slog.String("ip", c.ClientIP()),
+					slog.String("user-agent", c.Request.UserAgent()),
+					slog.Duration("latency", latency),
+					slog.String("time", end.Format(time.RFC3339)),
 				}
-				logger.Desugar().Info(path, fields...)
+				logger.Info(path, fields...)
 			}
 		}
 	}
 }
 
-// RecoveryWithZap returns a gin.HandlerFunc (middleware)
-// that recovers from any panics and logs requests using uber-go/zap.
-// All errors are logged using zap.Error().
-// stack means whether output the stack info.
-// The stack info is easy to find where the error occurs but the stack info is too large.
-func RecoveryWithZap(logger *zap.SugaredLogger, stack bool) gin.HandlerFunc {
+func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -92,7 +74,8 @@ func RecoveryWithZap(logger *zap.SugaredLogger, stack bool) gin.HandlerFunc {
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
-						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") ||
+							strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
 							brokenPipe = true
 						}
 					}
@@ -101,27 +84,27 @@ func RecoveryWithZap(logger *zap.SugaredLogger, stack bool) gin.HandlerFunc {
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
 					logger.Error(c.Request.URL.Path,
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+						slog.Any("error", err),
+						slog.String("request", string(httpRequest)),
 					)
 					// If the connection is dead, we can't write a status to it.
-					c.Error(err.(error)) // nolint: errcheck
+					c.Error(err.(error))
 					c.Abort()
 					return
 				}
 
 				if stack {
 					logger.Error("[Recovery from panic]",
-						zap.Time("time", time.Now()),
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
+						slog.Time("time", time.Now()),
+						slog.Any("error", err),
+						slog.String("request", string(httpRequest)),
+						slog.String("stack", string(debug.Stack())),
 					)
 				} else {
 					logger.Error("[Recovery from panic]",
-						zap.Time("time", time.Now()),
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
+						slog.Time("time", time.Now()),
+						slog.Any("error", err),
+						slog.String("request", string(httpRequest)),
 					)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)

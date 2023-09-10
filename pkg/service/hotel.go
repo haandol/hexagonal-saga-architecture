@@ -24,7 +24,7 @@ func NewHotelService(
 }
 
 func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "HotelService",
 		"method", "Book",
 		"command", cmd,
@@ -38,13 +38,13 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 		HotelID: cmd.Body.HotelID,
 	}
 	if err := s.hotelRepository.Book(ctx, req, cmd); err != nil {
-		logger.Errorw("failed to book hotel", "req", req, "err", err)
+		logger.Error("failed to book hotel", "req", req, "err", err)
 
 		go func(reason string) {
 			if err := s.hotelRepository.PublishAbortSaga(ctx,
 				cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason,
 			); err != nil {
-				logger.Errorw("failed to publish abort saga", "command", cmd, "err", err)
+				logger.Error("failed to publish abort saga", "command", cmd, "err", err)
 			}
 		}(err.Error())
 
@@ -57,7 +57,7 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 }
 
 func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHotelBooking) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "HotelService",
 		"method", "CancelBooking",
 		"command", cmd,
@@ -67,7 +67,7 @@ func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHot
 	defer span.End()
 
 	if err := s.hotelRepository.CancelBooking(ctx, cmd); err != nil {
-		logger.Errorw("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err)
+		logger.Error("failed to cancel hotel booking", "BookingID", cmd.Body.BookingID, "err", err)
 		return err
 	}
 

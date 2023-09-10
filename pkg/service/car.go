@@ -25,11 +25,11 @@ func NewCarService(
 }
 
 func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "CarService",
 		"method", "Book",
 	)
-	logger.Debugw("Book car", "command", cmd)
+	logger.Debug("Book car", "command", cmd)
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Book")
 	defer span.End()
@@ -38,7 +38,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	panicked := true
 	txCtx, err := s.carRepository.BeginTx(ctx)
 	if err != nil {
-		logger.Errorw("Failed to begin transaction", "err", err)
+		logger.Error("Failed to begin transaction", "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -48,7 +48,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 			if err := s.carRepository.RollbackTx(txCtx); err != nil {
 				span.RecordError(err)
 				span.SetStatus(o11y.GetStatus(err))
-				logger.Errorw("Failed to rollback transaction", "err", err)
+				logger.Error("Failed to rollback transaction", "err", err)
 			}
 		}
 	}()
@@ -59,17 +59,17 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	}
 	booking, err := s.carRepository.Book(txCtx, req)
 	if err != nil {
-		logger.Errorw("Failed to book car", "req", req, "err", err)
+		logger.Error("Failed to book car", "req", req, "err", err)
 
 		if err := s.carRepository.PublishAbortSaga(txCtx, cmd, err.Error()); err != nil {
-			logger.Errorw("Failed to publish AbortSaga", "command", cmd, "err", err)
+			logger.Error("Failed to publish AbortSaga", "command", cmd, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 	} else {
 		if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
-			logger.Errorw("Failed to publish CarBooked", "booking", booking, "err", err)
+			logger.Error("Failed to publish CarBooked", "booking", booking, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -79,7 +79,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	if err := s.carRepository.CommitTx(txCtx); err == nil {
 		panicked = false
 	} else {
-		logger.Errorw("Failed to commit transaction", "err", err)
+		logger.Error("Failed to commit transaction", "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err
@@ -95,7 +95,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 }
 
 func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
-	logger := util.GetLogger().WithContext(ctx).With(
+	logger := util.LoggerFromContext(ctx).With(
 		"service", "CarService",
 		"method", "CancelBooking",
 		"command", cmd,
@@ -105,7 +105,7 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 	defer span.End()
 
 	if err := s.carRepository.CancelBooking(ctx, cmd); err != nil {
-		logger.Errorw("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err)
+		logger.Error("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err

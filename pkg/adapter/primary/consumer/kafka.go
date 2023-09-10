@@ -13,7 +13,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/plugin/kzap"
 )
 
 type KafkaConsumer struct {
@@ -56,10 +55,6 @@ func buildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.FetchMaxWait(1 * time.Second),
 		kgo.FetchMaxBytes(70 * 1024 * 1024), // 70MB
 		kgo.AllowAutoTopicCreation(),        // TODO: only for the dev
-		kgo.WithLogger(kzap.New(
-			util.GetLogger().With("package", "consumer").Desugar(),
-			kzap.Level(kgo.LogLevelWarn),
-		)),
 	}
 }
 
@@ -88,7 +83,7 @@ func (c *KafkaConsumer) Consume(ctx context.Context) error {
 		"func", "Consume",
 		"topic", c.topic,
 	)
-	logger.Infow("Consuming Topic", "topic", c.topic)
+	logger.Info("Consuming Topic", "topic", c.topic)
 
 	// check initialized
 	if c.handler == nil {
@@ -133,7 +128,7 @@ func (c *KafkaConsumer) handleFetchesInOrder(ctx context.Context, fetches *kgo.F
 	var errs []error
 	fetches.EachRecord(func(record *kgo.Record) {
 		key := string(record.Key)
-		logger.Infow("Message received", "key", key)
+		logger.Info("Message received", "key", key)
 
 		message := &consumerport.Message{
 			Topic:     record.Topic,
@@ -142,7 +137,7 @@ func (c *KafkaConsumer) handleFetchesInOrder(ctx context.Context, fetches *kgo.F
 			Timestamp: record.Timestamp,
 		}
 		if c.messageExpiry > 0 && time.Since(record.Timestamp) > c.messageExpiry {
-			logger.Warnw("message expired", "expirySec", c.messageExpiry, "key", key)
+			logger.Warn("message expired", "expirySec", c.messageExpiry, "key", key)
 			return
 		}
 

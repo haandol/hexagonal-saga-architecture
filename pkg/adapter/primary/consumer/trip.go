@@ -36,7 +36,9 @@ func (c *TripConsumer) Init() {
 	)
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		logger.Panicw("Failed to register handler", "err", err)
+		msg := "Failed to register handler"
+		logger.Error(msg, "err", err)
+		panic(msg)
 	}
 }
 
@@ -48,10 +50,10 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Errorw("Failed to unmarshal command", "err", err)
+		logger.Error("Failed to unmarshal command", "err", err)
 	}
 
-	logger.Infow("Received command", "command", msg)
+	logger.Info("Received command", "command", msg)
 	ctx, span := o11y.BeginSpanWithTraceID(ctx, msg.CorrelationID, msg.ParentID, "TripConsumer")
 	defer span.End()
 	span.SetAttributes(
@@ -62,7 +64,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaEnded":
 		evt := &event.SagaEnded{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err)
+			logger.Error("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			span.SetStatus(o11y.GetStatus(err))
@@ -72,14 +74,14 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaAborted":
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Errorw("Failed to unmarshal command", "err", err)
+			logger.Error("Failed to unmarshal command", "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.tripService.ProcessSagaAborted(ctx, evt)
 	default:
-		logger.Errorw("unknown command", "message", msg)
+		logger.Error("unknown command", "message", msg)
 		err := errors.New("unknown command")
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))

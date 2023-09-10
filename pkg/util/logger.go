@@ -2,47 +2,35 @@ package util
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"strings"
 	"sync"
 
 	"github.com/haandol/hexagonal/pkg/util/o11y"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-var logger *Logger
-var once sync.Once
+var logger *slog.Logger
 
-type Logger struct {
-	*zap.SugaredLogger
-}
-
-func InitLogger(stage string) *Logger {
+func InitLogger(stage string) *slog.Logger {
+	var once sync.Once
 	once.Do(func() {
 		if strings.EqualFold(stage, "local") {
-			cfg := zap.NewDevelopmentConfig()
-			cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-			l, _ := cfg.Build()
-			logger = &Logger{
-				l.Sugar(),
-			}
+			logger = slog.New(slog.NewTextHandler(os.Stdout, nil))
 		} else {
-			l, _ := zap.NewProduction()
-			logger = &Logger{
-				l.Sugar(),
-			}
+			logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 		}
 	})
-	logger.Infow("Logger initialized", "stage", stage)
+	logger.Info("Logger initialized", "stage", stage)
 
 	return logger
 }
 
-func GetLogger() *Logger {
+func GetLogger() *slog.Logger {
 	return logger
 }
 
-func (l *Logger) WithContext(ctx context.Context) *zap.SugaredLogger {
+func LoggerFromContext(ctx context.Context) *slog.Logger {
 	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	return logger.With(
 		"TraceId", o11y.GetXrayTraceID(traceID),

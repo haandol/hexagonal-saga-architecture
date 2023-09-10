@@ -10,10 +10,7 @@ import (
 )
 
 func LeakBucket(cfg *config.App) gin.HandlerFunc {
-	logger := util.GetLogger().With(
-		"module", "Middleware",
-		"func", "LeakBucket",
-	)
+	logger := util.GetLogger().WithGroup("Middleware.LeakBucket")
 
 	var limiter ratelimit.Limiter
 	if cfg.RPS == 0 {
@@ -25,7 +22,7 @@ func LeakBucket(cfg *config.App) gin.HandlerFunc {
 	prev := time.Now()
 	return func(c *gin.Context) {
 		now := limiter.Take()
-		logger.Debugf("%v", now.Sub(prev))
+		logger.Debug("%v", now.Sub(prev))
 		prev = now
 		c.Next()
 	}

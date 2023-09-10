@@ -86,9 +86,7 @@ func getHandlerFunc(f any) gin.HandlerFunc {
 // @in header
 // @name Authorization
 func NewGinRouter(cfg *config.Config) *GinRouter {
-	logger := util.GetLogger().With(
-		"module", "GinRouter",
-	)
+	logger := util.GetLogger().WithGroup("GinRouter")
 
 	if cfg.App.Stage != "local" {
 		gin.SetMode(gin.ReleaseMode)
@@ -100,11 +98,11 @@ func NewGinRouter(cfg *config.Config) *GinRouter {
 	r.Use(middleware.Timeout(&cfg.App))
 	r.Use(middleware.OtelTracing("saga"))
 	r.Use(middleware.Cors())
-	r.Use(util.GinzapWithConfig(logger, &util.Config{
+	r.Use(util.GinSlogWithConfig(logger, &util.Config{
 		UTC:       false,
 		SkipPaths: []string{"/healthy"},
 	}))
-	r.Use(util.RecoveryWithZap(logger, true))
+	r.Use(util.RecoveryWithSlog(logger, true))
 
 	r.GET("/healthy", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK\n")

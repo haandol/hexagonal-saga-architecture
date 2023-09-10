@@ -9,7 +9,6 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/plugin/kzap"
 )
 
 var (
@@ -65,10 +64,6 @@ func buildProducerOpts(seeds []string) []kgo.Opt {
 		kgo.AllowAutoTopicCreation(), // for dev only
 		kgo.RecordPartitioner(kgo.StickyKeyPartitioner(nil)),
 		kgo.ProducerBatchCompression(kgo.GzipCompression()),
-		kgo.WithLogger(kzap.New(
-			util.GetLogger().With("package", "producer").Desugar(),
-			kzap.Level(kgo.LogLevelInfo),
-		)),
 	}
 }
 
@@ -89,10 +84,10 @@ func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []by
 
 	r := p.newRecord(topic, key, val)
 	if err := p.client.ProduceSync(ctx, r).FirstErr(); err != nil {
-		logger.Errorw("produce failed", "err", err)
+		logger.Error("produce failed", "err", err)
 		return err
 	}
-	logger.Debugw("Message produced", "sent bytes", len(r.Value))
+	logger.Debug("Message produced", "sent bytes", len(r.Value))
 	p.pool.Put(r)
 	return nil
 }
@@ -110,7 +105,7 @@ func Close(ctx context.Context) error {
 	}
 
 	if err := kafkaProducer.client.Flush(ctx); err != nil {
-		logger.Errorw("failed to flush", "err", err)
+		logger.Error("failed to flush", "err", err)
 		return err
 	}
 
