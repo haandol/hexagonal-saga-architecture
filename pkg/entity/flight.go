@@ -15,7 +15,7 @@ type FlightBooking struct {
 	UpdatedAt time.Time `gorm:"type:timestamp;"`
 }
 
-func (m FlightBooking) DTO() dto.FlightBooking {
+func (m *FlightBooking) DTO() dto.FlightBooking {
 	return dto.FlightBooking{
 		ID:        m.ID,
 		TripID:    m.TripID,

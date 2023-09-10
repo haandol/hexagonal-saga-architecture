@@ -30,10 +30,7 @@ func NewMessageRelayApp(
 }
 
 func (a *MessageRelayApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "MessageRelayApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("MessageRelayApp.Init")
 	logger.Info("Initializing App...")
 
 	a.outboxPoller.Init()
@@ -42,10 +39,7 @@ func (a *MessageRelayApp) Init() {
 }
 
 func (a *MessageRelayApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "MessageRelayApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("MessageRelayApp.Start")
 	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
@@ -75,10 +69,7 @@ func (a *MessageRelayApp) Start(ctx context.Context) error {
 
 func (a *MessageRelayApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "MessageRelayApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("MessageRelayApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

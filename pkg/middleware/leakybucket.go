@@ -22,7 +22,7 @@ func LeakBucket(cfg *config.App) gin.HandlerFunc {
 	prev := time.Now()
 	return func(c *gin.Context) {
 		now := limiter.Take()
-		logger.Debug("%v", now.Sub(prev))
+		logger.Debug(now.Sub(prev).String())
 		prev = now
 		c.Next()
 	}

@@ -192,7 +192,7 @@ func (r *TripRepository) Abort(ctx context.Context, evt *event.SagaAborted) erro
 	return r.WithContext(ctx).
 		Where("id = ?", evt.Body.TripID).
 		Updates(&entity.Trip{
-			Status: status.TripCancelled,
+			Status: status.TripCanceled,
 		}).Error
 }
 

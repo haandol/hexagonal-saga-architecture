@@ -41,10 +41,7 @@ func NewTripApp(
 }
 
 func (a *TripApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "TripApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("TripApp.Init")
 	logger.Info("Initializing App...")
 
 	v1 := a.routerGroup.Group("v1")
@@ -59,10 +56,7 @@ func (a *TripApp) Init() {
 }
 
 func (a *TripApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "TripApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("TripApp.Start")
 	logger.Info("Starting...")
 
 	g := new(errgroup.Group)
@@ -92,10 +86,7 @@ func (a *TripApp) Start(ctx context.Context) error {
 
 func (a *TripApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "TripApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("TripApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

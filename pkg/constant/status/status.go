@@ -4,14 +4,14 @@ package status
 const (
 	Initialized = "Initialized"
 	Booked      = "Booked"
-	Cancelled   = "Cancelled"
+	Canceled    = "Canceled"
 )
 
 // for trip
 const (
 	TripInitialized = "Initialized"
 	TripBooked      = "Booked"
-	TripCancelled   = "Cancelled"
+	TripCanceled    = "Canceled"
 )
 
 // for saga

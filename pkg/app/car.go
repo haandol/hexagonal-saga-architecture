@@ -30,10 +30,7 @@ func NewCarApp(
 }
 
 func (a *CarApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "CarApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("CarApp.Init")
 	logger.Info("Initializing App...")
 
 	a.consumer.Init()
@@ -42,10 +39,7 @@ func (a *CarApp) Init() {
 }
 
 func (a *CarApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "CarApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("CarApp.Start")
 	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
@@ -75,10 +69,7 @@ func (a *CarApp) Start(ctx context.Context) error {
 
 func (a *CarApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "CarApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("CarApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

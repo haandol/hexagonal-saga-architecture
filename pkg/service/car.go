@@ -25,10 +25,7 @@ func NewCarService(
 }
 
 func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "CarService",
-		"method", "Book",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("CarService.Book")
 	logger.Debug("Book car", "command", cmd)
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Book")
@@ -95,11 +92,7 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 }
 
 func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBooking) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "CarService",
-		"method", "CancelBooking",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("CarService.CancelBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CancelBooking")
 	defer span.End()

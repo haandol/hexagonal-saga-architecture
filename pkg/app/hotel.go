@@ -30,10 +30,7 @@ func NewHotelApp(
 }
 
 func (a *HotelApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "HotelApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("HotelApp.Init")
 	logger.Info("Initializing App...")
 
 	a.consumer.Init()
@@ -42,10 +39,7 @@ func (a *HotelApp) Init() {
 }
 
 func (a *HotelApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "HotelApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("HotelApp.Start")
 	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
@@ -75,10 +69,7 @@ func (a *HotelApp) Start(ctx context.Context) error {
 
 func (a *HotelApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "SagaApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("SagaApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

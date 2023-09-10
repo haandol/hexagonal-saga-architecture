@@ -105,21 +105,21 @@ func (r *FlightRepository) PublishAbortSaga(ctx context.Context,
 	return db.Create(row).Error
 }
 
-func (r *FlightRepository) PublishFlightBookingCancelled(ctx context.Context,
+func (r *FlightRepository) PublishFlightBookingCanceled(ctx context.Context,
 	corrID string, parentID string, d *dto.FlightBooking,
 ) error {
 	db := r.WithContext(ctx)
 
-	evt := &event.FlightBookingCancelled{
+	evt := &event.FlightBookingCanceled{
 		Message: message.Message{
-			Name:          reflect.ValueOf(event.FlightBookingCancelled{}).Type().Name(),
+			Name:          reflect.ValueOf(event.FlightBookingCanceled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
 			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.FlightBookingCancelledBody{
+		Body: event.FlightBookingCanceledBody{
 			BookingID: d.ID,
 			TripID:    d.TripID,
 		},
@@ -205,7 +205,7 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.Cance
 	result := tx.
 		Model(row).
 		Where("id = ?", cmd.Body.BookingID).
-		Update("status", status.Cancelled)
+		Update("status", status.Canceled)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -214,7 +214,7 @@ func (r *FlightRepository) CancelBooking(ctx context.Context, cmd *command.Cance
 	}
 
 	booking := row.DTO()
-	if err := r.PublishFlightBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
+	if err := r.PublishFlightBookingCanceled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 

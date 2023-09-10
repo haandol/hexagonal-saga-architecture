@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	ErrNoHotelBookingFound = errors.New("not hotel-booking found")
+	ErrNoHotelBookingFound = errors.New("no hotel-booking found")
 )
 
 type HotelRepository struct {
@@ -105,21 +105,21 @@ func (r *HotelRepository) PublishAbortSaga(ctx context.Context,
 	return db.Create(row).Error
 }
 
-func (r *HotelRepository) PublishHotelBookingCancelled(ctx context.Context,
+func (r *HotelRepository) PublishHotelBookingCanceled(ctx context.Context,
 	corrID string, parentID string, d *dto.HotelBooking,
 ) error {
 	db := r.WithContext(ctx)
 
-	evt := &event.HotelBookingCancelled{
+	evt := &event.HotelBookingCanceled{
 		Message: message.Message{
-			Name:          reflect.ValueOf(event.HotelBookingCancelled{}).Type().Name(),
+			Name:          reflect.ValueOf(event.HotelBookingCanceled{}).Type().Name(),
 			Version:       "1.0.0",
 			ID:            uuid.NewString(),
 			CorrelationID: corrID,
 			ParentID:      parentID,
 			CreatedAt:     time.Now().Format(time.RFC3339),
 		},
-		Body: event.HotelBookingCancelledBody{
+		Body: event.HotelBookingCanceledBody{
 			BookingID: d.ID,
 			TripID:    d.TripID,
 		},
@@ -205,7 +205,7 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, cmd *command.Cancel
 	result := tx.
 		Model(row).
 		Where("id = ?", cmd.Body.BookingID).
-		Update("status", status.Cancelled)
+		Update("status", status.Canceled)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -214,7 +214,7 @@ func (r *HotelRepository) CancelBooking(ctx context.Context, cmd *command.Cancel
 	}
 
 	booking := row.DTO()
-	if err := r.PublishHotelBookingCancelled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
+	if err := r.PublishHotelBookingCanceled(txCtx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
 		return err
 	}
 

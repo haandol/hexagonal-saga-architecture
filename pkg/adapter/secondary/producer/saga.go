@@ -246,10 +246,7 @@ func (p *SagaProducer) PublishEndSaga(ctx context.Context, d *dto.Saga) error {
 func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 	corrID string, parentID string, d *dto.Saga,
 ) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "Publisher",
-		"func", "PublishSagaEnded",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("Publisher.PublishSagaEnded")
 
 	evt := &event.SagaEnded{
 		Message: message.Message{
@@ -287,10 +284,7 @@ func (p *SagaProducer) PublishSagaEnded(ctx context.Context,
 func (p *SagaProducer) PublishSagaAborted(ctx context.Context,
 	corrID string, parentID string, d *dto.Saga,
 ) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "Publisher",
-		"func", "PublishSagaAborted",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("Publisher.PublishSagaAborted")
 
 	evt := &event.SagaAborted{
 		Message: message.Message{

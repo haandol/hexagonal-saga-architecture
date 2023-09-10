@@ -17,7 +17,7 @@ type Outbox struct {
 	UpdatedAt  time.Time      `gorm:"type:timestamp;"`
 }
 
-type Outboxes []Outbox
+type Outboxes []*Outbox
 
 func (m *Outbox) DTO() dto.Outbox {
 	return dto.Outbox{

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/haandol/hexagonal/pkg/config"
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -52,17 +53,14 @@ func buildConsumerOpts(seeds []string, group, topic string) []kgo.Opt {
 		kgo.ConsumeTopics(topic),
 		kgo.DisableAutoCommit(),
 		kgo.Balancers(kgo.CooperativeStickyBalancer()), // explicit default rebalancer
-		kgo.FetchMaxWait(1 * time.Second),
-		kgo.FetchMaxBytes(70 * 1024 * 1024), // 70MB
-		kgo.AllowAutoTopicCreation(),        // TODO: only for the dev
+		kgo.FetchMaxWait(time.Second),
+		kgo.FetchMaxBytes(constant.KafkaFetchMaxBytes), // 70MB
+		kgo.AllowAutoTopicCreation(),                   // TODO: only for the dev
 	}
 }
 
 func (c *KafkaConsumer) RegisterHandler(h consumerport.HandlerFunc) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaConsumer",
-		"func", "RegisterHandler",
-	)
+	logger := util.GetLogger().WithGroup("KafkaConsumer.RegisterHandler")
 	logger.Info("Registering handler...")
 
 	if c.handler != nil {
@@ -78,9 +76,7 @@ func (c *KafkaConsumer) RegisterHandler(h consumerport.HandlerFunc) error {
 
 // Consume - consume messages from Kafka and dispatch to handlers
 func (c *KafkaConsumer) Consume(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaConsumer",
-		"func", "Consume",
+	logger := util.GetLogger().WithGroup("KafkaConsumer.Consume").With(
 		"topic", c.topic,
 	)
 	logger.Info("Consuming Topic", "topic", c.topic)
@@ -119,9 +115,7 @@ func (c *KafkaConsumer) Consume(ctx context.Context) error {
 }
 
 func (c *KafkaConsumer) handleFetchesInOrder(ctx context.Context, fetches *kgo.Fetches) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaConsumer",
-		"func", "handleFetchesInOrder",
+	logger := util.GetLogger().WithGroup("KafkaConsumer.handleFetchesInOrder").With(
 		"topic", c.topic,
 	)
 
@@ -153,9 +147,7 @@ func (c *KafkaConsumer) handleFetchesInOrder(ctx context.Context, fetches *kgo.F
 }
 
 func (c *KafkaConsumer) Close(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaConsumer",
-		"func", "Close",
+	logger := util.GetLogger().WithGroup("KafkaConsumer.Close").With(
 		"topic", c.topic,
 	)
 	logger.Info("Closing...")

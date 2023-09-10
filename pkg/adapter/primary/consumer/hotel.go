@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
@@ -30,27 +31,20 @@ func NewHotelConsumer(
 }
 
 func (c *HotelConsumer) Init() {
-	logger := util.GetLogger().With(
-		"module", "HotelConsumer",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("HotelConsumer.Init")
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		msg := "Failed to register handler"
-		logger.Error(msg, "err", err)
-		panic(msg)
+		logger.Error(constant.ErrTxtRegisterHandler, "err", err)
+		panic(constant.ErrTxtRegisterHandler)
 	}
 }
 
 func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
-	logger := util.GetLogger().With(
-		"module", "HotelConsumer",
-		"func", "Handle",
-	)
+	logger := util.GetLogger().WithGroup("HotelConsumer.Handle")
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Error("Failed to unmarshal command", "err", err)
+		logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 	}
 
 	logger.Info("Received command", "command", msg)
@@ -64,7 +58,7 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 	case "BookHotel":
 		cmd := &command.BookHotel{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -73,15 +67,15 @@ func (c *HotelConsumer) Handle(ctx context.Context, r *consumerport.Message) err
 	case "CancelHotelBooking":
 		cmd := &command.CancelHotelBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.hotelService.CancelBooking(ctx, cmd)
 	default:
-		logger.Error("unknown command", "message", msg)
-		err := errors.New("unknown command")
+		logger.Error(constant.ErrTxtUnknownCommand, "message", msg)
+		err := errors.New(constant.ErrTxtUnknownCommand)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err

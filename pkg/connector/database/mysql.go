@@ -84,10 +84,7 @@ func initDB(cfg *config.Database) {
 }
 
 func Connect(cfg *config.Database) (*gorm.DB, error) {
-	logger := util.GetLogger().With(
-		"pkg", "database",
-		"func", "Connect",
-	)
+	logger := util.GetLogger().WithGroup("database.Connect")
 	logger.Info("Connecting to database...")
 
 	initDB(cfg)
@@ -110,10 +107,7 @@ func Connect(cfg *config.Database) (*gorm.DB, error) {
 }
 
 func Close(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"pkg", "database",
-		"func", "Close",
-	)
+	logger := util.GetLogger().WithGroup("database.Close")
 	logger.Info("Closing database connection...")
 
 	done := make(chan error)

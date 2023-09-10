@@ -24,11 +24,7 @@ func NewHotelService(
 }
 
 func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "HotelService",
-		"method", "Book",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("HotelService.Book")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Book")
 	defer span.End()
@@ -57,11 +53,7 @@ func (s *HotelService) Book(ctx context.Context, cmd *command.BookHotel) error {
 }
 
 func (s *HotelService) CancelBooking(ctx context.Context, cmd *command.CancelHotelBooking) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "HotelService",
-		"method", "CancelBooking",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("HotelService.CancelBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CancelBooking")
 	defer span.End()

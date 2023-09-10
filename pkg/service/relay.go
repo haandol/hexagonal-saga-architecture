@@ -32,10 +32,7 @@ func NewMessageRelayService(
 }
 
 func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.Outbox, error) {
-	logger := util.GetLogger().With(
-		"module", "MessageRelayService",
-		"func", "Fetch",
-	)
+	logger := util.GetLogger().WithGroup("MessageRelayService.Fetch")
 
 	// TODO: group by kafkaKey and send them parallell
 	messages, err := s.outboxRepository.QueryUnsent(ctx, batchSize)
@@ -48,10 +45,7 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 }
 
 func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) error {
-	logger := util.GetLogger().With(
-		"module", "MessageRelayService",
-		"func", "Relay",
-	)
+	logger := util.GetLogger().WithGroup("MessageRelayService.Relay")
 
 	var sentIDs []uint
 	var wg sync.WaitGroup

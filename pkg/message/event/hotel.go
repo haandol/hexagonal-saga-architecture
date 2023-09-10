@@ -11,12 +11,12 @@ type HotelBookedBody struct {
 	BookingID uint `json:"bookingId" validate:"required"`
 }
 
-type HotelBookingCancelled struct {
+type HotelBookingCanceled struct {
 	message.Message
-	Body HotelBookingCancelledBody `json:"body" validate:"required"`
+	Body HotelBookingCanceledBody `json:"body" validate:"required"`
 }
 
-type HotelBookingCancelledBody struct {
+type HotelBookingCanceledBody struct {
 	BookingID uint `json:"bookingId" validate:"required"`
 	TripID    uint `json:"tripId" validate:"required"`
 }

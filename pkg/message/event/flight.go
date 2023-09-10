@@ -11,12 +11,12 @@ type FlightBookedBody struct {
 	BookingID uint `json:"bookingId" validate:"required"`
 }
 
-type FlightBookingCancelledBody struct {
+type FlightBookingCanceledBody struct {
 	BookingID uint `json:"bookingId" validate:"required"`
 	TripID    uint `json:"tripId" validate:"required"`
 }
 
-type FlightBookingCancelled struct {
+type FlightBookingCanceled struct {
 	message.Message
-	Body FlightBookingCancelledBody `json:"body" validate:"required"`
+	Body FlightBookingCanceledBody `json:"body" validate:"required"`
 }

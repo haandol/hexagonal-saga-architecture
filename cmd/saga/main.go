@@ -38,9 +38,7 @@ func initialize() {
 }
 
 func start(ctx context.Context, ch chan error) {
-	logger := util.GetLogger().With(
-		"module", "start",
-	)
+	logger := util.GetLogger().WithGroup("start")
 	logger.Info("Starting apps...")
 
 	for _, a := range applications {
@@ -56,9 +54,7 @@ func start(ctx context.Context, ch chan error) {
 }
 
 func cleanup(ctx context.Context) {
-	logger := util.GetLogger().With(
-		"module", "cleanup",
-	)
+	logger := util.GetLogger().WithGroup("cleanup")
 
 	var wg sync.WaitGroup
 	for _, a := range applications {
@@ -91,8 +87,7 @@ func cleanup(ctx context.Context) {
 
 func main() {
 	cfg := config.Load()
-	logger := util.InitLogger(cfg.App.Stage).With(
-		"module", "main",
+	logger := util.InitLogger(cfg.App.Stage).WithGroup("main").With(
 		"build_tag", BuildTag,
 	)
 	logger.Info("\n==== Config ====\n\n", "config", fmt.Sprintf("%v", cfg))

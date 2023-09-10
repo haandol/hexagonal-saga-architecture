@@ -76,10 +76,7 @@ func (p *KafkaProducer) newRecord(topic, key string, val []byte) *kgo.Record {
 }
 
 func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []byte) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaProducer",
-		"func", "Produce",
-	)
+	logger := util.GetLogger().WithGroup("KafkaProducer.Produce")
 	logger.Info("Producing...")
 
 	r := p.newRecord(topic, key, val)
@@ -93,10 +90,7 @@ func (p *KafkaProducer) Produce(ctx context.Context, topic, key string, val []by
 }
 
 func Close(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "KafkaProducer",
-		"func", "Close",
-	)
+	logger := util.GetLogger().WithGroup("KafkaProducer.Close")
 	logger.Info("Closing producer...")
 
 	if kafkaProducer == nil {

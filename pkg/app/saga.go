@@ -30,10 +30,7 @@ func NewSagaApp(
 }
 
 func (a *SagaApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "SagaApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("SagaApp.Init")
 	logger.Info("Initializing App...")
 
 	a.consumer.Init()
@@ -42,10 +39,7 @@ func (a *SagaApp) Init() {
 }
 
 func (a *SagaApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "SagaApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("SagaApp.Start")
 	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
@@ -75,10 +69,7 @@ func (a *SagaApp) Start(ctx context.Context) error {
 
 func (a *SagaApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "SagaApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("SagaApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

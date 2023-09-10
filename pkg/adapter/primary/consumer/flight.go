@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/command"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
@@ -30,27 +31,20 @@ func NewFlightConsumer(
 }
 
 func (c *FlightConsumer) Init() {
-	logger := util.GetLogger().With(
-		"module", "FlightConsumer",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("FlightConsumer.Init")
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		msg := "Failed to register handler"
-		logger.Error(msg, "err", err)
-		panic(msg)
+		logger.Error(constant.ErrTxtRegisterHandler, "err", err)
+		panic(constant.ErrTxtRegisterHandler)
 	}
 }
 
 func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
-	logger := util.GetLogger().With(
-		"module", "FlightConsumer",
-		"func", "Handle",
-	)
+	logger := util.GetLogger().WithGroup("FlightConsumer.Handle")
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Error("Failed to unmarshal command", "err", err)
+		logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 	}
 
 	logger.Info("Received command", "command", msg)
@@ -64,7 +58,7 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	case "BookFlight":
 		cmd := &command.BookFlight{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
@@ -73,15 +67,15 @@ func (c *FlightConsumer) Handle(ctx context.Context, r *consumerport.Message) er
 	case "CancelFlightBooking":
 		cmd := &command.CancelFlightBooking{}
 		if err := json.Unmarshal(r.Value, cmd); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.flightService.CancelBooking(ctx, cmd)
 	default:
-		logger.Error("unknown command", "message", msg)
-		err := errors.New("unknown command")
+		logger.Error(constant.ErrTxtUnknownCommand, "message", msg)
+		err := errors.New(constant.ErrTxtUnknownCommand)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err

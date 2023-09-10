@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/haandol/hexagonal/pkg/constant"
 	"github.com/haandol/hexagonal/pkg/message"
 	"github.com/haandol/hexagonal/pkg/message/event"
 	"github.com/haandol/hexagonal/pkg/port/primaryport/consumerport"
@@ -30,27 +31,20 @@ func NewTripConsumer(
 }
 
 func (c *TripConsumer) Init() {
-	logger := util.GetLogger().With(
-		"module", "TripConsumer",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("TripConsumer.Init")
 
 	if err := c.RegisterHandler(c.Handle); err != nil {
-		msg := "Failed to register handler"
-		logger.Error(msg, "err", err)
-		panic(msg)
+		logger.Error(constant.ErrTxtRegisterHandler, "err", err)
+		panic(constant.ErrTxtRegisterHandler)
 	}
 }
 
 func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) error {
-	logger := util.GetLogger().With(
-		"module", "TripConsumer",
-		"func", "Handle",
-	)
+	logger := util.GetLogger().WithGroup("TripConsumer.Handle")
 
 	msg := &message.Message{}
 	if err := json.Unmarshal(r.Value, msg); err != nil {
-		logger.Error("Failed to unmarshal command", "err", err)
+		logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 	}
 
 	logger.Info("Received command", "command", msg)
@@ -64,7 +58,7 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaEnded":
 		evt := &event.SagaEnded{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			span.SetStatus(o11y.GetStatus(err))
@@ -74,15 +68,15 @@ func (c *TripConsumer) Handle(ctx context.Context, r *consumerport.Message) erro
 	case "SagaAborted":
 		evt := &event.SagaAborted{}
 		if err := json.Unmarshal(r.Value, evt); err != nil {
-			logger.Error("Failed to unmarshal command", "err", err)
+			logger.Error(constant.ErrTxtUnMarshalCommand, "err", err)
 			span.RecordError(err)
 			span.SetStatus(o11y.GetStatus(err))
 			return err
 		}
 		return c.tripService.ProcessSagaAborted(ctx, evt)
 	default:
-		logger.Error("unknown command", "message", msg)
-		err := errors.New("unknown command")
+		logger.Error(constant.ErrTxtUnknownCommand, "message", msg)
+		err := errors.New(constant.ErrTxtUnknownCommand)
 		span.RecordError(err)
 		span.SetStatus(o11y.GetStatus(err))
 		return err

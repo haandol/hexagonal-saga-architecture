@@ -30,11 +30,7 @@ func NewSagaService(
 }
 
 func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "Start",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.Start")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Start")
 	defer span.End()
@@ -50,11 +46,7 @@ func (s *SagaService) Start(ctx context.Context, cmd *command.StartSaga) error {
 }
 
 func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooked) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "ProcessCarBooking",
-		"event", evt,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.ProcessCarBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "ProcessCarBooking")
 	defer span.End()
@@ -69,12 +61,8 @@ func (s *SagaService) ProcessCarBooking(ctx context.Context, evt *event.CarBooke
 	return nil
 }
 
-func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "CompensateCarBooking",
-		"event", evt,
-	)
+func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.CompensateCarBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CompensateCarBooking")
 	defer span.End()
@@ -90,11 +78,7 @@ func (s *SagaService) CompensateCarBooking(ctx context.Context, evt *event.CarBo
 }
 
 func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelBooked) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "ProcessHotelBooking",
-		"event", evt,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.ProcessHotelBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "ProcessHotelBooking")
 	defer span.End()
@@ -109,12 +93,8 @@ func (s *SagaService) ProcessHotelBooking(ctx context.Context, evt *event.HotelB
 	return nil
 }
 
-func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCancelled) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "CompensateHotelBooking",
-		"event", evt,
-	)
+func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.HotelBookingCanceled) error {
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.CompensateHotelBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CompensateHotelBooking")
 	defer span.End()
@@ -131,11 +111,7 @@ func (s *SagaService) CompensateHotelBooking(ctx context.Context, evt *event.Hot
 }
 
 func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.FlightBooked) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "ProcessFlightBooking",
-		"event", evt,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.ProcessFlightBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "ProcessFlightBooking")
 	defer span.End()
@@ -150,12 +126,8 @@ func (s *SagaService) ProcessFlightBooking(ctx context.Context, evt *event.Fligh
 	return nil
 }
 
-func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCancelled) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "CompensateFlightBooking",
-		"event", evt,
-	)
+func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.FlightBookingCanceled) error {
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.CompensateFlightBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CompensateFlightBooking")
 	defer span.End()
@@ -172,11 +144,7 @@ func (s *SagaService) CompensateFlightBooking(ctx context.Context, evt *event.Fl
 }
 
 func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "End",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.End")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "End")
 	defer span.End()
@@ -192,11 +160,7 @@ func (s *SagaService) End(ctx context.Context, cmd *command.EndSaga) error {
 }
 
 func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "Abort",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.Abort")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Abort")
 	defer span.End()
@@ -255,9 +219,7 @@ func (s *SagaService) Abort(ctx context.Context, cmd *command.AbortSaga) error {
 }
 
 func (s *SagaService) MarkAbort(ctx context.Context, tripID uint) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"module", "SagaService",
-		"method", "MarkAbort",
+	logger := util.LoggerFromContext(ctx).WithGroup("SagaService.MarkAbort").With(
 		"tripID", tripID,
 	)
 

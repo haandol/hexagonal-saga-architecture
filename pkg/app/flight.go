@@ -30,10 +30,7 @@ func NewFlightApp(
 }
 
 func (a *FlightApp) Init() {
-	logger := util.GetLogger().With(
-		"module", "FlightApp",
-		"func", "Init",
-	)
+	logger := util.GetLogger().WithGroup("FlightApp.Init")
 	logger.Info("Initializing App...")
 
 	a.consumer.Init()
@@ -42,10 +39,7 @@ func (a *FlightApp) Init() {
 }
 
 func (a *FlightApp) Start(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "FlightApp",
-		"func", "Start",
-	)
+	logger := util.GetLogger().WithGroup("FlightApp.Start")
 	logger.Info("Starting App...")
 
 	g := new(errgroup.Group)
@@ -75,10 +69,7 @@ func (a *FlightApp) Start(ctx context.Context) error {
 
 func (a *FlightApp) Cleanup(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	logger := util.GetLogger().With(
-		"module", "FlightApp",
-		"func", "Cleanup",
-	)
+	logger := util.GetLogger().WithGroup("FlightApp.Cleanup")
 	logger.Info("Cleaning App...")
 
 	if a.server != nil {

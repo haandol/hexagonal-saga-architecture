@@ -27,10 +27,7 @@ func NewTripService(
 
 // create trip for the given user
 func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error) {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "Create",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.Create")
 
 	traceID, spanID := o11y.GetTraceSpanID(ctx)
 	trip, err := s.tripRepository.Create(ctx, traceID, spanID, d)
@@ -43,10 +40,7 @@ func (s *TripService) Create(ctx context.Context, d *dto.Trip) (dto.Trip, error)
 }
 
 func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "RecoverForward",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.RecoverForward")
 
 	traceID, spanID := o11y.GetTraceSpanID(ctx)
 
@@ -56,7 +50,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 		return dto.Trip{}, err
 	}
 
-	if trip.Status == status.TripCancelled || trip.Status == status.TripBooked {
+	if trip.Status == status.TripCanceled || trip.Status == status.TripBooked {
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
@@ -68,10 +62,7 @@ func (s *TripService) RecoverForward(ctx context.Context, tripID uint) (dto.Trip
 }
 
 func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Trip, error) {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "RecoverBackward",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.RecoverBackward")
 	traceID, spanID := o11y.GetTraceSpanID(ctx)
 
 	trip, err := s.tripRepository.GetByID(ctx, tripID)
@@ -80,7 +71,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 		return dto.Trip{}, err
 	}
 
-	if trip.Status == status.TripCancelled || trip.Status == status.TripBooked {
+	if trip.Status == status.TripCanceled || trip.Status == status.TripBooked {
 		return dto.Trip{}, errors.New("trip is already completed or aborted")
 	}
 
@@ -94,10 +85,7 @@ func (s *TripService) RecoverBackward(ctx context.Context, tripID uint) (dto.Tri
 }
 
 func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "List",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.List")
 
 	trips, err := s.tripRepository.List(ctx)
 	if err != nil {
@@ -109,10 +97,7 @@ func (s *TripService) List(ctx context.Context) ([]dto.Trip, error) {
 }
 
 func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "ProcessSagaEnded",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.ProcessSagaEnded")
 
 	if err := s.tripRepository.Complete(ctx, evt); err != nil {
 		logger.Error("failed to update trip booking", "event", evt, "err", err)
@@ -123,10 +108,7 @@ func (s *TripService) ProcessSagaEnded(ctx context.Context, evt *event.SagaEnded
 }
 
 func (s *TripService) ProcessSagaAborted(ctx context.Context, evt *event.SagaAborted) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "TripService",
-		"method", "ProcessSagaAborted",
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("TripService.ProcessSagaAborted")
 
 	if err := s.tripRepository.Abort(ctx, evt); err != nil {
 		logger.Error("failed to abort trip booking", "event", evt, "err", err)

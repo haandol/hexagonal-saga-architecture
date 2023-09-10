@@ -24,11 +24,7 @@ func NewFlightService(
 }
 
 func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "FlightService",
-		"method", "Book",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("FlightService.Book")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "Book")
 	defer span.End()
@@ -57,11 +53,7 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 }
 
 func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFlightBooking) error {
-	logger := util.LoggerFromContext(ctx).With(
-		"service", "FlightService",
-		"method", "CancelBooking",
-		"command", cmd,
-	)
+	logger := util.LoggerFromContext(ctx).WithGroup("FlightService.CancelBooking")
 
 	ctx, span := o11y.BeginSubSpan(ctx, "CancelBooking")
 	defer span.End()

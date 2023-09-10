@@ -363,7 +363,7 @@ func (r *SagaRepository) ProcessCarBooking(ctx context.Context, evt *event.CarBo
 	return nil
 }
 
-func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCancelled) error {
+func (r *SagaRepository) CompensateCarBooking(ctx context.Context, evt *event.CarBookingCanceled) error {
 	panicked := true
 
 	tx := r.WithContext(ctx).Begin()
@@ -486,7 +486,7 @@ func (r *SagaRepository) ProcessHotelBooking(ctx context.Context, evt *event.Hot
 }
 
 func (r *SagaRepository) CompensateHotelBooking(ctx context.Context,
-	evt *event.HotelBookingCancelled,
+	evt *event.HotelBookingCanceled,
 ) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {
@@ -586,7 +586,7 @@ func (r *SagaRepository) ProcessFlightBooking(ctx context.Context, evt *event.Fl
 }
 
 func (r *SagaRepository) CompensateFlightBooking(ctx context.Context,
-	evt *event.FlightBookingCancelled,
+	evt *event.FlightBookingCanceled,
 ) (dto.Saga, error) {
 	saga, err := r.GetByCorrelationID(ctx, evt.CorrelationID)
 	if err != nil {

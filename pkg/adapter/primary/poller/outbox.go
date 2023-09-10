@@ -29,12 +29,9 @@ func NewOutboxPoller(
 func (c *OutboxPoller) Init() {}
 
 func (c *OutboxPoller) Poll(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "OutboxPoller",
-		"func", "Poll",
-	)
-
+	logger := util.GetLogger().WithGroup("OutboxPoller.Poll")
 	logger.Info("Polling outbox...", "time", time.Now().Format(time.RFC3339))
+
 	jobDone := make(chan error)
 	for {
 		select {
@@ -76,10 +73,7 @@ func (c *OutboxPoller) Poll(ctx context.Context) error {
 }
 
 func (c *OutboxPoller) Close(ctx context.Context) error {
-	logger := util.GetLogger().With(
-		"module", "OutboxPoller",
-		"func", "Close",
-	)
+	logger := util.GetLogger().WithGroup("OutboxPoller.Close")
 	logger.Info("Closing poller...")
 	return nil
 }

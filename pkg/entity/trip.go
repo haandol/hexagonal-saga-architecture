@@ -20,9 +20,9 @@ type Trip struct {
 	UpdatedAt       time.Time `gorm:"type:timestamp;"`
 }
 
-type Trips []Trip
+type Trips []*Trip
 
-func (m Trip) DTO() dto.Trip {
+func (m *Trip) DTO() dto.Trip {
 	return dto.Trip{
 		ID:              m.ID,
 		UserID:          m.UserID,
