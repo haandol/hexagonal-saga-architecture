@@ -47,8 +47,8 @@ func (s *MessageRelayService) Fetch(ctx context.Context, batchSize int) ([]dto.O
 func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) error {
 	logger := util.GetLogger().WithGroup("MessageRelayService.Relay")
 
-	var sentIDs []uint
 	var wg sync.WaitGroup
+	sentIDs := make([]uint, len(messages))
 
 	for _, msg := range messages {
 		wg.Add(1)

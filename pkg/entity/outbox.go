@@ -31,7 +31,7 @@ func (m *Outbox) DTO() dto.Outbox {
 }
 
 func (m Outboxes) DTO() []dto.Outbox {
-	outboxes := make([]dto.Outbox, 0)
+	outboxes := make([]dto.Outbox, len(m))
 	for _, outbox := range m {
 		outboxes = append(outboxes, outbox.DTO())
 	}

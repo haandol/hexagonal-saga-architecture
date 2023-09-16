@@ -38,7 +38,7 @@ func (m *Trip) DTO() dto.Trip {
 }
 
 func (m Trips) DTO() []dto.Trip {
-	trips := make([]dto.Trip, 0)
+	trips := make([]dto.Trip, len(m))
 	for _, trip := range m {
 		trips = append(trips, trip.DTO())
 	}
