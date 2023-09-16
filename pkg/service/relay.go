@@ -48,7 +48,7 @@ func (s *MessageRelayService) Relay(ctx context.Context, messages []dto.Outbox) 
 	logger := util.GetLogger().WithGroup("MessageRelayService.Relay")
 
 	var wg sync.WaitGroup
-	sentIDs := make([]uint, len(messages))
+	sentIDs := make([]uint, 0, len(messages))
 
 	for _, msg := range messages {
 		wg.Add(1)
