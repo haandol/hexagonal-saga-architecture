@@ -7,8 +7,8 @@ import (
 	"github.com/haandol/hexagonal/internal/dto"
 	"github.com/haandol/hexagonal/internal/message/command"
 	"github.com/haandol/hexagonal/internal/port/secondaryport/repositoryport"
+	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
-	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type FlightService struct {

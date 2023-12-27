@@ -12,8 +12,8 @@ import (
 	"github.com/haandol/hexagonal/internal/message/event"
 	"github.com/haandol/hexagonal/internal/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/internal/service"
+	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
-	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type SagaConsumer struct {

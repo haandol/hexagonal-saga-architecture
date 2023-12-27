@@ -12,8 +12,8 @@ import (
 	"github.com/haandol/hexagonal/internal/port/secondaryport/producerport"
 	"github.com/haandol/hexagonal/internal/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/connector/producer"
+	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
-	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 type MessageRelayService struct {

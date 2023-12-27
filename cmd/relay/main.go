@@ -13,8 +13,8 @@ import (
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
 	"github.com/haandol/hexagonal/pkg/connector/producer"
+	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
-	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 var (

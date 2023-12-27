@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/haandol/hexagonal/pkg/util/o11y"
+	"github.com/haandol/hexagonal/pkg/o11y"
 )
 
 var logger *slog.Logger

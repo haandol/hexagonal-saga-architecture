@@ -12,8 +12,8 @@ import (
 	"github.com/haandol/hexagonal/internal/port"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
+	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
-	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
 
 var (
