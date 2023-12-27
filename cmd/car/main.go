@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/haandol/hexagonal/pkg/app"
+	"github.com/haandol/hexagonal/internal/app"
+	"github.com/haandol/hexagonal/internal/port"
 	"github.com/haandol/hexagonal/pkg/config"
 	"github.com/haandol/hexagonal/pkg/connector/database"
-	"github.com/haandol/hexagonal/pkg/port"
 	"github.com/haandol/hexagonal/pkg/util"
 	"github.com/haandol/hexagonal/pkg/util/o11y"
 )
