@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/haandol/hexagonal/internal/app"
@@ -96,7 +97,7 @@ func main() {
 	start(ctx, appErr)
 
 	sigs := make(chan os.Signal, 2)
-	signal.Notify(sigs, os.Interrupt)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 
 	select {
 	case err := <-appErr:
@@ -104,7 +105,7 @@ func main() {
 		logger.Error("error on job", "err", err)
 	case <-sigs:
 		cancel()
-		logger.Info("User interrupt for quitting...")
+		logger.Info("Exiting program...")
 	}
 
 	ctx, cancel = context.WithTimeout(
