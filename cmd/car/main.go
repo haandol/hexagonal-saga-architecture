@@ -108,10 +108,7 @@ func main() {
 		logger.Info("Exiting program...")
 	}
 
-	ctx, cancel = context.WithTimeout(
-		context.Background(),
-		time.Second*time.Duration(cfg.App.GracefulShutdownTimeout),
-	)
+	ctx, cancel = context.WithCancel(context.Background())
 	go func() {
 		defer cancel()
 		cleanup(ctx)
@@ -123,5 +120,7 @@ func main() {
 		os.Exit(1)
 	case <-ctx.Done():
 		logger.Info("Graceful close complete")
+	case <-time.After(time.Second * time.Duration(cfg.App.GracefulShutdownTimeout)):
+		logger.Info("Timeout on graceful close")
 	}
 }
