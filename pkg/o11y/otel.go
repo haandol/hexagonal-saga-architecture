@@ -223,8 +223,6 @@ func BuildKafkaMessageAttr(topic, key, id string) []attribute.KeyValue {
 
 func GetStatus(err error) (code codes.Code, msg string) {
 	code = codes.Ok
-	msg = ""
-
 	if err != nil {
 		code = codes.Error
 		msg = fmt.Sprintf("%v", err)
