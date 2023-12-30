@@ -13,11 +13,12 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/metric/noop"
+	noopmetric "go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
+	nooptrace "go.opentelemetry.io/otel/trace/noop"
 )
 
 var (
@@ -80,7 +81,8 @@ func initTracer(endpoint string) ShutdownFunc {
 		otlptracegrpc.WithEndpoint(endpoint),
 	)
 	if err != nil {
-		log.Fatalf("failed to create new OTLP trace exporter: %v", err)
+		otel.SetTracerProvider(nooptrace.NewTracerProvider())
+		return func(ctx context.Context) error { return nil }
 	}
 
 	// AWS EKS resource
@@ -91,11 +93,13 @@ func initTracer(endpoint string) ShutdownFunc {
 		log.Printf("Failed to create new resource: %v", err)
 	}
 
+	xrayIDG := xray.NewIDGenerator()
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithResource(resource),
 		sdktrace.WithBatcher(traceExporter),
-		sdktrace.WithIDGenerator(xray.NewIDGenerator()),
+		sdktrace.WithIDGenerator(xrayIDG),
 	)
 
 	otel.SetTracerProvider(tp)
@@ -113,7 +117,7 @@ func initMetricProvider(endpoint string) ShutdownFunc {
 		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
-		otel.SetMeterProvider(noop.NewMeterProvider())
+		otel.SetMeterProvider(noopmetric.NewMeterProvider())
 		return func(ctx context.Context) error { return nil }
 	}
 
