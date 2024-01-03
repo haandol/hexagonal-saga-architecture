@@ -121,7 +121,16 @@ func initMetricProvider(endpoint string) ShutdownFunc {
 		return func(ctx context.Context) error { return nil }
 	}
 
+	// AWS EKS resource
+	resourceDetector := eks.NewResourceDetector()
+	resource, err := resourceDetector.Detect(context.Background())
+	if err != nil {
+		// just use nil-resource if failed to detect resource
+		log.Printf("Failed to create new resource: %v", err)
+	}
+
 	provider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter)),
 	)
 	otel.SetMeterProvider(provider)
