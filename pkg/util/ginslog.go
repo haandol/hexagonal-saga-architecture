@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -85,7 +84,7 @@ func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 				if brokenPipe {
 					logger.Error(c.Request.URL.Path,
 						slog.Any("error", err),
-						slog.String("request", fmt.Sprintf("%v", httpRequest)),
+						slog.String("request", string(httpRequest)),
 					)
 					// If the connection is dead, we can't write a status to it.
 					c.Error(err.(error)) // nolint: errcheck
@@ -97,14 +96,14 @@ func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 					logger.Error("[Recovery from panic]",
 						slog.Time("time", time.Now()),
 						slog.Any("error", err),
-						slog.String("request", fmt.Sprintf("%v", httpRequest)),
-						slog.String("stack", fmt.Sprintf("%v", debug.Stack())),
+						slog.String("request", string(httpRequest)),
+						slog.String("stack", string(debug.Stack())),
 					)
 				} else {
 					logger.Error("[Recovery from panic]",
 						slog.Time("time", time.Now()),
 						slog.Any("error", err),
-						slog.String("request", fmt.Sprintf("%v", httpRequest)),
+						slog.String("request", string(httpRequest)),
 					)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)
