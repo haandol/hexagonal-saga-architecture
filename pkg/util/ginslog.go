@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -74,8 +75,7 @@ func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
-						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") ||
-							strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
 							brokenPipe = true
 						}
 					}
@@ -85,10 +85,10 @@ func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 				if brokenPipe {
 					logger.Error(c.Request.URL.Path,
 						slog.Any("error", err),
-						slog.String("request", string(httpRequest)),
+						slog.String("request", fmt.Sprintf("%v", httpRequest)),
 					)
 					// If the connection is dead, we can't write a status to it.
-					c.Error(err.(error))
+					c.Error(err.(error)) // nolint: errcheck
 					c.Abort()
 					return
 				}
@@ -97,14 +97,14 @@ func RecoveryWithSlog(logger *slog.Logger, stack bool) gin.HandlerFunc {
 					logger.Error("[Recovery from panic]",
 						slog.Time("time", time.Now()),
 						slog.Any("error", err),
-						slog.String("request", string(httpRequest)),
-						slog.String("stack", string(debug.Stack())),
+						slog.String("request", fmt.Sprintf("%v", httpRequest)),
+						slog.String("stack", fmt.Sprintf("%v", debug.Stack())),
 					)
 				} else {
 					logger.Error("[Recovery from panic]",
 						slog.Time("time", time.Now()),
 						slog.Any("error", err),
-						slog.String("request", string(httpRequest)),
+						slog.String("request", fmt.Sprintf("%v", httpRequest)),
 					)
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)

@@ -26,6 +26,8 @@ func initTracer(endpoint string) ShutdownFunc {
 	)
 	if err != nil {
 		otel.SetTracerProvider(nooptrace.NewTracerProvider())
+		otel.SetTextMapPropagator(xray.Propagator{})
+		tracer = otel.Tracer("hexagonal")
 		return func(ctx context.Context) error { return nil }
 	}
 
