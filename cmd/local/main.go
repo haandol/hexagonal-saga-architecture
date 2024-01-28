@@ -135,5 +135,6 @@ func main() {
 		logger.Info("Graceful close complete")
 	case <-time.After(time.Second * time.Duration(cfg.App.GracefulShutdownTimeout)):
 		logger.Info("Timeout on graceful close")
+		os.Exit(1)
 	}
 }
