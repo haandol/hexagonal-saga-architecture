@@ -93,8 +93,8 @@ services:
       context: .
       dockerfile: ./Dockerfile.local
     profiles: ['wire']
-    working_dir: /src/pkg/app
-    command: [wire]
+    working_dir: /src/internal/app
+    command: ['wire']
     volumes:
       - .:/src
   swagger:

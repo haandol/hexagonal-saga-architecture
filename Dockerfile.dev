@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.22 AS builder
+FROM golang:1.22.2 AS builder
 LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
