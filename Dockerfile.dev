@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.21.1 AS builder
+FROM golang:1.22 AS builder
 LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
@@ -20,7 +20,7 @@ ARG BUILD_TAG
 ARG APP_NAME
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
-FROM alpine:3.17 AS server
+FROM alpine:3.19 AS server
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 

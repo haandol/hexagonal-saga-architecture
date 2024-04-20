@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.21.1 AS builder
+FROM golang:1.22 AS builder
 LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
@@ -22,7 +22,7 @@ ARG TARGETOS=linux
 ARG TARGETARCH=arm64
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
-FROM alpine:3.17 AS server
+FROM alpine:3.19 AS server
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 
@@ -41,7 +41,7 @@ EXPOSE ${APP_PORT}
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # for schema migration
-FROM golang:alpine3.17 as migration
+FROM golang:alpine3.19 as migration
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 

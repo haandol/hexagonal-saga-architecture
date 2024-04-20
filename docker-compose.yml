@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.8'
 
 services:
   mysql:
@@ -72,7 +72,7 @@ services:
       - AWS_REGION=ap-northeast-2
     command: ['--config=/etc/otel-agent-config.yml']
   dev:
-    image: cosmtrek/air:v1.45.0
+    image: cosmtrek/air:v1.51.0
     profiles: ['dev']
     working_dir: /src
     stop_signal: SIGINT
@@ -83,7 +83,7 @@ services:
     ports:
       - '8090:8090'
   migrate:
-    image: haandol/goose:3.9.0
+    image: haandol/goose:3.19.2
     profiles: ['dev']
     working_dir: /migrations
     volumes:
