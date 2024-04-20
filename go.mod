@@ -1,6 +1,6 @@
 module github.com/haandol/hexagonal
 
-go 1.22.2
+go 1.22.0
 
 replace github.com/haandol/hexagonal/pkg => ./pkg
 
