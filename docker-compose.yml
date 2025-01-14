@@ -1,40 +1,40 @@
 services:
   mysql:
-    image: mysql:8.1
-    command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+    image: mysql:8.4
+    command: --mysql-native-password=ON
     restart: always
-    profiles: ['backend']
+    profiles: ["backend"]
     ports:
-      - '3306:3306'
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_USER=mysql
       - MYSQL_PASSWORD=password
       - MYSQL_DATABASE=saga
     volumes:
-      - saga-app-mysql-data:/var/lib/mysql
+      - saga-mysql-data:/var/lib/mysql
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
   redis:
-    image: redis:7.2
+    image: redis:7.4
     restart: always
-    profiles: ['backend']
+    profiles: ["backend"]
     ports:
-      - '6379:6379'
+      - "6379:6379"
   zookeeper:
     image: zookeeper
     restart: always
-    profiles: ['backend']
+    profiles: ["backend"]
     ports:
-      - '2181:2181'
+      - "2181:2181"
   kafka:
     depends_on:
       - zookeeper
-    image: bitnami/kafka:2.8.1
+    image: bitnami/kafka:3.9
     restart: always
-    profiles: ['backend']
+    profiles: ["backend"]
     ports:
-      - '9093:9093'
+      - "9093:9093"
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_BROKER_ID=1
@@ -52,9 +52,9 @@ services:
       - kafka
     image: provectuslabs/kafka-ui
     restart: always
-    profiles: ['ops']
+    profiles: ["ops"]
     ports:
-      - '8080:8080'
+      - "8080:8080"
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
@@ -63,15 +63,16 @@ services:
     volumes:
       - ./otel-config.yml:/etc/otel-agent-config.yml
       - ~/.aws:/root/.aws
-    profiles: ['ops']
+    profiles: ["ops"]
     ports:
-      - '4317:4317' # OTLP receiver
+      - "4317:4317" # OTLP receiver
     environment:
       - AWS_REGION=ap-northeast-2
-    command: ['--config=/etc/otel-agent-config.yml']
+    command: ["--config=/etc/otel-agent-config.yml"]
   dev:
-    image: cosmtrek/air:v1.51.0
-    profiles: ['dev']
+    image: cosmtrek/air:v1.61.5
+    platform: linux/arm64
+    profiles: ["dev"]
     working_dir: /src
     stop_signal: SIGINT
     stop_grace_period: 5s
@@ -79,32 +80,33 @@ services:
       - .:/src
       - ~/.aws:/root/.aws
     ports:
-      - '8090:8090'
+      - "8090:8090"
   migrate:
     image: haandol/goose:3.19.2
-    profiles: ['dev']
+    platform: linux/arm64
+    profiles: ["dev"]
     working_dir: /migrations
     volumes:
       - .:/migrations
       - ~/.aws:/root/.aws
-    entrypoint: ['./scripts/migrate.sh', 'up']
+    entrypoint: ["./scripts/migrate.sh", "up"]
   wire:
     build:
       context: .
       dockerfile: ./Dockerfile.local
-    profiles: ['wire']
+    profiles: ["wire"]
     working_dir: /src/internal/app
-    command: ['wire']
+    command: ["wire"]
     volumes:
       - .:/src
   swagger:
     build:
       context: .
       dockerfile: ./Dockerfile.local
-    command: ['./scripts/swagger.sh']
-    profiles: ['swagger']
+    command: ["./scripts/swagger.sh"]
+    profiles: ["swagger"]
     volumes:
       - .:/src
 
 volumes:
-  saga-app-mysql-data: {}
+  saga-mysql-data: {}

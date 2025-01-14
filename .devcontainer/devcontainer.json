@@ -1,0 +1,38 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "Go Development Container",
+  "image": "mcr.microsoft.com/vscode/devcontainers/go:1.23",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "streetsidesoftware.code-spell-checker",
+        "visualstudioexptteam.vscodeintellicode",
+        "eamodio.gitlens",
+        "davidanson.vscode-markdownlint"
+      ],
+      "settings": {
+        "extensions.verifySignature": false,
+        "go.toolsManagement.autoUpdate": true,
+        "go.useLanguageServer": true,
+        "go.lintTool": "golangci-lint",
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "features": {
+    "ghcr.io/guiyomh/features/golangci-lint:0": {},
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
+    }
+  },
+  "remoteEnv": {
+    "GOPROXY": "direct"
+  },
+  "forwardPorts": [8090],
+  "mounts": [
+    "source=${env:HOME}${env:USERPROFILE}/.aws,target=/root/.aws,type=bind",
+    "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/root/.ssh,type=bind"
+  ]
+}

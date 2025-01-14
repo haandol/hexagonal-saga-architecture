@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-FROM golang:1.22.2 AS builder
+FROM golang:1.23.4 AS builder
 LABEL maintainer="ldg55d@gmail.com"
 
 WORKDIR /src
@@ -10,6 +9,7 @@ ENV GONOSUMDB github.com/haandol
 ENV GOPRIVATE github.com/haandol
 
 # manage dependencies
+ENV GOPROXY=direct
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -22,7 +22,7 @@ ARG TARGETOS=linux
 ARG TARGETARCH=arm64
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-X main.BuildTag=$BUILD_TAG -s -w" -o /go/bin/app ./cmd/${APP_NAME}
 
-FROM alpine:3.19 AS server
+FROM alpine:3.21 AS server
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 
@@ -30,18 +30,18 @@ RUN apk --no-cache add curl
 RUN apk --no-cache add tzdata
 RUN echo "Asia/Seoul" >  /etc/timezone
 
-WORKDIR /
-COPY --chown=0:0 --from=builder /go/bin/app /
-COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /
-COPY --chown=0:0 --from=builder /src/env/dev.env /.env
+WORKDIR /src
+COPY --chown=0:0 --from=builder /go/bin/app /src/
+COPY --chown=0:0 --from=builder /src/docker-entrypoint.sh /src/
+COPY --chown=0:0 --from=builder /src/env/dev.env /src/.env
 
 ARG APP_PORT
 EXPOSE ${APP_PORT}
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/src/docker-entrypoint.sh"]
 
 # for schema migration
-FROM golang:alpine3.19 as migration
+FROM golang:alpine3.21 as migration
 ARG GIT_COMMIT=undefined
 LABEL git_commit=$GIT_COMMIT
 

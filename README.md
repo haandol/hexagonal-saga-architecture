@@ -8,7 +8,7 @@ hexagonal saga demo app
 # Prerequisites
 
 - Docker
-- Go 1.22+
+- Go 1.23+
 - MySQL 8.x
 - [Wire](https://github.com/google/wire) (for DI)
 - [Goose](https://github.com/pressly/goose) (for schema migration)
@@ -21,7 +21,7 @@ hexagonal saga demo app
 # Run infrastructure
 
 ```bash
-$ docker-compose --profile backend up -d
+docker-compose --profile backend up -d
 ```
 
 # Run services
@@ -29,25 +29,25 @@ $ docker-compose --profile backend up -d
 ## Copy .env to project root folder
 
 ```bash
-$ cp env/local.env .env
+cp env/local.env .env
 ```
 
 ## Schema migration
 
 ```bash
-$ docker-compose up migrate
+docker-compose up migrate
 ```
 
 ## Run service
 
 ```bash
-$ docker-compose up dev
+docker-compose up dev
 ```
 
 ## Build swagger docs (Optional)
 
 ```bash
-$ docker-compose up swagger
+docker-compose up swagger
 ```
 
 # Try it out
@@ -55,7 +55,7 @@ $ docker-compose up swagger
 open swagger on the browser
 
 ```bash
-$ open http://localhost:8090/swagger/index.html
+open http://localhost:8090/swagger/index.html
 ```
 
 ## Create trip record
