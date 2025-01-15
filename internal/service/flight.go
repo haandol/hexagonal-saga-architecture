@@ -5,6 +5,7 @@ import (
 
 	"github.com/haandol/hexagonal/internal/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/internal/dto"
+	"github.com/haandol/hexagonal/internal/instrument"
 	"github.com/haandol/hexagonal/internal/message/command"
 	"github.com/haandol/hexagonal/internal/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/o11y"
@@ -34,18 +35,16 @@ func (s *FlightService) Book(ctx context.Context, cmd *command.BookFlight) error
 		FlightID: cmd.Body.FlightID,
 	}
 	if err := s.flightRepository.Book(ctx, req, cmd); err != nil {
-		logger.Error("failed to book flight", "req", req, "err", err)
+		instrument.RecordBookFlightError(logger, span, err, cmd)
 
 		go func(reason string) {
 			if err := s.flightRepository.PublishAbortSaga(ctx,
 				cmd.CorrelationID, cmd.ParentID, cmd.Body.TripID, reason,
 			); err != nil {
-				logger.Error("failed to publish abort saga", "command", cmd, "err", err)
+				instrument.RecordPublishAbortSagaError(logger, span, err, cmd)
 			}
 		}(err.Error())
 
-		span.RecordError(err)
-		span.SetStatus(o11y.GetStatus(err))
 		return err
 	}
 
@@ -59,7 +58,7 @@ func (s *FlightService) CancelBooking(ctx context.Context, cmd *command.CancelFl
 	defer span.End()
 
 	if err := s.flightRepository.CancelBooking(ctx, cmd); err != nil {
-		logger.Error("failed to cancel flight booking", "BookingID", cmd.Body.BookingID, "err", err)
+		instrument.RecordCancelFlightBookingError(logger, span, err, cmd)
 		return err
 	}
 

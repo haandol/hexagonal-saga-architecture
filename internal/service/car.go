@@ -6,6 +6,7 @@ import (
 
 	"github.com/haandol/hexagonal/internal/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/internal/dto"
+	"github.com/haandol/hexagonal/internal/instrument"
 	"github.com/haandol/hexagonal/internal/message/command"
 	"github.com/haandol/hexagonal/internal/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/o11y"
@@ -35,17 +36,13 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	panicked := true
 	txCtx, err := s.carRepository.BeginTx(ctx)
 	if err != nil {
-		logger.Error("Failed to begin transaction", "err", err)
-		span.RecordError(err)
-		span.SetStatus(o11y.GetStatus(err))
+		instrument.RecordBeginTxError(logger, span, err)
 		return err
 	}
 	defer func() {
 		if r := recover(); r != nil || panicked {
 			if err := s.carRepository.RollbackTx(txCtx); err != nil {
-				span.RecordError(err)
-				span.SetStatus(o11y.GetStatus(err))
-				logger.Error("Failed to rollback transaction", "err", err)
+				instrument.RecordRollbackTxError(logger, span, err)
 			}
 		}
 	}()
@@ -56,33 +53,29 @@ func (s *CarService) Book(ctx context.Context, cmd *command.BookCar) error {
 	}
 	booking, err := s.carRepository.Book(txCtx, req)
 	if err != nil {
-		logger.Error("Failed to book car", "req", req, "err", err)
+		instrument.RecordBookCarError(logger, span, err, req)
 
-		if err := s.carRepository.PublishAbortSaga(txCtx, cmd, err.Error()); err != nil {
-			logger.Error("Failed to publish AbortSaga", "command", cmd, "err", err)
-			span.RecordError(err)
-			span.SetStatus(o11y.GetStatus(err))
-			return err
-		}
-	} else {
-		if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
-			logger.Error("Failed to publish CarBooked", "booking", booking, "err", err)
-			span.RecordError(err)
-			span.SetStatus(o11y.GetStatus(err))
-			return err
-		}
+		go func(reason string) {
+			if err := s.carRepository.PublishAbortSaga(txCtx, cmd, reason); err != nil {
+				instrument.RecordPublishAbortSagaError(logger, span, err, cmd)
+			}
+		}(err.Error())
+
+		return err
+	}
+
+	if err := s.carRepository.PublishCarBooked(ctx, cmd.CorrelationID, cmd.ParentID, &booking); err != nil {
+		instrument.RecordPublishCarBookedError(logger, span, err, cmd)
+		return err
 	}
 
 	if err := s.carRepository.CommitTx(txCtx); err == nil {
 		panicked = false
 	} else {
-		logger.Error("Failed to commit transaction", "err", err)
-		span.RecordError(err)
-		span.SetStatus(o11y.GetStatus(err))
+		instrument.RecordCommitTxError(logger, span, err)
 		return err
 	}
 	// Transaction Ends
-
 	span.SetAttributes(
 		o11y.AttrString("booking", fmt.Sprintf("%v", booking)),
 		o11y.AttrString("panicked", fmt.Sprintf("%v", panicked)),
@@ -98,9 +91,7 @@ func (s *CarService) CancelBooking(ctx context.Context, cmd *command.CancelCarBo
 	defer span.End()
 
 	if err := s.carRepository.CancelBooking(ctx, cmd); err != nil {
-		logger.Error("failed to cancel car booking", "BookingID", cmd.Body.BookingID, "err", err)
-		span.RecordError(err)
-		span.SetStatus(o11y.GetStatus(err))
+		instrument.RecordCancelCarBookingError(logger, span, err, cmd)
 		return err
 	}
 
