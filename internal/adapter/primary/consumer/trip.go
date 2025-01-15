@@ -3,8 +3,9 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 
 	"github.com/haandol/hexagonal/internal/constant"
 	"github.com/haandol/hexagonal/internal/message"

@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/haandol/hexagonal/internal/constant"
@@ -13,6 +12,7 @@ import (
 	"github.com/haandol/hexagonal/internal/service"
 	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/pkg/errors"
 )
 
 type FlightConsumer struct {

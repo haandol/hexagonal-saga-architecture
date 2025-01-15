@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"reflect"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/internal/constant"
@@ -19,9 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	ErrNoFlightBookingFound = errors.New("no flight-booking found")
-)
+var ErrNoFlightBookingFound = errors.New("no flight-booking found")
 
 type FlightRepository struct {
 	BaseRepository

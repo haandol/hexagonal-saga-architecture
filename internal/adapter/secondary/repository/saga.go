@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"reflect"
 	"time"
 
@@ -16,12 +15,11 @@ import (
 	"github.com/haandol/hexagonal/internal/message/command"
 	"github.com/haandol/hexagonal/internal/message/event"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-var (
-	ErrNoRowAffected = errors.New("no row affected")
-)
+var ErrNoRowAffected = errors.New("no row affected")
 
 type SagaRepository struct {
 	BaseRepository

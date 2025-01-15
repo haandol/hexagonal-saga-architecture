@@ -2,16 +2,15 @@ package app
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"os"
 	"sync"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/haandol/hexagonal/internal/adapter/primary/consumer"
 	"github.com/haandol/hexagonal/internal/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 type FlightApp struct {

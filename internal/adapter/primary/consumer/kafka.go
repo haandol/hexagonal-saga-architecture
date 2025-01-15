@@ -3,11 +3,12 @@ package consumer
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/haandol/hexagonal/internal/constant"
 	"github.com/haandol/hexagonal/internal/port/primaryport/consumerport"

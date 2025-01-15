@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"reflect"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
 	"github.com/haandol/hexagonal/internal/constant"
@@ -19,9 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	ErrNoCarBookingFound = errors.New("no car-booking found")
-)
+var ErrNoCarBookingFound = errors.New("no car-booking found")
 
 type CarRepository struct {
 	BaseRepository

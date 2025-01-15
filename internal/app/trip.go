@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"os"
 	"sync"
@@ -12,6 +11,7 @@ import (
 	"github.com/haandol/hexagonal/internal/port/primaryport/consumerport"
 	"github.com/haandol/hexagonal/internal/port/primaryport/routerport"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 

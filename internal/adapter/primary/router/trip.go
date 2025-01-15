@@ -2,9 +2,10 @@ package router
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/haandol/hexagonal/internal/constant"

@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/haandol/hexagonal/internal/constant"
 	"gorm.io/gorm"

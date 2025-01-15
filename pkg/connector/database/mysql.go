@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -11,7 +10,7 @@ import (
 	"github.com/haandol/hexagonal/pkg/connector/cloud"
 	"github.com/haandol/hexagonal/pkg/connector/database/internal"
 	"github.com/haandol/hexagonal/pkg/util"
-
+	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

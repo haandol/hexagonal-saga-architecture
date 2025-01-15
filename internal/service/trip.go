@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/haandol/hexagonal/internal/adapter/secondary/repository"
 	"github.com/haandol/hexagonal/internal/constant/status"
@@ -11,6 +10,7 @@ import (
 	"github.com/haandol/hexagonal/internal/port/secondaryport/repositoryport"
 	"github.com/haandol/hexagonal/pkg/o11y"
 	"github.com/haandol/hexagonal/pkg/util"
+	"github.com/pkg/errors"
 )
 
 type TripService struct {
