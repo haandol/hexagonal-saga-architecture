@@ -10,6 +10,7 @@
         "streetsidesoftware.code-spell-checker",
         "visualstudioexptteam.vscodeintellicode",
         "eamodio.gitlens",
+        "chaitanyashahare.lazygit",
         "davidanson.vscode-markdownlint"
       ],
       "settings": {
@@ -23,14 +24,15 @@
   },
   "features": {
     "ghcr.io/guiyomh/features/golangci-lint:0": {},
-    "ghcr.io/devcontainers/features/go:1": {
-      "version": "latest"
-    }
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/georgofenbeck/features/lazygit-linuxbinary:1": {}
   },
   "remoteEnv": {
     "GOPROXY": "direct"
   },
-  "forwardPorts": [8090],
+  "forwardPorts": [
+    8090
+  ],
   "mounts": [
     "source=${env:HOME}${env:USERPROFILE}/.aws,target=/root/.aws,type=bind",
     "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/root/.ssh,type=bind"
